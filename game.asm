@@ -1,9 +1,5 @@
 ; A simple text adventure in x64 assembler
 
-; Function:
-;   - PrintDecision
-;       - rdx -> pointer 
-
 default rel  ; Enables RIP-relative addressing for 64-bit mode
 
 section .data
@@ -22,9 +18,12 @@ section .data
     txt_game_over db 10, "***************************", 10, "******** GAME OVER ********", 10, "***************************", 10, 10, "Thank you for playing! Better luck next time!", 10, 0
     txt_game_over_l equ $ - txt_game_over
 
+    txt_input_confirm db "Your decision is: ", 0
+    txt_input_confirm_l equ $ - txt_input_confirm
+
     ; Texts - Decisions
     txt_dc_initial:
-        db  "You are in a dark room. What do you do?", 10, "1) Turn on the light", 10, "2) Exit the game. Too creepy here.", 10, 10, 0
+        db  "You are in a dark room. What do you do?", 10, "   1) Turn on the light", 10, "   2) Exit the game. Too creepy here.", 10, 10, 0
     txt_dc_initial_l equ $ - txt_dc_initial
 
     txt_dc_flavor db "Is that a dream? Is that reality?", 0
@@ -43,6 +42,8 @@ section .data
 
     hConsoleOut dq 0
     hConsoleIn dq 0
+    previous_cursor_y db 5   ; Example Y position (you may want to store it dynamically)
+    previous_cursor_x db 0   ; X position (start of the line)
 
 section .bss
     input_buffer resb 128   ; Buffer for user input
@@ -71,27 +72,26 @@ main:
     mov [current_decision], rsi
 
 main_loop:
-    call PrintDecision
+    ; Print the current decision text
+    mov rcx, [current_decision]
+    mov rdx, [rcx + 8]
+    mov rcx, [rcx]
+    call WriteText
+
+    ; Read the decision from the input
+    mov rcx, txt_input_confirm
+    mov rdx, txt_input_confirm_l
+    call WriteText
+
     call ReadDigit
+    
 
+    ; React on decision
+    
     ; Exit
-    xor ecx, ecx
-    call ExitProcess
+    jmp EndGame
 
-PrintDecision:
-    ; Prints the text of the current decision to the console
 
-    ; Print text
-    mov rcx, [hConsoleOut]      ; Handle for out
-    mov rdx, [current_decision] ; Load the address of the current decision into rdx
-    mov rdx, [rdx]              ; Load the address of the text (first value, quad) of the current decision into rdx
-    mov r8, [rsi + 8]           ; Loads the length of the text (second value, word) into r8
-    lea r9, [rsp-8]             ; Pointer to number of chars written
-    push 0                      ; Reserved parameter (must be 0)
-    call WriteConsoleA
-    add rsp, 8                  ; Correct the stack pointer after call to WriteConsoleA
-
-    ret
 
 ReadDigit:
     ; Reads input from the console
@@ -106,6 +106,7 @@ _read_digit_loop:
     lea r9, [bytes_read]    ; Pointer to store number of bytes read
     push 0                 ; Reserved parameter (must be 0)
     call ReadConsoleA
+    pop rax
 
     mov rax, [bytes_read]
     cmp rax, 3
@@ -117,8 +118,6 @@ _read_digit_loop:
     cmp al, 9
     ja _invalid_digit_input
 
-    add al, '0'
-    mov [input_buffer], al
     ret
 
 _invalid_digit_input:
@@ -130,40 +129,38 @@ _invalid_digit_input:
     cmp r12, rax
     je _too_many_inputs
 
-    mov rcx, [hConsoleOut]
-    mov rdx, err_invalid_input
-    mov r8, err_invalid_input_l
-    mov rcx, [hConsoleOut]  ; Handle
-    lea r9, [rsp-8]         ; Pointer to number of chars written
-    push 0                  ; Reserved parameter (must be 0)
-    call WriteConsoleA
-    add rsp, 8              ; Correct the stack pointer after call to WriteConsoleA
+    mov rcx, err_invalid_input
+    mov rdx, err_invalid_input_l
+    call WriteText
+
     jmp _read_digit_loop
 
 _too_many_inputs:
     ; Print the error message and end the game
-
-    mov rcx, [hConsoleOut]
-    mov rdx, err_too_many_invalid_input
-    mov r8, err_too_many_invalid_input_l
-    mov rcx, [hConsoleOut]  ; Handle
-    lea r9, [rsp-8]         ; Pointer to number of chars written
-    push 0                  ; Reserved parameter (must be 0)
-    call WriteConsoleA
-    add rsp, 8              ; Correct the stack pointer after call to WriteConsoleA
+    mov rcx, err_too_many_invalid_input
+    mov rdx, err_too_many_invalid_input_l
+    call WriteText
 
     jmp EndGame
 
 EndGame:
-    ; Print game over text
-    mov rcx, [hConsoleOut]
-    mov rdx, txt_game_over
-    mov r8, txt_game_over_l
-    lea r9, [rsp-8]
-    push 0
-    call WriteConsoleA
-    add rsp, 8
+    ; Print game over text and ends the process
+    mov rcx, txt_game_over
+    mov rdx, txt_game_over_l
+    call WriteText
 
     ; Exit
     xor ecx, ecx
     call ExitProcess
+
+WriteText:
+    ; rcx - Pointer to message
+    ; rdx - Message length
+    mov r8, rdx             ; Move the length of the text
+    mov rdx, rcx            ; Move the pointer to the text
+    mov rcx, [hConsoleOut]  ; Handle
+    lea r9, [rsp-8]         ; Pointer to number of chars written
+    push 0                  ; Reserved parameter (must be 0)
+    call WriteConsoleA
+    pop rax
+    ret
