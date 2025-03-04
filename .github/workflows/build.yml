@@ -1,0 +1,46 @@
+name: Build and Release x64 Assembly
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          choco install nasm -y
+          choco install mingw -y
+
+      - name: Assemble Code
+        run: |
+          nasm -f win64 game.asm -o game.obj
+          gcc -nostartfiles -o game.exe game.obj
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: game
+          path: game.exe
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: game
+          path: ./
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: game.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
