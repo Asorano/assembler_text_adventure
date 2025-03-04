@@ -6,14 +6,10 @@ section .data
     ; Common
     newline db 10, 0
     newline_l db 2
-    max_input_tries db 3
 
     ; Texts
-    err_invalid_input: db "You need to enter a value between 1 and 9!", 10, 0
+    err_invalid_input: db "You need to enter a value between 1 and ", 0
     err_invalid_input_l equ $ - err_invalid_input
-
-    err_too_many_invalid_input: db "While thinking about your decision, the time passed by and you turned into a mummy.", 10, 0
-    err_too_many_invalid_input_l equ $ - err_too_many_invalid_input
 
     err_invalid_action: db "Impossible!", 10, 10, 0
     err_invalid_action_l equ $ - err_invalid_action
@@ -24,7 +20,7 @@ section .data
     txt_input_confirm db "Your decision is: ", 0
     txt_input_confirm_l equ $ - txt_input_confirm
 
-    txt_decision_taken db "---------------------------------------------------------------------------", 10, 0
+    txt_decision_taken db 10, "---------------------------------------------------------------------------", 10, 10, 0
     txt_decision_taken_l equ $ - txt_decision_taken
 
     ; Decisions
@@ -105,12 +101,8 @@ main_loop:
 
     push rax                        ; push action count on stack
 
-    ; Read the decision from the input
-    mov rcx, txt_input_confirm
-    mov rdx, txt_input_confirm_l
-    call WriteText
-
-    call ReadDigit                  ; selected digit in rax
+    mov rcx, rax
+    call ReadActionIndex                  ; selected digit in rax
 
     pop rdx
 
@@ -158,17 +150,23 @@ _action_counter_loop:
     add rcx, 8
     jmp _action_counter_loop
 
-_action_return
+_action_return:
     ret
 
-ReadDigit:
+ReadActionIndex:
     ; Reads input from the console
     ; Converts it to a number and verifies that the value is between 0 and 9
+    ; rcx => action count
     ; Returns digit in rax
-
     mov r10, 0
+    mov r13, rcx
 
 _read_digit_loop:
+    ; Read the decision from the input
+    mov rcx, txt_input_confirm
+    mov rdx, txt_input_confirm_l
+    call WriteText
+
     mov rcx, [hConsoleIn]  ; Handle to console input
     mov rdx, input_buffer   ; Pointer to input buffer
     mov r8, 127            ; Max number of bytes to read
@@ -184,10 +182,10 @@ _read_digit_loop:
     ; Convert first character to number
     mov al, [input_buffer]
     sub al, '0'
-    cmp al, 9
-    ja _invalid_digit_input
     cmp al, 0
     je _invalid_digit_input
+    cmp rax, r13
+    ja _invalid_digit_input
 
     sub rax, 1
     ret
@@ -195,25 +193,19 @@ _read_digit_loop:
 _invalid_digit_input:
     ; Check whether the max input tries has been reached.
     ; End the game or repeat the input listening
-
-    mov al, [max_input_tries]
-    inc r12
-    cmp r12, rax
-    je _too_many_inputs
-
     mov rcx, err_invalid_input
     mov rdx, err_invalid_input_l
     call WriteText
 
-    jmp _read_digit_loop
-
-_too_many_inputs:
-    ; Print the error message and end the game
-    mov rcx, err_too_many_invalid_input
-    mov rdx, err_too_many_invalid_input_l
+    mov rdx, r13
+    add rdx, '0'
+    mov [input_buffer], rdx
+    mov byte [input_buffer + 1], 10
+    mov rcx, input_buffer
+    mov rdx, 2
     call WriteText
 
-    jmp EndGame
+    jmp _read_digit_loop
 
 WriteText:
     ; rcx - Pointer to message
