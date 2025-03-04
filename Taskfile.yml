@@ -1,0 +1,31 @@
+version: '3'
+
+tasks:
+  default:
+    desc: "Assemble the program and run it"
+    cmds:
+      - task: build
+      - task: run
+
+  build:
+    desc: "Assembles and links the executable"
+    cmds:
+      - task: assemble
+      - task: link
+
+  assemble:
+    cmd: nasm -f win64 game.asm -o ./build/game.obj
+  
+  link:
+    cmds:
+      - link /SUBSYSTEM:CONSOLE /ENTRY:main ./build/game.obj kernel32.lib /OUT:build/game.exe
+
+  run:
+    desc: "Start the built executable"
+    cmd: ./build/game.exe
+
+  clean:
+    desc: "Clean up the compiled binary"
+    cmds:
+      - cmd /c "del /f /q .\build\*.obj"
+      - cmd /c "del /f /q .\build\*.exe"
