@@ -1,5 +1,14 @@
 ; A simple text adventure in x64 assembler
 
+; The game is based on "decisions"
+; Each decision consists of:
+;   - 8 bytes (dq) pointer_to_text
+;   - 4 bytes (dd) length of text
+;   - 0..9 -> 8 bytes (dq) action / address of next decision 
+;   - dq 0 -> Delimiter
+
+; The game starts with the dc_initial decision.
+
 default rel  ; Enables RIP-relative addressing for 64-bit mode
 
 section .data
@@ -7,7 +16,7 @@ section .data
     newline db 10, 0
     newline_l db 2
 
-    ; Texts
+    ; Common Texts
     err_invalid_input: db "You need to enter a value between 1 and ", 0
     err_invalid_input_l equ $ - err_invalid_input
 
@@ -54,10 +63,9 @@ section .data
 
     ;dc_area_0_turn_on_light:
 
+    ; Runtime data
     hConsoleOut dq 0
-    hConsoleIn dq 0
-    previous_cursor_y db 5   ; Example Y position (you may want to store it dynamically)
-    previous_cursor_x db 0   ; X position (start of the line)
+    hConsoleIn dq 06
 
 section .bss
     input_buffer resb 128   ; Buffer for user input
