@@ -16,7 +16,7 @@ section .data
     newline db 10, 0
     newline_l db 2
 
-    %include "content.inc"
+    %include "include/content.inc"
 
     ;dc_area_0_turn_on_light:
 
@@ -33,8 +33,8 @@ section .text
     global main
     extern GetStdHandle, WriteConsoleA, ReadConsoleA, ExitProcess
 
-    %include "decisions.inc"
-    %include "input.inc"
+    %include "include/decisions.inc"
+    %include "include/input.inc"
 
 main:
     sub rsp, 40  ; Ensure stack is 16-byte aligned
