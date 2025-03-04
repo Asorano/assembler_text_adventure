@@ -16,50 +16,7 @@ section .data
     newline db 10, 0
     newline_l db 2
 
-    ; Common Texts
-    err_invalid_input: db "You need to enter a value between 1 and ", 0
-    err_invalid_input_l equ $ - err_invalid_input
-
-    err_invalid_action: db "Impossible!", 10, 10, 0
-    err_invalid_action_l equ $ - err_invalid_action
-
-    txt_game_over db 10, "***************************", 10, "******** GAME OVER ********", 10, "***************************", 10, 10, "Thank you for playing! Better luck next time!", 10, 0
-    txt_game_over_l equ $ - txt_game_over
-
-    txt_input_confirm db "Your decision is: ", 0
-    txt_input_confirm_l equ $ - txt_input_confirm
-
-    txt_decision_taken db 10, "---------------------------------------------------------------------------", 10, 10, 0
-    txt_decision_taken_l equ $ - txt_decision_taken
-
-    ; Decisions
-    dc_initial:
-        dq txt_dc_initial
-        dd txt_dc_initial_l
-        dq dc_stage1_light_on
-        dq dc_game_end
-        dq 0
-
-    txt_dc_initial:
-        db  "You are in a dark room. What do you do?", 10, "   1) Turn on the light", 10, "   2) Exit the game. Too creepy here.", 10, 10, 0
-    txt_dc_initial_l equ $ - txt_dc_initial
-
-    dc_stage1_light_on:
-        dq txt_dc_stage1_light_on
-        dd txt_dc_stage1_light_on_l
-        dq dc_initial
-        dq 0
-
-    txt_dc_stage1_light_on db "The light turns on. You see a carnage in front of you. A massacre. A whole pile of corpse.", 10, "   1) Turn the light off", 10, 10, 0
-    txt_dc_stage1_light_on_l equ $ - txt_dc_stage1_light_on
-
-    dc_game_end:
-        dq txt_dc_game_end
-        dd txt_dc_game_end_l
-        dq 0
-
-    txt_dc_game_end db "The dream is over! Head back to reality.", 10, 0
-    txt_dc_game_end_l equ $ - txt_dc_game_end
+    %include "content.inc"
 
     ;dc_area_0_turn_on_light:
 
@@ -75,6 +32,9 @@ section .bss
 section .text
     global main
     extern GetStdHandle, WriteConsoleA, ReadConsoleA, ExitProcess
+
+    %include "decisions.inc"
+    %include "input.inc"
 
 main:
     sub rsp, 40  ; Ensure stack is 16-byte aligned
@@ -133,87 +93,6 @@ _invalid_action:
     mov rdx, err_invalid_action_l
     call WriteText
     jmp main_loop
-
-GetActionTarget:
-    ; rcx => decision address
-    ; rdx => action index
-    ; rax = returns action target decision address
-    shl rdx, 3  ; multiply by 8 since an action address is 8 bytes
-    add rcx, 12
-    add rcx, rdx
-    mov rax, [rcx]
-    ret
-
-GetActionCount:
-    ; rcx => decision address
-    mov rax, 0
-    add rcx, 12     ; Jump to the first possible action
-
-_action_counter_loop:
-    mov rdx, [rcx]  ; Load the
-    cmp rdx, 0
-    je _action_return
-
-    inc rax
-    add rcx, 8
-    jmp _action_counter_loop
-
-_action_return:
-    ret
-
-ReadActionIndex:
-    ; Reads input from the console
-    ; Converts it to a number and verifies that the value is between 0 and 9
-    ; rcx => action count
-    ; Returns digit in rax
-    mov r10, 0
-    mov r13, rcx
-
-_read_digit_loop:
-    ; Read the decision from the input
-    mov rcx, txt_input_confirm
-    mov rdx, txt_input_confirm_l
-    call WriteText
-
-    mov rcx, [hConsoleIn]  ; Handle to console input
-    mov rdx, input_buffer   ; Pointer to input buffer
-    mov r8, 127            ; Max number of bytes to read
-    lea r9, [bytes_read]    ; Pointer to store number of bytes read
-    push 0                 ; Reserved parameter (must be 0)
-    call ReadConsoleA
-    pop rax
-
-    mov rax, [bytes_read]
-    cmp rax, 3
-    jne _invalid_digit_input
-
-    ; Convert first character to number
-    mov al, [input_buffer]
-    sub al, '0'
-    cmp al, 0
-    je _invalid_digit_input
-    cmp rax, r13
-    ja _invalid_digit_input
-
-    sub rax, 1
-    ret
-
-_invalid_digit_input:
-    ; Check whether the max input tries has been reached.
-    ; End the game or repeat the input listening
-    mov rcx, err_invalid_input
-    mov rdx, err_invalid_input_l
-    call WriteText
-
-    mov rdx, r13
-    add rdx, '0'
-    mov [input_buffer], rdx
-    mov byte [input_buffer + 1], 10
-    mov rcx, input_buffer
-    mov rdx, 2
-    call WriteText
-
-    jmp _read_digit_loop
 
 WriteText:
     ; rcx - Pointer to message
