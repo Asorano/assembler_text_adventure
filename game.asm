@@ -31,7 +31,7 @@ section .data
     dc_initial:
         dq txt_dc_initial
         dd txt_dc_initial_l
-        dq dc_flavor
+        dq dc_stage1_light_on
         dq dc_game_end
         dq 0
 
@@ -39,14 +39,14 @@ section .data
         db  "You are in a dark room. What do you do?", 10, "   1) Turn on the light", 10, "   2) Exit the game. Too creepy here.", 10, 10, 0
     txt_dc_initial_l equ $ - txt_dc_initial
 
-    dc_flavor:
-        dq txt_dc_flavor
-        dd txt_dc_flavor_l
+    dc_stage1_light_on:
+        dq txt_dc_stage1_light_on
+        dd txt_dc_stage1_light_on_l
         dq dc_initial
         dq 0
 
-    txt_dc_flavor db "Is that a dream? Is that reality?", 10, "   1) Do something", 10, 10, 0
-    txt_dc_flavor_l equ $ - txt_dc_flavor
+    txt_dc_stage1_light_on db "The light turns on. You see a carnage in front of you. A massacre. A whole pile of corpse.", 10, "   1) Turn the light off", 10, 10, 0
+    txt_dc_stage1_light_on_l equ $ - txt_dc_stage1_light_on
 
     dc_game_end:
         dq txt_dc_game_end
