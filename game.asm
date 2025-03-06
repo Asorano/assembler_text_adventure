@@ -26,8 +26,10 @@ section .data
 
 section .bss
     input_buffer resb 128   ; Buffer for user input
+    output_buffer resb 32   ; Buffer for user input
     current_decision resq 1
     bytes_read resq 1       ; Store number of bytes read
+    decisions_taken resw 1
 
 section .text
     global main
@@ -82,6 +84,11 @@ main_loop:
     call GetActionTarget
     mov [current_decision], rax
 
+    ; Increment decisions_taken
+    mov rax, [decisions_taken]
+    inc rax
+    mov [decisions_taken], rax
+
     mov rcx, txt_decision_taken
     mov rdx, txt_decision_taken_l
     call WriteText
@@ -104,6 +111,15 @@ WriteText:
     push 0                  ; Reserved parameter (must be 0)
     call WriteConsoleA
     pop rax
+    ret
+
+WriteNumber:
+    ; rcx - Digit
+    add rcx, '0'
+    mov [output_buffer], rcx
+    mov rcx, output_buffer
+    mov rdx, 1
+    call WriteText
     ret
 
 EndGame:

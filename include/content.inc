@@ -9,6 +9,9 @@ section .data
     txt_game_over db 10, "***************************", 10, "******** GAME OVER ********", 10, "***************************", 10, 10, "Thank you for playing! Better luck next time!", 10, 0
     txt_game_over_l equ $ - txt_game_over
 
+    txt_total_decisions_taken db " decisions taken"
+    txt_total_decisions_taken_l equ $ - txt_total_decisions_taken
+
     txt_input_confirm db "Your decision is: ", 0
     txt_input_confirm_l equ $ - txt_input_confirm
 
