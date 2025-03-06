@@ -12,10 +12,8 @@
 default rel  ; Enables RIP-relative addressing for 64-bit mode
 
 section .data
-    ; Common
-    newline db 10, 0
-    newline_l db 2
 
+    %include "include/balancing.inc"
     %include "include/content.inc"
 
     ;dc_area_0_turn_on_light:
@@ -29,6 +27,7 @@ section .bss
     output_buffer resb 32   ; Buffer for user input
     current_decision resq 1
     bytes_read resq 1       ; Store number of bytes read
+    player_health resw 1
     decisions_taken resw 1
 
 section .text
@@ -37,6 +36,7 @@ section .text
 
     %include "include/decisions.inc"
     %include "include/input.inc"
+    %include "include/output.inc"
 
 main:
     sub rsp, 40  ; Ensure stack is 16-byte aligned
@@ -51,9 +51,17 @@ main:
     call GetStdHandle
     mov [hConsoleOut], rax
 
+    ; Initial player health
+    mov rsi, INITIAL_PLAYER_HEALTH
+    mov [player_health], rsi
+
     ; Initial current_decision with the initial decision
     mov rsi, dc_initial
     mov [current_decision], rsi
+
+    mov rcx, 1242
+    mov rdx, 1
+    call WriteNumber
 
 main_loop:
     ; Print the current decision text
@@ -100,27 +108,6 @@ _invalid_action:
     mov rdx, err_invalid_action_l
     call WriteText
     jmp main_loop
-
-WriteText:
-    ; rcx - Pointer to message
-    ; rdx - Message length
-    mov r8, rdx             ; Move the length of the text
-    mov rdx, rcx            ; Move the pointer to the text
-    mov rcx, [hConsoleOut]  ; Handle
-    lea r9, [rsp-8]         ; Pointer to number of chars written
-    push 0                  ; Reserved parameter (must be 0)
-    call WriteConsoleA
-    pop rax
-    ret
-
-WriteNumber:
-    ; rcx - Digit
-    add rcx, '0'
-    mov [output_buffer], rcx
-    mov rcx, output_buffer
-    mov rdx, 1
-    call WriteText
-    ret
 
 EndGame:
     ; Print game over text and ends the process

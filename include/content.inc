@@ -1,4 +1,8 @@
 section .data
+    ; Common
+    newline db 10, 0
+    newline_l db 2
+
     ; Common Texts
     err_invalid_input: db "You need to enter a value between 1 and ", 0
     err_invalid_input_l equ $ - err_invalid_input
