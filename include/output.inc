@@ -22,16 +22,28 @@ section .text
         ret
 
     WriteText:
-        ; rcx - Pointer to message
-        ; rdx - Message length
+        ; Preserve registers
+        push rcx
+        push rdx
+        push r8
+        push r9
+
         mov r8, rdx             ; Move the length of the text
         mov rdx, rcx            ; Move the pointer to the text
-        mov rcx, [hConsoleOut]  ; Handle
+        mov rcx, [hConsoleOut]  ; Handle to the console
         lea r9, [rsp-8]         ; Pointer to number of chars written
         push 0                  ; Reserved parameter (must be 0)
         call WriteConsoleA
-        pop rax
+        pop rcx
+        
+        ; Restore registers
+        pop r9
+        pop r8
+        pop rdx
+        pop rcx
+
         ret
+
 
     WriteChar:
         push rcx
@@ -48,48 +60,52 @@ section .text
     WriteNumber:
         ; rcx = number
         push rcx
+        push rdi   ; Preserve rdi
 
-        mov rax, rcx                            ; Use rax because rdx is used by the div op later
-        mov rbx, 10                             ; Prepare divisor
+        mov rax, rcx                     ; Use rax because rdx is used by the div op later
+        mov rbx, 10                      ; Prepare divisor
         mov rdi, write_buffer
-        add rdi, WRITE_BUFFER_CAPACITY-1   ; move rdi to end of buffer
+        add rdi, WRITE_BUFFER_CAPACITY-1 ; Move to end of buffer
 
-        mov byte [rdi], 0                       ; add string terminate
+        mov byte [rdi], 0                 ; Null terminator (not needed for WriteConsoleA, but useful)
         dec rdi
 
         ; Check for zero
         test rax, rax
         jnz .write_number_loop
 
-        ; Add zero to buffer and then write it to the console
+        ; Special case: print '0'
         mov byte [rdi], '0'
         dec rdi
         jmp .write_number_to_console
 
     .write_number_loop:
-        ; If the number is zero, print it
         test rax, rax
         jz .write_number_to_console
 
-        ; Divide 
-        xor rdx, rdx        ; Fast reset to 0, faster than mov
-        div rbx
+        xor rdx, rdx   ; Reset rdx for division
+        div rbx        ; rax = rax / 10, rdx = rax % 10
 
-        add dl, '0'         ; Convert to ASCII
-        mov [rdi], dl       ; Copy in output buffer
+        add dl, '0'    ; Convert remainder to ASCII
+        mov [rdi], dl  ; Store digit in buffer
         dec rdi
 
         jmp .write_number_loop
 
     .write_number_to_console:
+        ; Move rdi to the start of the number string
+        inc rdi  ; Undo last decrement
 
-        mov rcx, rdi
-        mov rdx, rdi
-        mov rax, write_buffer
-        sub rdx, rax
+        ; Correct length calculation
+        mov rcx, rdi                      ; Pointer to start of number string
+        mov rdx, write_buffer
+        add rdx, WRITE_BUFFER_CAPACITY-1  ; End of buffer
+        sub rdx, rcx                      ; Length = (end - start)
+
         call WriteText
 
-        ; Restore caller-safe parameters
+        ; Restore registers
+        pop rdi
         pop rcx
 
         ret
