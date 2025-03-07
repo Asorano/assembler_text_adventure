@@ -1,7 +1,5 @@
 section .data
     ; Common
-    newline db 10, 0
-    newline_l db 2
 
     ; Common Texts
     err_invalid_input: db "You need to enter a value between 1 and ", 0
@@ -21,6 +19,9 @@ section .data
 
     txt_decision_taken db 10, "---------------------------------------------------------------------------", 10, 10, 0
     txt_decision_taken_l equ $ - txt_decision_taken
+
+    txt_current_health db 10, "Your current health is ", 0
+    txt_current_health_l equ $ - txt_current_health
 
     ; Decisions
     dc_initial:

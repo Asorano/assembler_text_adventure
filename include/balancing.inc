@@ -1,2 +1,2 @@
 section .data
-    INITIAL_PLAYER_HEALTH equ 100
+    INITIAL_HEALTH equ 100

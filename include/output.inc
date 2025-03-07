@@ -1,4 +1,10 @@
 section .data
+    newline db 10, 0
+    newline_l equ 2
+
+    whitespace db ' ', 0
+    whitespace_l equ 2
+
     NUMBER_OUT_BUFFER_CAPACITY equ 20
     number_output_buffer times NUMBER_OUT_BUFFER_CAPACITY db 0 ; Initialize number output to 0
 
@@ -15,6 +21,26 @@ section .text
         pop rax
         ret
 
+    WriteNewLine:
+        push rcx
+        push rdx
+        mov rcx, newline
+        mov rdx, newline_l
+        call WriteText
+        pop rdx
+        pop rcx
+        ret
+
+    WriteSpace:
+        push rcx
+        push rdx
+        mov rcx, whitespace
+        mov rdx, whitespace_l
+        call WriteText
+        pop rdx
+        pop rcx
+        ret
+
     WriteDigit:
         ; rcx - Digit
         add rcx, '0'
@@ -26,20 +52,14 @@ section .text
 
     WriteNumber:
         ; rcx = number
-        ; rdx = new line if not 0
+        push rcx
+
         mov rax, rcx                            ; Use rax because rdx is used by the div op later
         mov rbx, 10                             ; Prepare divisor
         mov rdi, number_output_buffer
         add rdi, NUMBER_OUT_BUFFER_CAPACITY-1   ; move rdi to end of buffer
 
         mov byte [rdi], 0                       ; add string terminate
-        dec rdi
-
-        ; Check whether to add a new line character
-        test rax, rax
-        jz .write_number_check_zero
-
-        mov byte [rdi], 10                      ; add line break
         dec rdi
 
     .write_number_check_zero
@@ -74,4 +94,8 @@ section .text
         mov rax, number_output_buffer
         sub rdx, rax
         call WriteText
+
+        ; Restore caller-safe parameters
+        pop rcx
+
         ret

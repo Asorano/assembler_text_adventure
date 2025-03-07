@@ -25,9 +25,9 @@ section .data
 section .bss
     input_buffer resb 128   ; Buffer for user input
     output_buffer resb 32   ; Buffer for user input
-    current_decision resq 1
+    current_decision dq 0
     bytes_read resq 1       ; Store number of bytes read
-    player_health resw 1
+    current_health dw INITIAL_HEALTH
     decisions_taken resw 1
 
 section .text
@@ -37,6 +37,7 @@ section .text
     %include "include/decisions.inc"
     %include "include/input.inc"
     %include "include/output.inc"
+    %include "include/view.inc"
 
 main:
     sub rsp, 40  ; Ensure stack is 16-byte aligned
@@ -51,19 +52,14 @@ main:
     call GetStdHandle
     mov [hConsoleOut], rax
 
-    ; Initial player health
-    mov rsi, INITIAL_PLAYER_HEALTH
-    mov [player_health], rsi
-
-    ; Initial current_decision with the initial decision
-    mov rsi, dc_initial
+    mov rsi, dc_initial                         ; Initial current_decision with the initial decision
     mov [current_decision], rsi
 
-    mov rcx, 1242
-    mov rdx, 1
-    call WriteNumber
+    mov word [current_health], INITIAL_HEALTH   ; Initialize health
 
 main_loop:
+    call WritePlayerStats
+
     ; Print the current decision text
     mov rcx, [current_decision]
     mov rdx, [rcx + 8]
@@ -74,7 +70,7 @@ main_loop:
     mov rcx, [current_decision]
     call GetActionCount
 
-    cmp rax, 0x0
+    cmp rax, 0x0                    ; Check whether action count of current decision is 0
     je EndGame
 
     push rax                        ; push action count on stack
@@ -83,6 +79,7 @@ main_loop:
     call ReadActionIndex                  ; selected digit in rax
 
     pop rdx
+
 
     cmp rax, rdx
     jae _invalid_action
@@ -97,9 +94,17 @@ main_loop:
     inc rax
     mov [decisions_taken], rax
 
+    ; Write decision taken
     mov rcx, txt_decision_taken
     mov rdx, txt_decision_taken_l
     call WriteText
+
+    ; Write current health
+    mov rcx, txt_current_health
+    mov rdx, txt_current_health_l
+    call WriteText
+
+    call WriteNewLine
 
     jmp main_loop
 
