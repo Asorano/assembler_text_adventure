@@ -1,4 +1,6 @@
 section .data
+    hConsoleOut dq 0
+
     newline db 10, 0
     newline_l equ 2
 
@@ -9,6 +11,16 @@ section .data
     write_buffer times WRITE_BUFFER_CAPACITY db 0 ; Initialize number output to 0
 
 section .text
+    extern GetStdHandle, WriteConsoleA
+
+    SetupWrite:
+        ; Get handle to standard output (console)
+        mov ecx, -11  ; STD_OUTPUT_HANDLE
+        call GetStdHandle
+        mov [hConsoleOut], rax
+
+        ret
+
     WriteText:
         ; rcx - Pointer to message
         ; rdx - Message length

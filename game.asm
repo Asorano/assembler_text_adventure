@@ -19,7 +19,6 @@ section .data
     ;dc_area_0_turn_on_light:
 
     ; Runtime data
-    hConsoleOut dq 0
     hConsoleIn dq 06
 
 section .bss
@@ -31,7 +30,7 @@ section .bss
 
 section .text
     global main
-    extern GetStdHandle, WriteConsoleA, ReadConsoleA, ExitProcess
+    extern ReadConsoleA, ExitProcess
 
     %include "include/decisions.inc"
     %include "include/input.inc"
@@ -46,10 +45,7 @@ main:
     call GetStdHandle
     mov [hConsoleIn], rax  ; Store the input handle
 
-    ; Get handle to standard output (console)
-    mov ecx, -11  ; STD_OUTPUT_HANDLE
-    call GetStdHandle
-    mov [hConsoleOut], rax
+    call SetupWrite
 
     mov rsi, dc_initial                         ; Initial current_decision with the initial decision
     mov [current_decision], rsi
