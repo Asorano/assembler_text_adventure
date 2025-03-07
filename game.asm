@@ -24,7 +24,6 @@ section .data
 
 section .bss
     input_buffer resb 128   ; Buffer for user input
-    output_buffer resb 32   ; Buffer for user input
     current_decision dq 0
     bytes_read resq 1       ; Store number of bytes read
     current_health dw INITIAL_HEALTH
@@ -98,13 +97,6 @@ main_loop:
     mov rcx, txt_decision_taken
     mov rdx, txt_decision_taken_l
     call WriteText
-
-    ; Write current health
-    mov rcx, txt_current_health
-    mov rdx, txt_current_health_l
-    call WriteText
-
-    call WriteNewLine
 
     jmp main_loop
 

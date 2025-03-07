@@ -5,8 +5,8 @@ section .data
     whitespace db ' ', 0
     whitespace_l equ 2
 
-    NUMBER_OUT_BUFFER_CAPACITY equ 20
-    number_output_buffer times NUMBER_OUT_BUFFER_CAPACITY db 0 ; Initialize number output to 0
+    WRITE_BUFFER_CAPACITY equ 20
+    write_buffer times WRITE_BUFFER_CAPACITY db 0 ; Initialize number output to 0
 
 section .text
     WriteText:
@@ -21,33 +21,16 @@ section .text
         pop rax
         ret
 
-    WriteNewLine:
+    WriteChar:
         push rcx
         push rdx
-        mov rcx, newline
-        mov rdx, newline_l
+
+        mov [write_buffer], rcx
+        mov rcx, write_buffer
+        mov rdx, 2
         call WriteText
         pop rdx
         pop rcx
-        ret
-
-    WriteSpace:
-        push rcx
-        push rdx
-        mov rcx, whitespace
-        mov rdx, whitespace_l
-        call WriteText
-        pop rdx
-        pop rcx
-        ret
-
-    WriteDigit:
-        ; rcx - Digit
-        add rcx, '0'
-        mov [output_buffer], rcx
-        mov rcx, output_buffer
-        mov rdx, 1
-        call WriteText
         ret
 
     WriteNumber:
@@ -56,8 +39,8 @@ section .text
 
         mov rax, rcx                            ; Use rax because rdx is used by the div op later
         mov rbx, 10                             ; Prepare divisor
-        mov rdi, number_output_buffer
-        add rdi, NUMBER_OUT_BUFFER_CAPACITY-1   ; move rdi to end of buffer
+        mov rdi, write_buffer
+        add rdi, WRITE_BUFFER_CAPACITY-1   ; move rdi to end of buffer
 
         mov byte [rdi], 0                       ; add string terminate
         dec rdi
@@ -91,7 +74,7 @@ section .text
 
         mov rcx, rdi
         mov rdx, rdi
-        mov rax, number_output_buffer
+        mov rax, write_buffer
         sub rdx, rax
         call WriteText
 

@@ -6,6 +6,13 @@ section .text
 
         mov rcx, [current_health]
         call WriteNumber
-        call WriteNewLine
-        call WriteNewLine
+
+        mov rcx, '.'
+        call WriteChar
+
+        mov rcx, 10
+        call WriteChar
+        call WriteChar
+
+
         ret
