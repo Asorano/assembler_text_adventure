@@ -57,7 +57,6 @@ section .text
         mov byte [rdi], 0                       ; add string terminate
         dec rdi
 
-    .write_number_check_zero
         ; Check for zero
         test rax, rax
         jnz .write_number_loop
