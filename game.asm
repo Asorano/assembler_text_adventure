@@ -20,17 +20,17 @@ section .data
 
     ; Runtime data
     hConsoleIn dq 06
+    decisions_taken db 1
 
 section .bss
     input_buffer resb 128   ; Buffer for user input
-    current_decision dq 0
+    current_decision resq 1
     bytes_read resq 1       ; Store number of bytes read
-    current_health dw INITIAL_HEALTH
-    decisions_taken resw 1
+    current_health resw 1
 
 section .text
     global main
-    extern ReadConsoleA, ExitProcess
+    extern Sleep, ReadConsoleA, ExitProcess
 
     %include "include/decisions.inc"
     %include "include/input.inc"
@@ -85,14 +85,15 @@ main_loop:
     mov [current_decision], rax
 
     ; Increment decisions_taken
-    mov rax, [decisions_taken]
-    inc rax
-    mov [decisions_taken], rax
+    inc byte [decisions_taken]
 
     ; Write decision taken
     mov rcx, txt_decision_taken
     mov rdx, txt_decision_taken_l
     call WriteText
+
+    mov ecx, 100
+    call Sleep
 
     jmp main_loop
 

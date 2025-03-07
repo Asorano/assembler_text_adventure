@@ -22,9 +22,9 @@ section .text
         mov rdx, input_buffer   ; Pointer to input buffer
         mov r8, 127            ; Max number of bytes to read
         lea r9, [bytes_read]    ; Pointer to store number of bytes read
-        push 0                 ; Reserved parameter (must be 0)
+        sub rsp, 8                 ; Reserved parameter (must be 0)
         call ReadConsoleA
-        pop rax
+        add rsp, 8
 
         mov rax, [bytes_read]
         cmp rax, 3
