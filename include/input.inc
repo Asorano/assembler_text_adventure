@@ -1,4 +1,21 @@
+section .data
+    ; STD_INPUT_HANDLE
+    hConsoleIn dq 06
+
+section .bss
+    bytes_read resq 1       ; Store number of bytes read
+    input_buffer resb 128   ; Buffer for user input
+
 section .text
+    extern GetStdHandle, ReadConsoleA
+
+    SetupRead:
+        ; Get handle to standard input (console)
+        mov ecx, -10  ; STD_INPUT_HANDLE
+        call GetStdHandle
+        mov [hConsoleIn], rax  ; Store the input handle
+        ret
+
     ReadActionIndex:
         ; Reads input from the console
         ; Converts it to a number and verifies that the value is between 0 and 9

@@ -19,36 +19,24 @@ default rel  ; Enables RIP-relative addressing for 64-bit mode
 %include "include/content.inc"
 
 section .data
-
-    ;dc_area_0_turn_on_light:
-
-    ; Runtime data
-    hConsoleIn dq 06
     decisions_taken dq 0
-
     health dq (INITIAL_HEALTH << 32) | INITIAL_HEALTH
 
 section .bss
-    input_buffer resb 128   ; Buffer for user input
     current_decision resq 1
-    bytes_read resq 1       ; Store number of bytes read
-    ; current_health resw 1
 
 section .text
     global main
-    extern Sleep, ReadConsoleA, ExitProcess
+    extern Sleep, ExitProcess
 
 main:
-    sub rsp, 40  ; Ensure stack is 16-byte aligned
+    sub rsp, 40  ; Ensure stack is 16-byte aligned for windows API calls
 
-    ; Get handle to standard input (console)
-    mov ecx, -10  ; STD_INPUT_HANDLE
-    call GetStdHandle
-    mov [hConsoleIn], rax  ; Store the input handle
-
+    call SetupRead
     call SetupWrite
 
-    mov rsi, dc_initial                         ; Initial current_decision with the initial decision
+    ; Initialize initial decision
+    mov rsi, dc_initial                         
     mov [current_decision], rsi
 
 main_loop:
