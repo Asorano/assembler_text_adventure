@@ -1,5 +1,6 @@
 section .data
-    hConsoleOut dq 0
+    handle_consoule_out dq 0
+    cursor_coords dq 0x0005000A         ; X=5, Y=10 (Little-endian format)
 
     newline db 10, 0
     newline_l equ 2
@@ -10,15 +11,37 @@ section .data
     WRITE_BUFFER_CAPACITY equ 20
     write_buffer times WRITE_BUFFER_CAPACITY db 0 ; Initialize number output to 0
 
-section .text
-    extern GetStdHandle, WriteConsoleA
+section .bss
+    num_chars_written resd 1
 
-    SetupWrite:
+section .text
+    extern GetStdHandle, WriteConsoleA, GetConsoleScreenBufferInfo, SetConsoleCursorPosition, FillConsoleOutputCharacterA
+
+    SetupOutput:
         ; Get handle to standard output (console)
         mov ecx, -11  ; STD_OUTPUT_HANDLE
         call GetStdHandle
-        mov [hConsoleOut], rax
+        mov [handle_consoule_out], rax
 
+        ret
+
+    SetCursorPosition:
+        sub rsp, 0x28
+        mov rcx, [handle_consoule_out]
+        mov edx, 0x0 
+        call SetConsoleCursorPosition
+        add rsp, 0x28
+        ret
+
+    ClearOutput:
+        sub rsp, 28h
+        mov rcx, [handle_consoule_out]
+        mov rdx, 'a'
+        mov r8d, 2000
+        xor r9d, r9d
+        lea rax, [num_chars_written]
+        call FillConsoleOutputCharacterA
+        add rsp, 28h
         ret
 
     WriteText:
@@ -30,7 +53,7 @@ section .text
 
         mov r8, rdx             ; Move the length of the text
         mov rdx, rcx            ; Move the pointer to the text
-        mov rcx, [hConsoleOut]  ; Handle to the console
+        mov rcx, [handle_consoule_out]  ; Handle to the console
         lea r9, [rsp-8]         ; Pointer to number of chars written
         push 0                  ; Reserved parameter (must be 0)
         call WriteConsoleA

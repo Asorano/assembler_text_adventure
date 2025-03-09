@@ -1,6 +1,6 @@
 section .data
     ; STD_INPUT_HANDLE
-    hConsoleIn dq 06
+    handle_console_in dq 06
 
 section .bss
     bytes_read resq 1       ; Store number of bytes read
@@ -9,11 +9,11 @@ section .bss
 section .text
     extern GetStdHandle, ReadConsoleA
 
-    SetupRead:
+    SetupInput:
         ; Get handle to standard input (console)
         mov ecx, -10  ; STD_INPUT_HANDLE
         call GetStdHandle
-        mov [hConsoleIn], rax  ; Store the input handle
+        mov [handle_console_in], rax  ; Store the input handle
         ret
 
     ReadActionIndex:
@@ -35,7 +35,7 @@ section .text
         mov rdx, txt_input_confirm_l
         call WriteText
 
-        mov rcx, [hConsoleIn]  ; Handle to console input
+        mov rcx, [handle_console_in]  ; Handle to console input
         mov rdx, input_buffer   ; Pointer to input buffer
         mov r8, 127            ; Max number of bytes to read
         lea r9, [bytes_read]    ; Pointer to store number of bytes read

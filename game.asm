@@ -32,14 +32,16 @@ section .text
 main:
     sub rsp, 40  ; Ensure stack is 16-byte aligned for windows API calls
 
-    call SetupRead
-    call SetupWrite
+    call SetupInput
+    call SetupOutput
 
     ; Initialize initial decision
     mov rsi, dc_initial                         
     mov [current_decision], rsi
 
 main_loop:
+    call ClearOutput
+    call SetCursorPosition
     call WritePlayerStats
 
     ; Print the current decision text
