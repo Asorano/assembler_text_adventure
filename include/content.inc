@@ -20,8 +20,8 @@ section .data
     txt_decision_taken db 10, "---------------------------------------------------------------------------", 10, 10, 0
     txt_decision_taken_l equ $ - txt_decision_taken
 
-    txt_current_health db 10, "Your current health is ", 0
-    txt_current_health_l equ $ - txt_current_health
+    txt_stats_health db 10, "Health: ", 0
+    txt_stats_health_l equ $ - txt_stats_health
 
     ; Decisions
     dc_initial:

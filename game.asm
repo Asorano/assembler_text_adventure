@@ -11,31 +11,32 @@
 
 default rel  ; Enables RIP-relative addressing for 64-bit mode
 
-section .data
+%include "include/decisions.inc"
+%include "include/input.inc"
+%include "include/output.inc"
+%include "include/view.inc"
+%include "include/balancing.inc"
+%include "include/content.inc"
 
-    %include "include/balancing.inc"
-    %include "include/content.inc"
+section .data
 
     ;dc_area_0_turn_on_light:
 
     ; Runtime data
     hConsoleIn dq 06
-    decisions_taken db 1
+    decisions_taken dq 0
+
+    health dq (INITIAL_HEALTH << 32) | INITIAL_HEALTH
 
 section .bss
     input_buffer resb 128   ; Buffer for user input
     current_decision resq 1
     bytes_read resq 1       ; Store number of bytes read
-    current_health resw 1
+    ; current_health resw 1
 
 section .text
     global main
     extern Sleep, ReadConsoleA, ExitProcess
-
-    %include "include/decisions.inc"
-    %include "include/input.inc"
-    %include "include/output.inc"
-    %include "include/view.inc"
 
 main:
     sub rsp, 40  ; Ensure stack is 16-byte aligned
@@ -49,8 +50,6 @@ main:
 
     mov rsi, dc_initial                         ; Initial current_decision with the initial decision
     mov [current_decision], rsi
-
-    mov word [current_health], INITIAL_HEALTH   ; Initialize health
 
 main_loop:
     call WritePlayerStats
@@ -85,7 +84,7 @@ main_loop:
     mov [current_decision], rax
 
     ; Increment decisions_taken
-    inc byte [decisions_taken]
+    inc word [decisions_taken]
 
     ; Write decision taken
     mov rcx, txt_decision_taken
