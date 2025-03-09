@@ -20,6 +20,11 @@ tasks:
 
   assemble:
     cmd: nasm -f win64 game.asm -o ./build/game.obj
+
+  debug:
+    cmds: 
+      - nasm -f win64 -g game.asm -o ./build/game_debug.obj
+      - link /SUBSYSTEM:CONSOLE /ENTRY:main ./build/game_debug.obj kernel32.lib /OUT:build/game_debug.exe /DEBUG
   
   link:
     cmds:
