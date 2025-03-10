@@ -75,11 +75,6 @@ main_loop:
     ; Increment decisions_taken
     inc word [decisions_taken]
 
-    ; Write decision taken
-    mov rcx, txt_decision_taken
-    mov rdx, txt_decision_taken_l
-    call WriteText
-
     ; mov ecx, 100
     ; call Sleep
 
