@@ -1,6 +1,31 @@
+; Define structures correctly for NASM
 section .data
+    ; Define the COORD structure (4 bytes in total)
+    struc COORD
+        .X  resw 1  ; X position (2 bytes)
+        .Y  resw 1  ; Y position (2 bytes)
+    endstruc
+
+    ; Define the SMALL_RECT structure (8 bytes in total)
+    struc SMALL_RECT
+        .Left   resw 1  ; 2 bytes
+        .Top    resw 1  ; 2 bytes
+        .Right  resw 1  ; 2 bytes
+        .Bottom resw 1  ; 2 bytes
+    endstruc
+
+    ; Define the CONSOLE_SCREEN_BUFFER_INFO structure (22 bytes total)
+    struc CONSOLE_SCREEN_BUFFER_INFO
+        .dwSize                resw 2   ; Buffer size (COORD, 4 bytes)
+        .dwCursorPosition      resw 2   ; Cursor position (COORD, 4 bytes)
+        .wAttributes           resw 1   ; Attributes (2 bytes)
+        .srWindow              resw 4   ; Window rect (SMALL_RECT, 8 bytes)
+        .dwMaximumWindowSize   resw 2   ; Maximum window size (COORD, 4 bytes)
+    endstruc
+
+    ; Declare an instance of the structure
+
     handle_console_out dq 0
-    cursor_coords dq 0x0005000A         ; X=5, Y=10 (Little-endian format)
 
     newline db 10, 0
     newline_l equ 2
@@ -13,43 +38,47 @@ section .data
 
 section .bss
     num_chars_written resq 1
+    console_info resb CONSOLE_SCREEN_BUFFER_INFO_size  ; Console info structure
+    cursor_coords resb COORD_size         ; X=5, Y=10 (Little-endian format)
 
 section .text
-    extern GetStdHandle, WriteConsoleA, GetConsoleScreenBufferInfo, SetConsoleCursorPosition, FillConsoleOutputCharacterA
+    extern GetStdHandle, WriteConsoleA, GetConsoleScreenBufferInfo, SetConsoleCursorPosition, FillConsoleOutputCharacterA, SetConsoleWindowInfo
 
     SetupOutput:
         sub rsp, 0x28
         ; Get handle to standard output (console)
         mov ecx, -11  ; STD_OUTPUT_HANDLE
         call GetStdHandle
-        add rsp, 0x28
         mov [handle_console_out], rax
+
+        ; Get the console screen buffer info
+        mov rcx, [handle_console_out]
+        lea rdx, [console_info]
+        call GetConsoleScreenBufferInfo
+
+        add rsp, 0x28
+
         ret
 
-    SetCursorPosition:
+    ResetCursorPosition:
         sub rsp, 0x28
         mov rcx, [handle_console_out]
-        mov edx, 0x0 
+        xor rdx, rdx
         call SetConsoleCursorPosition
         add rsp, 0x28
         ret
 
     ClearOutput:
-        mov rcx, ' '
-        mov rdx, 2000
-        call WriteCharMultipleTimes
-
-    WriteCharMultipleTimes:
         sub rsp, 0x28
 
-        mov r8d, edx                    ; Number of characters to write (2000)
-        movzx rdx, byte cl ; cCharacter ('*')
         mov rcx, [handle_console_out]  ; Load console output handle
-
-        xor r9d, r9d                     ; Start at position (0, 0)
+        mov rdx, ' '
+        mov r8d, 10000
+        xor r9d, r9d
         lea rax, [num_chars_written]
         mov [rsp+32], rax
-        call FillConsoleOutputCharacterA ; Call the API to fill the console
+        call FillConsoleOutputCharacterA
+
         add rsp, 0x28
         ret
 
@@ -68,8 +97,8 @@ section .text
 
         ret
 
-
     WriteChar:
+        ; rcx = char
         mov [write_buffer], rcx
         mov rcx, write_buffer
         mov rdx, 2

@@ -32,18 +32,16 @@ section .text
 main:
     call SetupInput
     call SetupOutput
-    call ClearOutput
 
     ; Initialize initial decision
     mov rsi, dc_initial                         
     mov [current_decision], rsi
-    
 
 main_loop:
-    call SetCursorPosition
+    ; call ResetCursorPosition
     call ClearOutput
-    call WritePlayerStats
-
+    call ResetCursorPosition
+    call RenderGameView
 
     ; Print the current decision text
     mov rcx, [current_decision]
@@ -94,6 +92,7 @@ _invalid_action:
     jmp main_loop
 
 EndGame:
+    sub rsp, 0x28
     ; Print game over text and ends the process
     mov rcx, txt_game_over
     mov rdx, txt_game_over_l
@@ -102,3 +101,4 @@ EndGame:
     ; Exit
     xor ecx, ecx
     call ExitProcess
+    add rsp, 0x28
