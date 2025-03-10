@@ -30,17 +30,17 @@ section .text
     extern Sleep, ExitProcess
 
 main:
-    sub rsp, 40  ; Ensure stack is 16-byte aligned for windows API calls
-
-    call SetupRead
-    call SetupWrite
+    call SetupInput
+    call SetupOutput
 
     ; Initialize initial decision
     mov rsi, dc_initial                         
     mov [current_decision], rsi
 
 main_loop:
-    call WritePlayerStats
+    call ClearOutput
+    call ResetCursorPosition
+    call RenderGameView
 
     ; Print the current decision text
     mov rcx, [current_decision]
@@ -74,13 +74,8 @@ main_loop:
     ; Increment decisions_taken
     inc word [decisions_taken]
 
-    ; Write decision taken
-    mov rcx, txt_decision_taken
-    mov rdx, txt_decision_taken_l
-    call WriteText
-
-    mov ecx, 100
-    call Sleep
+    ; mov ecx, 100
+    ; call Sleep
 
     jmp main_loop
 
@@ -91,6 +86,7 @@ _invalid_action:
     jmp main_loop
 
 EndGame:
+    sub rsp, 0x28
     ; Print game over text and ends the process
     mov rcx, txt_game_over
     mov rdx, txt_game_over_l
@@ -99,3 +95,4 @@ EndGame:
     ; Exit
     xor ecx, ecx
     call ExitProcess
+    add rsp, 0x28

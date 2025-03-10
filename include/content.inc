@@ -17,12 +17,6 @@ section .data
     txt_input_confirm db "Your decision is: ", 0
     txt_input_confirm_l equ $ - txt_input_confirm
 
-    txt_decision_taken db 10, "---------------------------------------------------------------------------", 10, 10, 0
-    txt_decision_taken_l equ $ - txt_decision_taken
-
-    txt_stats_health db 10, "Health: ", 0
-    txt_stats_health_l equ $ - txt_stats_health
-
     ; Decisions
     dc_initial:
         dq txt_dc_initial

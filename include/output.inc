@@ -1,5 +1,31 @@
+; Define structures correctly for NASM
 section .data
-    hConsoleOut dq 0
+    ; Define the COORD structure (4 bytes in total)
+    struc COORD
+        .X  resw 1  ; X position (2 bytes)
+        .Y  resw 1  ; Y position (2 bytes)
+    endstruc
+
+    ; Define the SMALL_RECT structure (8 bytes in total)
+    struc SMALL_RECT
+        .Left   resw 1  ; 2 bytes
+        .Top    resw 1  ; 2 bytes
+        .Right  resw 1  ; 2 bytes
+        .Bottom resw 1  ; 2 bytes
+    endstruc
+
+    ; Define the CONSOLE_SCREEN_BUFFER_INFO structure (22 bytes total)
+    struc CONSOLE_SCREEN_BUFFER_INFO
+        .dwSize                resw 2   ; Buffer size (COORD, 4 bytes)
+        .dwCursorPosition      resw 2   ; Cursor position (COORD, 4 bytes)
+        .wAttributes           resw 1   ; Attributes (2 bytes)
+        .srWindow              resw 4   ; Window rect (SMALL_RECT, 8 bytes)
+        .dwMaximumWindowSize   resw 2   ; Maximum window size (COORD, 4 bytes)
+    endstruc
+
+    ; Declare an instance of the structure
+
+    handle_console_out dq 0
 
     newline db 10, 0
     newline_l equ 2
@@ -10,56 +36,77 @@ section .data
     WRITE_BUFFER_CAPACITY equ 20
     write_buffer times WRITE_BUFFER_CAPACITY db 0 ; Initialize number output to 0
 
-section .text
-    extern GetStdHandle, WriteConsoleA
+section .bss
+    num_chars_written resq 1
+    console_info resb CONSOLE_SCREEN_BUFFER_INFO_size  ; Console info structure
+    cursor_coords resb COORD_size         ; X=5, Y=10 (Little-endian format)
 
-    SetupWrite:
+section .text
+    extern GetStdHandle, WriteConsoleA, GetConsoleScreenBufferInfo, SetConsoleCursorPosition, FillConsoleOutputCharacterA, SetConsoleWindowInfo
+
+    SetupOutput:
+        sub rsp, 0x28
         ; Get handle to standard output (console)
         mov ecx, -11  ; STD_OUTPUT_HANDLE
         call GetStdHandle
-        mov [hConsoleOut], rax
+        mov [handle_console_out], rax
+
+        ; Get the console screen buffer info
+        mov rcx, [handle_console_out]
+        lea rdx, [console_info]
+        call GetConsoleScreenBufferInfo
+
+        add rsp, 0x28
 
         ret
 
+    ResetCursorPosition:
+        sub rsp, 0x28
+        mov rcx, [handle_console_out]
+        xor rdx, rdx
+        call SetConsoleCursorPosition
+        add rsp, 0x28
+        ret
+
+    ClearOutput:
+        sub rsp, 0x28
+
+        mov rcx, [handle_console_out]  ; Load console output handle
+        mov rdx, ' '
+        mov r8d, 10000
+        xor r9d, r9d
+        lea rax, [num_chars_written]
+        mov [rsp+32], rax
+        call FillConsoleOutputCharacterA
+
+        add rsp, 0x28
+        ret
+
     WriteText:
-        ; Preserve registers
-        push rcx
-        push rdx
-        push r8
-        push r9
+        sub rsp, 0x28
 
         mov r8, rdx             ; Move the length of the text
         mov rdx, rcx            ; Move the pointer to the text
-        mov rcx, [hConsoleOut]  ; Handle to the console
+        mov rcx, [handle_console_out]  ; Handle to the console
         lea r9, [rsp-8]         ; Pointer to number of chars written
         push 0                  ; Reserved parameter (must be 0)
         call WriteConsoleA
         pop rcx
         
-        ; Restore registers
-        pop r9
-        pop r8
-        pop rdx
-        pop rcx
+        add rsp, 0x28
 
         ret
 
-
     WriteChar:
-        push rcx
-        push rdx
-
+        ; rcx = char
         mov [write_buffer], rcx
         mov rcx, write_buffer
         mov rdx, 2
         call WriteText
-        pop rdx
-        pop rcx
         ret
 
     WriteNumber:
         ; rcx = number
-        push rcx
         push rdi   ; Preserve rdi
 
         mov rax, rcx                     ; Use rax because rdx is used by the div op later
@@ -106,6 +153,5 @@ section .text
 
         ; Restore registers
         pop rdi
-        pop rcx
 
         ret
