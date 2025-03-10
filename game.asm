@@ -16,6 +16,7 @@ default rel  ; Enables RIP-relative addressing for 64-bit mode
 %include "include/output.inc"
 %include "include/view.inc"
 %include "include/balancing.inc"
+%include "include/animations.inc"
 %include "include/content.inc"
 
 section .data
@@ -44,9 +45,9 @@ main_loop:
 
     ; Print the current decision text
     mov rcx, [current_decision]
-    mov rdx, [rcx + 8]
+    mov edx, [rcx + 8]
     mov rcx, [rcx]
-    call WriteText
+    call AnimateText
 
     ; Get the action count of the decision
     mov rcx, [current_decision]
@@ -90,7 +91,7 @@ EndGame:
     ; Print game over text and ends the process
     mov rcx, txt_game_over
     mov rdx, txt_game_over_l
-    call WriteText
+    call AnimateText
 
     ; Exit
     xor ecx, ecx

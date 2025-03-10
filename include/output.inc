@@ -83,6 +83,8 @@ section .text
         ret
 
     WriteText:
+        ; rcx = address of text
+        ; rdx = length of the text
         sub rsp, 0x28
 
         mov r8, rdx             ; Move the length of the text
@@ -101,7 +103,7 @@ section .text
         ; rcx = char
         mov [write_buffer], rcx
         mov rcx, write_buffer
-        mov rdx, 2
+        mov rdx, 1
         call WriteText
         ret
 

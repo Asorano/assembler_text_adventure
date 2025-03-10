@@ -30,7 +30,7 @@ section .text
         ; Read the decision from the input
         mov rcx, txt_input_confirm
         mov rdx, txt_input_confirm_l
-        call WriteText
+        call AnimateText
 
         mov rcx, [handle_console_in]  ; Handle to console input
         mov rdx, input_buffer   ; Pointer to input buffer
