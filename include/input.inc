@@ -10,10 +10,12 @@ section .text
     extern GetStdHandle, ReadConsoleA
 
     SetupInput:
+        sub rsp, 0x28
         ; Get handle to standard input (console)
         mov ecx, -10  ; STD_INPUT_HANDLE
         call GetStdHandle
         mov [handle_console_in], rax  ; Store the input handle
+        add rsp, 0x28
         ret
 
     ReadActionIndex:
@@ -21,11 +23,6 @@ section .text
         ; Converts it to a number and verifies that the value is between 0 and 9
         ; rcx => action count
         ; Returns digit in rax
-        push rcx
-        push rdx
-        push r8
-        push r9
-
         mov r10, 0
         mov r13, rcx
 
@@ -57,11 +54,6 @@ section .text
 
         sub rax, 1
 
-        pop r9
-        pop r8
-        pop rdx
-        pop rcx
-        
         ret
 
     _invalid_digit_input:

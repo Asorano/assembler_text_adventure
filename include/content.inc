@@ -20,7 +20,7 @@ section .data
     txt_decision_taken db 10, "---------------------------------------------------------------------------", 10, 10, 0
     txt_decision_taken_l equ $ - txt_decision_taken
 
-    txt_stats_health db 10, "Health: ", 0
+    txt_stats_health db "Health: ", 0
     txt_stats_health_l equ $ - txt_stats_health
 
     ; Decisions

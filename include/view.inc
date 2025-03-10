@@ -1,5 +1,9 @@
 section .text
     WritePlayerStats:
+        ; mov rcx, '*'
+        ; mov rdx, 30
+        ; call WriteCharMultipleTimes
+
         mov rcx, txt_stats_health
         mov rdx, txt_stats_health_l
         call WriteText
@@ -17,9 +21,6 @@ section .text
         shr rax, 32
         mov ecx, eax
         call WriteNumber
-
-        mov rcx, '.'
-        call WriteChar
 
         mov rcx, 10
         call WriteChar

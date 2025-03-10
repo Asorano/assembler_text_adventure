@@ -30,19 +30,20 @@ section .text
     extern Sleep, ExitProcess
 
 main:
-    sub rsp, 40  ; Ensure stack is 16-byte aligned for windows API calls
-
     call SetupInput
     call SetupOutput
+    call ClearOutput
 
     ; Initialize initial decision
     mov rsi, dc_initial                         
     mov [current_decision], rsi
+    
 
 main_loop:
-    call ClearOutput
     call SetCursorPosition
+    call ClearOutput
     call WritePlayerStats
+
 
     ; Print the current decision text
     mov rcx, [current_decision]
@@ -81,8 +82,8 @@ main_loop:
     mov rdx, txt_decision_taken_l
     call WriteText
 
-    mov ecx, 100
-    call Sleep
+    ; mov ecx, 100
+    ; call Sleep
 
     jmp main_loop
 
