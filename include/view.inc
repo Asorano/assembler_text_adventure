@@ -1,8 +1,8 @@
 section .data
-    txt_cut_line db "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*", 10, 0
+    txt_cut_line db "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*", 0
     txt_cut_line_l equ $ - txt_cut_line
 
-    txt_health db "#  Health: ", 0
+    txt_health db "   Health: ", 0
     txt_health_l equ $ - txt_health
 
     txt_decision_taken db "          Decisions taken: ", 0
@@ -19,6 +19,12 @@ section .text
         mov rcx, txt_cut_line
         mov rdx, txt_cut_line_l
         call WriteText
+
+        mov rcx, '\'
+        call WriteChar
+
+        mov rcx, 10
+        call WriteChar
 
         mov rcx, txt_health
         mov rdx, txt_health_l
@@ -75,6 +81,9 @@ section .text
         mov rcx, txt_cut_line
         mov rdx, txt_cut_line_l
         call WriteText
+
+        mov rcx, '/'
+        call WriteChar
 
         mov rcx, 10
         call WriteChar
