@@ -33,8 +33,9 @@ section .data
     whitespace db ' ', 0
     whitespace_l equ 2
 
-    WRITE_BUFFER_CAPACITY equ 20
+    WRITE_BUFFER_CAPACITY equ 256
     write_buffer times WRITE_BUFFER_CAPACITY db 0 ; Initialize number output to 0
+    write_buffer_length dq 0
 
 section .bss
     num_chars_written resq 1
@@ -80,6 +81,25 @@ section .text
         call FillConsoleOutputCharacterA
 
         add rsp, 0x28
+        ret
+
+    FlushOutputBuffer:
+        ; rcx = address of text buffer
+        mov rax, 0
+
+    _length_loop:
+        movzx rdx, byte [rcx]
+        test rdx, rdx
+        jz _flush
+
+        inc rax
+        inc rcx
+        
+        jmp _length_loop
+
+    _flush:
+        mov rcx, rax
+        call WriteNumber
         ret
 
     WriteText:
