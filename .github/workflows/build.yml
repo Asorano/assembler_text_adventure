@@ -2,6 +2,13 @@ name: Build and Release x64 Assembly
 
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag for release'
+        required: true
+  push:
+    tags:
+      - 'v*'  # This triggers only when a tag like 'v1.0.0' is pushed
 
 jobs:
   build:
@@ -11,10 +18,9 @@ jobs:
       - name: Set up NASM
         uses: ilammy/setup-nasm@v1
 
-      - name: Set up MinGW
-        uses: egor-tensin/setup-mingw@v2
-        with:
-          platform: x64
+      - name: Set up MINGW
+        run: |
+          choco install mingw -y
 
       - name: Checkout Repository
         uses: actions/checkout@v4
