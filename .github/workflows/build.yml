@@ -12,6 +12,8 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write  # Grant the required permissions
 
     steps:
       - name: Set up NASM
@@ -48,9 +50,6 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    permissions:
-      contents: write  # Grant the required permissions
-
       
     steps:
       - name: Download Artifact
