@@ -23,6 +23,8 @@ section .data
     decisions_taken dq 0
     health dq (INITIAL_HEALTH << 32) | INITIAL_HEALTH
 
+    test_txt db "123", 0
+
 section .bss
     current_decision resq 1
 

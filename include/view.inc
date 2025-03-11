@@ -17,7 +17,6 @@ section .text
         call WriteChar
 
         mov rcx, txt_cut_line
-        mov rdx, txt_cut_line_l
         call WriteText
 
         mov rcx, '\'
