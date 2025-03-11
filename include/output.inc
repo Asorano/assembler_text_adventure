@@ -33,7 +33,7 @@ section .data
     whitespace db ' ', 0
     whitespace_l equ 2
 
-    WRITE_BUFFER_CAPACITY equ 20
+    WRITE_BUFFER_CAPACITY equ 256
     write_buffer times WRITE_BUFFER_CAPACITY db 0 ; Initialize number output to 0
 
 section .bss
@@ -82,7 +82,41 @@ section .text
         add rsp, 0x28
         ret
 
+    CalculateTextLength:
+        ; rcx = address of text, text must end with 0
+        mov rax, 0
+
+    _calc_length_loop:
+        movzx rdx, byte [rcx]
+        test rdx, rdx
+        jz _return_length
+
+        inc rax
+        inc rcx
+        
+        jmp _calc_length_loop
+
+    _return_length
+        ret
+
     WriteText:
+        ; rcx = address of text, text must end with 0
+        
+        push rcx                        ; Push rcx on the stack before calculating the length and later pop it into rdx to use it for the writing
+        call CalculateTextLength
+    
+        mov rcx, [handle_console_out]   ; Handle to the console
+        pop rdx         ; Pop the original rcx with the address into rdx
+        mov r8, rax   ; Move the length of the text
+        lea r9, [rsp-8]                 ; Pointer to number of chars written
+
+        sub rsp, 0x28
+        push 0                          ; Reserved parameter (must be 0)
+        call WriteConsoleA
+        add rsp, 0x30
+        ret
+
+    WriteBuffer:
         ; rcx = address of text
         ; rdx = length of the text
         sub rsp, 0x28
@@ -104,7 +138,7 @@ section .text
         mov [write_buffer], rcx
         mov rcx, write_buffer
         mov rdx, 1
-        call WriteText
+        call WriteBuffer
         ret
 
     WriteNumber:
@@ -151,7 +185,7 @@ section .text
         add rdx, WRITE_BUFFER_CAPACITY-1  ; End of buffer
         sub rdx, rcx                      ; Length = (end - start)
 
-        call WriteText
+        call WriteBuffer
 
         ; Restore registers
         pop rdi

@@ -3,8 +3,8 @@ section .text
         ; rcx => decision address
         ; rdx => action index
         ; rax = returns action target decision address
-        shl rdx, 3  ; multiply by 8 since an action address is 8 bytes
-        add rcx, 12
+        shl rdx, 3  ; multiply by 8 since an action address is 8 bytes, shifting by 3 = rdx * 8
+        add rcx, 8
         add rcx, rdx
         mov rax, [rcx]
         ret
@@ -12,7 +12,7 @@ section .text
     GetActionCount:
         ; rcx => decision address
         mov rax, 0
-        add rcx, 12     ; Jump to the first possible action
+        add rcx, 8     ; Jump to the first possible action
 
     _action_counter_loop:
         mov rdx, [rcx]  ; Load the
