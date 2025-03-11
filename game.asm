@@ -3,7 +3,6 @@
 ; The game is based on "decisions"
 ; Each decision consists of:
 ;   - 8 bytes (dq) pointer_to_text
-;   - 4 bytes (dd) length of text
 ;   - 0..9 -> 8 bytes (dq) action / address of next decision 
 ;   - dq 0 -> Delimiter
 
@@ -15,15 +14,14 @@ default rel  ; Enables RIP-relative addressing for 64-bit mode
 %include "include/input.inc"
 %include "include/output.inc"
 %include "include/view.inc"
-%include "include/balancing.inc"
 %include "include/animations.inc"
 %include "include/content.inc"
 
-section .data
-    decisions_taken dq 0
+section .data    
+    INITIAL_HEALTH equ 100
     health dq (INITIAL_HEALTH << 32) | INITIAL_HEALTH
 
-    test_txt db "123", 0
+    decisions_taken dq 0
 
 section .bss
     current_decision resq 1
@@ -43,11 +41,11 @@ main:
 main_loop:
     call ClearOutput
     call ResetCursorPosition
-    call RenderGameView
+
+    call RenderGameHeader
 
     ; Print the current decision text
     mov rcx, [current_decision]
-    mov edx, [rcx + 8]
     mov rcx, [rcx]
     call AnimateText
 
@@ -84,18 +82,14 @@ main_loop:
 
 _invalid_action:
     mov rcx, err_invalid_action
-    mov rdx, err_invalid_action_l
     call WriteText
     jmp main_loop
 
 EndGame:
-    sub rsp, 0x28
-    ; Print game over text and ends the process
-    mov rcx, txt_game_over
-    mov rdx, txt_game_over_l
-    call AnimateText
+    call RenderGameEnd
 
-    ; Exit
+    ; Exit the process
+    sub rsp, 0x28
     xor ecx, ecx
     call ExitProcess
     add rsp, 0x28

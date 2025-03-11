@@ -29,7 +29,6 @@ section .text
     _read_digit_loop:
         ; Read the decision from the input
         mov rcx, txt_input_confirm
-        mov rdx, txt_input_confirm_l
         call AnimateText
 
         mov rcx, [handle_console_in]  ; Handle to console input
@@ -60,7 +59,6 @@ section .text
         ; Check whether the max input tries has been reached.
         ; End the game or repeat the input listening
         mov rcx, err_invalid_input
-        mov rdx, err_invalid_input_l
         call WriteText
 
         mov rdx, r13

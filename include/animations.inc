@@ -1,8 +1,11 @@
 section .text
     AnimateText:
         ; rcx = address of text
-        ; rdx = length of the text
+        push rcx
+        call CalculateTextLength
+        pop rcx
 
+        mov rdx, rax
         mov rax, 0
 
     _animate_loop:
@@ -15,7 +18,7 @@ section .text
         push rax
 
         sub rsp, 0x28
-        mov ecx, 30
+        mov ecx, 15
         call Sleep
         add rsp, 0x28
 
