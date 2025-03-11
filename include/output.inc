@@ -82,22 +82,29 @@ section .text
         add rsp, 0x28
         ret
 
-    WriteText:
+    CalculateTextLength:
         ; rcx = address of text, text must end with 0
-        push rcx        ; Put rcx on the stack for later when writing it
         mov rax, 0
 
     _calc_length_loop:
         movzx rdx, byte [rcx]
         test rdx, rdx
-        jz _write_to_console
+        jz _return_length
 
         inc rax
         inc rcx
         
         jmp _calc_length_loop
 
-    _write_to_console:
+    _return_length
+        ret
+
+    WriteText:
+        ; rcx = address of text, text must end with 0
+        
+        push rcx                        ; Push rcx on the stack before calculating the length and later pop it into rdx to use it for the writing
+        call CalculateTextLength
+    
         mov rcx, [handle_console_out]   ; Handle to the console
         pop rdx         ; Pop the original rcx with the address into rdx
         mov r8, rax   ; Move the length of the text
