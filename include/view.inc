@@ -2,10 +2,10 @@ section .data
     ; Header
     txt_cut_line db "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*", 0
     txt_health db "   Health: ", 0
-    txt_decision_taken db "          Decisions taken: ", 0
+    txt_decision_taken db "   Decisions taken: ", 0
 
     ; Game End
-    txt_game_over_box db 10, "|-------------------------------------------------|", 10, "|-*-*-*-*-*-*-*-*-  GAME OVER   -*-*-*-*-*-*-*-*-|", 10, "|-------------------------------------------------|", 10, 10, 0
+    txt_game_over_box db 10, "|-------------------------------------------------|", 10, "|-*-*-*-*-*-*-*-*-   GAME OVER   -*-*-*-*-*-*-*-*-|", 10, "|-------------------------------------------------|", 10, 10, 0
     txt_game_over_goodbye db "Thank you for playing! Better luck next time!", 0
 
 section .text
@@ -25,34 +25,34 @@ section .text
         mov rcx, 10
         call WriteChar
 
-        mov rcx, txt_health
-        call WriteText
+        ; mov rcx, txt_health
+        ; call WriteText
 
-        ; Write current health
-        mov rcx, 0x06
-        call SetTextColor
+        ; ; Write current health
+        ; mov rcx, 0x06
+        ; call SetTextColor
 
-        mov rax, [health]
-        mov ecx, eax
-        call WriteNumber
+        ; mov rax, [health]
+        ; mov ecx, eax
+        ; call WriteNumber
 
-        mov rcx, 0x07
-        call SetTextColor
+        ; mov rcx, 0x07
+        ; call SetTextColor
 
-        mov rcx, '/'
-        call WriteChar
+        ; mov rcx, '/'
+        ; call WriteChar
 
-        mov rcx, 0x06
-        call SetTextColor
+        ; mov rcx, 0x06
+        ; call SetTextColor
 
-        ; Write max health
-        mov rax, [health]
-        shr rax, 32
-        mov ecx, eax
-        call WriteNumber
+        ; ; Write max health
+        ; mov rax, [health]
+        ; shr rax, 32
+        ; mov ecx, eax
+        ; call WriteNumber
 
-        mov rcx, 0x07
-        call SetTextColor
+        ; mov rcx, 0x07
+        ; call SetTextColor
 
         mov rcx, txt_decision_taken
         call WriteText
@@ -86,6 +86,9 @@ section .text
 
         mov rcx, 0x07
         call SetTextColor
+
+        mov rcx, 10
+        call WriteChar
 
         ret
 
