@@ -7,8 +7,11 @@ on:
         description: 'Tag for release'
         required: true
   push:
-    tags:
-      - 'v*'  # This triggers only when a tag like 'v1.0.0' is pushed
+    branches:
+      - master
+  # push:
+  #   tags:
+  #     - 'v*'  # This triggers only when a tag like 'v1.0.0' is pushed
 
 jobs:
   build:
@@ -42,7 +45,18 @@ jobs:
     permissions:
       contents: write  # Grant the required permissions
 
+      
     steps:
+      - name: Set up Git user
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create/Update latest tag
+        run: |
+          git tag -f latest
+          git push origin latest --force
+
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
@@ -53,5 +67,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: game.exe
+          tag_name: latest
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
