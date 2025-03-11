@@ -2,19 +2,29 @@ name: Build and Release x64 Assembly
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - master
+  # push:
+  #   tags:
+  #     - 'v*'  # This triggers only when a tag like 'v1.0.0' is pushed
 
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
+      - name: Set up NASM
+        uses: ilammy/setup-nasm@v1
+
+      - name: Set up MINGW
+        run: |
+          choco install mingw -y
+
       - name: Checkout Repository
         uses: actions/checkout@v4
-
-      - name: Install Dependencies
-        run: |
-          choco install nasm -y
-          choco install mingw -y
 
       - name: Assemble Code
         run: |
@@ -27,9 +37,21 @@ jobs:
           name: game
           path: game.exe
 
+      - name: Set up Git user
+        run: |
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+  
+      - name: Create/Update latest tag
+        run: |
+            git tag -f latest
+            git push origin latest --force
+
   release:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write 
 
     steps:
       - name: Download Artifact
@@ -42,5 +64,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: game.exe
+          tag_name: latest
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
