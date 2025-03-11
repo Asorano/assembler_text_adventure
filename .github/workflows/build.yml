@@ -39,6 +39,8 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Grant the required permissions
 
     steps:
       - name: Download Artifact
