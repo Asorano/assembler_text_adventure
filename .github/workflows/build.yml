@@ -8,12 +8,14 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      - name: Setup NASM
+        uses: ilammy/setup-nasm@v1
+
       - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Install Dependencies
         run: |
-          choco install nasm -y
           choco install mingw -y
 
       - name: Assemble Code
