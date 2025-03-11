@@ -15,20 +15,13 @@ tasks:
   build:
     desc: "Assembles and links the executable"
     cmds:
-      - task: assemble
-      - task: link
-
-  assemble:
-    cmd: nasm -f win64 game.asm -o ./build/game.obj
+      - nasm -f win64 game.asm -o ./build/game.obj
+      - gcc -nostdlib -o ./build/game.exe ./build/game.obj -lkernel32 -luser32 -Wl,-e,main
 
   debug:
     cmds: 
       - nasm -f win64 -g game.asm -o ./build/game_debug.obj
       - link /SUBSYSTEM:CONSOLE /ENTRY:main ./build/game_debug.obj kernel32.lib /OUT:build/game_debug.exe /DEBUG
-  
-  link:
-    cmds:
-      - link /SUBSYSTEM:CONSOLE /ENTRY:main ./build/game.obj kernel32.lib /OUT:build/game.exe
 
   run:
     desc: "Start the built executable"
