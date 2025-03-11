@@ -13,6 +13,19 @@ tasks:
       - nasm -f win64 game.asm -o ./build/game.obj 
       - lld-link ./build/game.obj -entry:main -subsystem:console -defaultlib:kernel32.lib -out:./build/game.exe
 
+  file:
+    desc: "Assembles and links the executable"
+    cmds:
+      - nasm -f win64 file.asm -o ./build/file.obj
+      - gcc -nostdlib -o ./build/file.exe ./build/file.obj -lkernel32 -luser32 -Wl,-e,main
+      - ./build/file.exe
+
+  debugfile:
+    desc: "Assembles and links the executable"
+    cmds:
+      - nasm -f win64 -g file.asm -o ./build/file_debug.obj
+      - gcc -g -nostdlib -o ./build/file_debug.exe ./build/file.obj -lkernel32 -lmsvcrt -luser32 -Wl,-e,main
+
   debug:
     cmds: 
       - nasm -f win64 -g game.asm -o ./build/game_debug.obj
