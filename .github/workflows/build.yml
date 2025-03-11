@@ -8,15 +8,16 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Setup NASM
+      - name: Set up NASM
         uses: ilammy/setup-nasm@v1
+
+      - name: Set up MinGW
+        uses: egor-tensin/setup-mingw@v2
+        with:
+          platform: x64
 
       - name: Checkout Repository
         uses: actions/checkout@v4
-
-      - name: Install Dependencies
-        run: |
-          choco install mingw -y
 
       - name: Assemble Code
         run: |
