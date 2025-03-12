@@ -10,7 +10,7 @@ tasks:
   build:
     desc: "Assembles and links the executable"
     cmds:
-      - nasm -f win64 game.asm -o ./build/game.obj
+      - nasm -D SKIP_INTRO -f win64 game.asm -o ./build/game.obj 
       - lld-link ./build/game.obj -entry:main -subsystem:console -defaultlib:kernel32.lib -out:./build/game.exe
 
   debug:

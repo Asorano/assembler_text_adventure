@@ -1,4 +1,7 @@
 section .data
+    ; Game Start
+    txt_start_box db 10, 10, "*-------------------------------------------------*", 10, "|-*-*-*-*-*-*-*-*- x64 Adventure -*-*-*-*-*-*-*-*-|", 10, "|-*-*-*-*-*-*-*-*-  by Asorano   -*-*-*-*-*-*-*-*-|", 10, "*-------------------------------------------------*", 0
+
     ; Header
     txt_cut_line db "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*", 0
     txt_health db "   Health: ", 0
@@ -10,6 +13,26 @@ section .data
 
 section .text
     extern SetConsoleTextAttribute
+
+    RenderGameIntro:
+%ifdef SKIP_INTRO
+        ret
+%endif
+        mov rcx, 0x03
+        call SetTextColor
+
+        mov rcx, txt_start_box
+        call AnimateText
+
+        mov rcx, 0x07
+        call SetTextColor
+
+        sub rsp, 0x28
+        mov ecx, 1000
+        call Sleep
+        add rsp, 0x28
+
+        ret
 
     RenderGameHeader:
 

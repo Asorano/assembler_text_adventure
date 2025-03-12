@@ -34,6 +34,10 @@ main:
     call SetupInput
     call SetupOutput
 
+    call ClearOutput
+    call ResetCursorPosition
+    call RenderGameIntro
+
     ; Initialize initial decision
     mov rsi, dc_initial                         
     mov [current_decision], rsi
