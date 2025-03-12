@@ -96,7 +96,7 @@ section .text
         
         jmp _calc_length_loop
 
-    _return_length
+    _return_length:
         ret
 
     WriteText:
