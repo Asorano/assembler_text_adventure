@@ -2,14 +2,20 @@ default rel
 BITS 64
 
 %include "include/output.inc"
+%include "include/error.inc"
 
 section .data
+    txt_err_file_handle db "Could not get file handle: ", 0
+
     filename db "C:\\Development\\Private\\assembler\\game.bin", 0          ; File name (null-terminated)
     buffer db 1024 dup(0)              ; Buffer for file content
     bytesRead dq 0                     ; Stores number of bytes read
     bytesWritten dq 0                     ; Stores number of bytes read
     hFile dq -1                        ; File handle
     fmt db "File Content: %s", 10, 0   ; Format string for printf
+
+section .bss
+    game_buffer resb 1048576  ; 1MB buffer
 
 section .text
     global main
@@ -37,7 +43,7 @@ main:
     add rsp, 40                ; Restore the stack
 
     cmp rax, -1
-    je exit          
+    je _create_file_error          
 
     mov [hFile], rax                      ; Store file handle
 
@@ -54,20 +60,34 @@ main:
     ; mov rcx, [hFile]                      ; hObject (file handle)
     ; call CloseHandle
 
-    lea rcx, [buffer]
-    call WriteText
+    ; lea rcx, [buffer]
+    ; call WriteText
 
-    ; mov rcx, rax
-    ; call WriteNumber
+    ; ; mov rcx, rax
+    ; ; call WriteNumber
 
-    lea rcx, [buffer + 12]
-    ; add rcx, 40
-    ; shl rax, 3
-    ; add rcx, rax 
-    call WriteText
+    ; lea rcx, [buffer + 12]
+    ; ; add rcx, 40
+    ; ; shl rax, 3
+    ; ; add rcx, rax 
+    ; call WriteText
 
 exit:
+    mov rcx, 0x07
+    call SetTextColor
+
     sub rsp, 0x28
     xor ecx, ecx
     call ExitProcess
     add rsp, 0x28
+
+_create_file_error:
+    mov rcx, 0x04
+    call SetTextColor
+
+    mov rcx, txt_err_file_handle
+    call WriteText
+
+    call WriteLastError
+
+    jmp exit

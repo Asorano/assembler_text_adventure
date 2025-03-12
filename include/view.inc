@@ -12,7 +12,6 @@ section .data
     txt_game_over_goodbye db "Thank you for playing! Better luck next time!", 0
 
 section .text
-    extern SetConsoleTextAttribute
 
     RenderGameIntro:
 %ifdef SKIP_INTRO
@@ -136,17 +135,6 @@ section .text
         mov rcx, 10
         call WriteChar
 
-        ret
-
-    SetTextColor:
-        ; rcx = color
-        sub rsp, 0x28                    ; Shadow space for function call
-
-        mov rdx, rcx
-        mov rcx, [handle_console_out]     ; Console handle
-        call SetConsoleTextAttribute      ; Change text color
-
-        add rsp, 0x28
         ret
 
     RenderGameEnd:

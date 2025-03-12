@@ -17,14 +17,14 @@ tasks:
     desc: "Assembles and links the executable"
     cmds:
       - nasm -f win64 file.asm -o ./build/file.obj
-      - gcc -nostdlib -o ./build/file.exe ./build/file.obj -lkernel32 -luser32 -Wl,-e,main
+      - lld-link ./build/file.obj -entry:main -subsystem:console -defaultlib:kernel32.lib -out:./build/file.exe
       - ./build/file.exe
 
   debugfile:
     desc: "Assembles and links the executable"
     cmds:
       - nasm -f win64 -g file.asm -o ./build/file_debug.obj
-      - gcc -g -nostdlib -o ./build/file_debug.exe ./build/file.obj -lkernel32 -lmsvcrt -luser32 -Wl,-e,main
+      - lld-link ./build/file_debug.obj -entry:main -subsystem:console -defaultlib:kernel32.lib -out:./build/file_debug.exe /debug /pdb:./build/file_debug.pdb
 
   debug:
     cmds: 

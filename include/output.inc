@@ -42,7 +42,7 @@ section .bss
     cursor_coords resb COORD_size         ; X=5, Y=10 (Little-endian format)
 
 section .text
-    extern GetStdHandle, WriteConsoleA, GetConsoleScreenBufferInfo, SetConsoleCursorPosition, FillConsoleOutputCharacterA, SetConsoleWindowInfo
+    extern GetStdHandle, WriteConsoleA, GetConsoleScreenBufferInfo, SetConsoleCursorPosition, FillConsoleOutputCharacterA, SetConsoleWindowInfo, SetConsoleTextAttribute
 
     SetupOutput:
         sub rsp, 0x28
@@ -88,7 +88,7 @@ section .text
 
     _calc_length_loop:
         movzx rdx, byte [rcx]
-        cmp rdx, 0x0D
+        cmp rdx, 0
         je _return_length
 
         inc rax
@@ -189,4 +189,15 @@ section .text
         ; Restore registers
         pop rdi
 
+        ret
+
+    SetTextColor:
+        ; rcx = color
+        sub rsp, 0x28                    ; Shadow space for function call
+
+        mov rdx, rcx
+        mov rcx, [handle_console_out]     ; Console handle
+        call SetConsoleTextAttribute      ; Change text color
+
+        add rsp, 0x28
         ret
