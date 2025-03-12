@@ -88,8 +88,8 @@ section .text
 
     _calc_length_loop:
         movzx rdx, byte [rcx]
-        test rdx, rdx
-        jz _return_length
+        cmp rdx, 0x0D
+        je _return_length
 
         inc rax
         inc rcx
@@ -111,9 +111,8 @@ section .text
         lea r9, [rsp-8]                 ; Pointer to number of chars written
 
         sub rsp, 0x28
-        push 0                          ; Reserved parameter (must be 0)
         call WriteConsoleA
-        add rsp, 0x30
+        add rsp, 0x28
         ret
 
     WriteBuffer:

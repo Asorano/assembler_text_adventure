@@ -54,13 +54,17 @@ main:
     ; mov rcx, [hFile]                      ; hObject (file handle)
     ; call CloseHandle
 
-    mov rcx, [handle_console_out]   ; Handle to the console
-    lea rdx, [buffer]         ; Pop the original rcx with the address into rdx
-    mov r8, [bytesRead]   ; Move the length of the text
-    lea r9, [bytesWritten]                 ; Pointer to number of chars written
-    sub rsp, 0x28
-    call WriteConsoleA
-    add rsp, 0x28
+    lea rcx, [buffer]
+    call WriteText
+
+    ; mov rcx, rax
+    ; call WriteNumber
+
+    lea rcx, [buffer + 12]
+    ; add rcx, 40
+    ; shl rax, 3
+    ; add rcx, rax 
+    call WriteText
 
 exit:
     sub rsp, 0x28
