@@ -16,9 +16,13 @@ jobs:
       - name: Set up NASM
         uses: ilammy/setup-nasm@v1
 
-      - name: Set up MINGW
+      - name: Install LLVM
+        run: choco install llvm
+
+      - name: Install rcedit
         run: |
-          choco install mingw -y
+          $rceditUrl = "https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe"
+          Invoke-WebRequest -Uri $rceditUrl -OutFile "C:\rcedit.exe"
 
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -26,7 +30,17 @@ jobs:
       - name: Assemble Code
         run: |
           nasm -f win64 game.asm -o game.obj
-          gcc -nostdlib -o game.exe game.obj -lkernel32 -luser32 "-Wl,-e,main"
+          $WindowsKits = "C:\Program Files (x86)\Windows Kits\10"
+          $LatestSDK = (Get-ChildItem "$WindowsKits\Lib" | Sort-Object -Property Name -Descending)[0].Name
+          $LibPath = "$WindowsKits\Lib\$LatestSDK\um\x64"
+          lld-link game.obj -entry:main -subsystem:console -libpath:"$LibPath" -defaultlib:kernel32.lib -out:game.exe
+
+      - name: Add version information
+        run: |
+          C:\rcedit.exe game.exe --set-version-string "CompanyName" "Benjamin Berger" 
+          C:\rcedit.exe game.exe --set-version-string "FileDescription" "Game Executable"
+          C:\rcedit.exe game.exe --set-version-string "ProductName" "x64 Assembly Text Adventure"
+          C:\rcedit.exe game.exe --set-version-string "LegalCopyright" "Copyright © 2025 [Asorano]"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4

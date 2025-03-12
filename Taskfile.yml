@@ -2,26 +2,21 @@ version: '3'
 
 tasks:
   default:
-    desc: "Assemble the program and run it"
+    desc: "Build and run it"
     cmds:
       - task: build
       - task: run
-
-  x64tools:
-    cmds:
-      - cmd: '"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat" && cmd /k'
-        platforms: [windows]
 
   build:
     desc: "Assembles and links the executable"
     cmds:
       - nasm -f win64 game.asm -o ./build/game.obj
-      - gcc -nostdlib -o ./build/game.exe ./build/game.obj -lkernel32 -luser32 -Wl,-e,main
+      - lld-link ./build/game.obj -entry:main -subsystem:console -defaultlib:kernel32.lib -out:./build/game.exe
 
   debug:
     cmds: 
       - nasm -f win64 -g game.asm -o ./build/game_debug.obj
-      - link /SUBSYSTEM:CONSOLE /ENTRY:main ./build/game_debug.obj kernel32.lib /OUT:build/game_debug.exe /DEBUG
+      - lld-link ./build/game_debug.obj -entry:main -subsystem:console -defaultlib:kernel32.lib -out:./build/game_debug.exe /debug /pdb:./build/game_debug.pdb
 
   run:
     desc: "Start the built executable"
@@ -30,5 +25,4 @@ tasks:
   clean:
     desc: "Clean up the compiled binary"
     cmds:
-      - cmd /c "del /f /q .\build\*.obj"
-      - cmd /c "del /f /q .\build\*.exe"
+      - cmd /c "del /f /q .\build\*"
