@@ -5,21 +5,23 @@ BITS 64
 %include "include/error.inc"
 
 section .data
+    BUFFER_SIZE equ 1048576     ; 1MB
+
     txt_err_file_handle db "Could not get file handle: ", 0
+    txt_err_file_too_large db "File is too large. Maximum is: ", 0
+    txt_file_size db "File size: ", 0
 
     filename db "C:\\Development\\Private\\assembler\\game.bin", 0          ; File name (null-terminated)
-    buffer db 1024 dup(0)              ; Buffer for file content
-    bytesRead dq 0                     ; Stores number of bytes read
-    bytesWritten dq 0                     ; Stores number of bytes read
-    hFile dq -1                        ; File handle
-    fmt db "File Content: %s", 10, 0   ; Format string for printf
+
+    file_handle dq -1                        ; File handle
 
 section .bss
-    game_buffer resb 1048576  ; 1MB buffer
+    game_buffer resb BUFFER_SIZE  ; 1MB buffer
+    file_size resq 1
 
 section .text
     global main
-    extern ExitProcess, CreateFileA, ReadFile, CloseHandle
+    extern ExitProcess, CreateFileA, ReadFile, CloseHandle, GetFileSize, Sleep
 
 main:
     call SetupOutput
@@ -38,39 +40,59 @@ main:
 
     call CreateFileA           ; Call the function
 
-    mov [hFile], rax           ; Store the file handle
+    mov [file_handle], rax           ; Store the file handle
 
     add rsp, 40                ; Restore the stack
 
     cmp rax, -1
     je _create_file_error          
 
-    mov [hFile], rax                      ; Store file handle
+    mov [file_handle], rax                      ; Store file handle
+
+    ; Get and print file size
+    sub rsp, 32
+    mov rcx, rax           ; file handle
+    xor rdx, rdx           ; NULL for high part
+    call GetFileSize
+    mov [file_size], rax
+    add rsp, 32
+
+    mov rcx, txt_file_size
+    call WriteText
+    mov rcx, [file_size]
+    call WriteNumber
+
+    mov rcx, 10
+    call WriteChar
+
+    ; Check file size
+    cmp qword [file_size], BUFFER_SIZE-1
+    ja _file_too_large_error
 
     ; ; Read file using ReadFile
-    mov rcx, rax                          ; hFile (file handle)
-    lea rdx, [buffer]                     ; lpBuffer (buffer)
-    mov r8, 1024                          ; nNumberOfBytesToRead (1024 bytes)
-    lea r9, [bytesRead]                   ; lpNumberOfBytesRead
+    mov rcx, [file_handle]                          ; file_handle (file handle)
+    lea rdx, [game_buffer]                     ; lpBuffer (buffer)
+    mov r8, [file_size]                          ; nNumberOfBytesToRead (1024 bytes)
+    lea r9, [rsp+8]                   ; lpNumberOfBytesRead
     sub rsp, 32                           ; Shadow space
     call ReadFile                         ; Call ReadFile
     add rsp, 32                           ; Clean up stack
 
     ; ; Close file handle
-    ; mov rcx, [hFile]                      ; hObject (file handle)
-    ; call CloseHandle
+    sub rsp, 0x28
+    mov rcx, [file_handle]                      ; hObject (file handle)
+    call CloseHandle
+    add rsp, 0x28
 
-    ; lea rcx, [buffer]
-    ; call WriteText
+    ; Now do something with the data
 
-    ; ; mov rcx, rax
-    ; ; call WriteNumber
+    lea rcx, [game_buffer]
+    mov rdx, [file_size]
+    call StripWhitespace
 
-    ; lea rcx, [buffer + 12]
-    ; ; add rcx, 40
-    ; ; shl rax, 3
-    ; ; add rcx, rax 
-    ; call WriteText
+    lea rcx, [game_buffer]
+    call WriteText
+    ; Parse
 
 exit:
     mov rcx, 0x07
@@ -81,6 +103,30 @@ exit:
     call ExitProcess
     add rsp, 0x28
 
+StripWhitespace:
+    ; rcx = address of buffer
+    ; rdx = length
+    mov rax, rcx
+    mov r9, rcx
+    add r9, rdx
+
+_strip_loop:
+    cmp rax, r9
+    je _end_strip
+
+    movzx r8, byte [rax]
+    cmp r8, ' '
+    jnz _increment
+
+    mov byte [rax], '_'
+_increment:
+    inc rax
+    jmp _strip_loop
+
+_end_strip:
+    ret
+
+
 _create_file_error:
     mov rcx, 0x04
     call SetTextColor
@@ -89,5 +135,17 @@ _create_file_error:
     call WriteText
 
     call WriteLastError
+
+    jmp exit
+
+_file_too_large_error:
+    mov rcx, 0x04
+    call SetTextColor
+
+    mov rcx, txt_err_file_too_large
+    call WriteText
+
+    mov rcx, BUFFER_SIZE
+    call WriteNumber
 
     jmp exit
