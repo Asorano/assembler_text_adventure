@@ -34,8 +34,6 @@ main:
     call SetupInput
     call SetupOutput
 
-    call ClearOutput
-    call ResetCursorPosition
     call RenderGameIntro
 
     ; Initialize initial decision
