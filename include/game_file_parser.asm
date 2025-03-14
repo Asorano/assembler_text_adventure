@@ -1,8 +1,6 @@
 default rel
 BITS 64
 
-
-
 section .data
     GAME_DECISION_BUFFER_SIZE equ 1048576     ; 1MB
     GAME_TEXT_BUFFER_SIZE equ 1048576     ; 1MB
@@ -14,6 +12,7 @@ section .bss
 
 section .text
     global ParseGameFile
+    extern debug_log_decision
 
     ParseGameFile:
         ; Arguments:
@@ -114,6 +113,9 @@ section .text
 
     _end_parsing:
         mov al, byte [game_decision_count]
+
+        mov rcx, [game_decision_buffer]
+        call debug_log_decision
         pop r12
         ret
 
