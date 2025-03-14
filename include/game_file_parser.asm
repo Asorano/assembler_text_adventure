@@ -1,13 +1,9 @@
 default rel
 BITS 64
 
-%include "include/output.inc"
-
 section .data
     GAME_DECISION_BUFFER_SIZE equ 1048576     ; 1MB
     GAME_TEXT_BUFFER_SIZE equ 1048576     ; 1MB
-
-    txt_file_parsing_error db "File parsing error", 0
 
 section .bss
     game_decision_count resw 1
@@ -50,12 +46,12 @@ section .text
         mov r10, game_decision_buffer           ; Load game_decision_buffer
         mov r11, game_text_buffer               ; Load game_text_buffer
 
-        mov [r10], word 0                            ; Total number of decisions, initialized to 0
+        mov [game_decision_count], word 0       ; Total number of decisions, initialized to 0
 
         mov al, byte [rcx]                      ; Load first character
         
         mov r12, ' '                            ; Replace all whitespaces at the beginning 
-        call _parse_game_file_skip_char         ; Skip potential initial whitespace
+        call SkipChar         ; Skip potential initial whitespace
         
         ; DECISION PARSING
 
@@ -63,29 +59,26 @@ section .text
         cmp rax, '['                            ; Check that the decision starts with [
         jne _file_parsing_error                 
 
+        ; Parse decision id
         inc rcx
         mov al, byte [rcx]
         mov r12, '='
         call ParseTextIntoBuffer
 
+        mov r12, ' '
+        call SkipChar
+
+        ; Check that the next sign is a "
+        cmp rax, 0x3D
+        jne _file_parsing_error
+
         ; Increment decision count
         inc word [game_decision_count]
 
-        mov rax, 1
+        mov rax, [game_decision_count]
         jmp _end_parsing
-    
-    _parse_game_file_skip_char:
-        cmp rax, r12
-        jne _end_skip_whitespace
-        inc rcx                                 ; Increment data_buffer address
-        mov al, byte [rcx]                      ; Load next char into rax
-        jmp _parse_game_file_skip_char
-    _end_skip_whitespace:
-        ret
 
     _file_parsing_error:
-        mov rcx, txt_file_parsing_error
-        call WriteText
         mov rax, 0
 
     _end_parsing:
@@ -108,4 +101,14 @@ section .text
     _end_text_parse:
         mov [r11], byte 0                ; Add string terminator
         inc r11
+        ret
+
+    ; Skips chars as long as they are equal to the char in r12 
+    SkipChar:
+        cmp rax, r12
+        jne _end_skip_char
+        inc rcx                                 ; Increment data_buffer address
+        mov al, byte [rcx]                      ; Load next char into rax
+        jmp SkipChar
+    _end_skip_char:
         ret

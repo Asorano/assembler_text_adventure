@@ -9,7 +9,10 @@ section .data
 
     txt_err_file_handle db "Could not get file handle: ", 0
     txt_err_file_too_large db "File is too large. Maximum is: ", 0
+    txt_err_file_parsing db "Failed to parse file", 0
     txt_file_size db "File size: ", 0
+    txt_file_parsed db "File parse sucessfully!", 10, 0
+    txt_game_data_decision db "Decisions: ", 0
 
     filename db "C:\\Development\\Private\\assembler\\game.bin", 0          ; File name (null-terminated)
 
@@ -88,6 +91,20 @@ main:
     lea rcx, [file_buffer]
     call ParseGameFile
 
+    test rax, rax
+    jz _parse_file_error
+
+    push rax
+
+    mov rcx, txt_file_parsed
+    call WriteText
+
+    mov rcx, txt_game_data_decision,
+    call WriteText
+
+    pop rcx
+    call WriteNumber
+
 exit:
     mov rcx, 0x07
     call SetTextColor
@@ -122,6 +139,14 @@ _increment:
 _end_strip:
     ret
 
+_parse_file_error:
+    mov rcx, 0x04
+    call SetTextColor   
+
+    mov rcx, txt_err_file_parsing
+    call WriteText
+
+    jmp exit 
 
 _create_file_error:
     mov rcx, 0x04
