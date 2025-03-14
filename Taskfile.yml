@@ -16,17 +16,17 @@ tasks:
   file:
     desc: "Assembles and links the executable"
     cmds:
+      - nasm -f win64 include/game_file_parser.asm -o ./build/file/game_file_parser.obj
       - nasm -f win64 file.asm -o ./build/file/file.obj
-      - clang -c include/test.c -o ./build/file/test_c.obj
-      - lld-link ./build/file/file.obj ./build/file/test_c.obj -entry:main -subsystem:console -defaultlib:kernel32.lib -out:./build/file.exe
+      - lld-link ./build/file/file.obj ./build/file/test_c.obj ./build/file/game_file_parser.obj -entry:main -subsystem:console -defaultlib:kernel32.lib -out:./build/file.exe
       - ./build/file.exe
 
   debugfile:
     desc: "Assembles and links the executable"
     cmds:
+      - nasm -f win64 -g include/game_file_parser.asm -o ./build/file/game_file_parser.obj
       - nasm -f win64 -g file.asm -o ./build/file/file.obj
-      - clang -c include/test.c -o ./build/file/test_c.obj
-      - lld-link ./build/file/file.obj ./build/file/test_c.obj -entry:main -subsystem:console -defaultlib:kernel32.lib -out:./build/file_debug.exe /debug /pdb:./build/file_debug.pdb
+      - lld-link ./build/file/file.obj ./build/file/test_c.obj ./build/file/game_file_parser.obj -entry:main -subsystem:console -defaultlib:kernel32.lib -out:./build/file_debug.exe /debug /pdb:./build/file_debug.pdb
 
   debug:
     cmds: 

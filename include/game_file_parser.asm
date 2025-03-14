@@ -1,33 +1,21 @@
-    struc GameDecision
-        .id resb 32
-        .txt:       resq 1          ; 8 byte, address to decision text
-        .actions:   resq 4          ; 8 byte for addresses of max 4 possible actions per decision
-    endstruc
+default rel
+BITS 64
 
-    struc GameAction
-        .txt:       resq 1          ; 8 byte, address of text
-        .decision:  resq 1          ; 8 byte, address of triggered decision
-    endstruc
+%include "include/output.inc"
 
 section .data
-    BUFFER_SIZE equ 1048576               ; 1MB
     GAME_DECISION_BUFFER_SIZE equ 1048576     ; 1MB
     GAME_TEXT_BUFFER_SIZE equ 1048576     ; 1MB
 
-    txt_test db "AB", 0
     txt_file_parsing_error db "File parsing error", 0
 
 section .bss
-    file_buffer resb BUFFER_SIZE  ; 1MB buffer
-    file_size resq 1
-
-    ; Game Data Buffer
-    ; - GameData
-    ; - 
+    game_decision_count resw 1
     game_decision_buffer resb GAME_DECISION_BUFFER_SIZE  ; 1MB buffer
     game_text_buffer resb GAME_TEXT_BUFFER_SIZE  ; 1MB buffer
 
 section .text
+    global ParseGameFile
 
     ParseGameFile:
         ; Arguments:
@@ -59,8 +47,10 @@ section .text
 
         push r12                                ; Save non-volatile register for restoring at the end
 
-        lea r10, game_decision_buffer           ; Load game_decision_buffer
-        lea r11, game_text_buffer               ; Load game_text_buffer
+        mov r10, game_decision_buffer           ; Load game_decision_buffer
+        mov r11, game_text_buffer               ; Load game_text_buffer
+
+        mov [r10], word 0                            ; Total number of decisions, initialized to 0
 
         mov al, byte [rcx]                      ; Load first character
         
@@ -69,44 +59,21 @@ section .text
         
         ; DECISION PARSING
 
+    _parse_decision:
         cmp rax, '['                            ; Check that the decision starts with [
         jne _file_parsing_error                 
 
         inc rcx
         mov al, byte [rcx]
         mov r12, '='
-        call _parse_game_text
+        call ParseTextIntoBuffer
 
-        ; lea rax, [file_buffer]
-        ; lea rcx, [game_decision_buffer]
-        ; movzx dx, byte [rax]
-
-        ; File needs to start with an [
-        cmp rdx, '['
-        jne _file_parsing_error
-
-        mov r8, ']'
+        ; Increment decision count
+        inc word [game_decision_count]
 
         mov rax, 1
         jmp _end_parsing
-        
-    _parse_game_text:
-        ; r12 = terminator char
-        cmp rax, r12
-        je _end_parse_game_text     ; End text if the terminator was found
-        
-        mov [r11], byte al          ; Write into text buffer
-        inc r11
-
-        inc rcx                     ; Load next char into rax
-        mov al, byte [rcx]
-        jmp _parse_game_text
-
-    _end_parse_game_text:
-        mov [r11], byte 0                ; Add string terminator
-        inc r11
-        ret
-
+    
     _parse_game_file_skip_char:
         cmp rax, r12
         jne _end_skip_whitespace
@@ -123,4 +90,22 @@ section .text
 
     _end_parsing:
         pop r12
+        ret
+
+    ; Parses a text into the buffer passed via rcx
+    ParseTextIntoBuffer:
+        ; r12 = terminator char
+        cmp rax, r12
+        je _end_text_parse     ; End text if the terminator was found
+        
+        mov [r11], byte al          ; Write into text buffer
+        inc r11
+
+        inc rcx                     ; Load next char into rax
+        mov al, byte [rcx]
+        jmp ParseTextIntoBuffer
+
+    _end_text_parse:
+        mov [r11], byte 0                ; Add string terminator
+        inc r11
         ret
