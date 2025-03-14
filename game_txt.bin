@@ -1,0 +1,16 @@
+[misc]
+title="Nights in the dark room"
+
+[game_start]
+act_1_turn_light_on="Turn the light on"
+Quit the game! Too creepy already
+You are in a dark room. What do you do?
+
+[exit_game_instantly]
+That was short! And that's what she said!
+
+[turn_light_on]
+game_start=Carefully wave your hand
+game_start=Pretend that you did not see her
+exit_game_instantly=Throw a smoke grenade
+What is going on here?! A child is standing in the middle of the room and is starring at me.

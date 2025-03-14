@@ -3,9 +3,10 @@ BITS 64
 
 %include "include/output.inc"
 %include "include/error.inc"
+%include "include/file.inc"
 
 section .data
-    BUFFER_SIZE equ 1048576     ; 1MB
+    
 
     txt_err_file_handle db "Could not get file handle: ", 0
     txt_err_file_too_large db "File is too large. Maximum is: ", 0
@@ -16,12 +17,12 @@ section .data
     file_handle dq -1                        ; File handle
 
 section .bss
-    game_buffer resb BUFFER_SIZE  ; 1MB buffer
-    file_size resq 1
+
 
 section .text
     global main
     extern ExitProcess, CreateFileA, ReadFile, CloseHandle, GetFileSize, Sleep
+    extern print_message, parse_game_file
 
 main:
     call SetupOutput
@@ -71,7 +72,7 @@ main:
 
     ; ; Read file using ReadFile
     mov rcx, [file_handle]                          ; file_handle (file handle)
-    lea rdx, [game_buffer]                     ; lpBuffer (buffer)
+    lea rdx, [file_buffer]                     ; lpBuffer (buffer)
     mov r8, [file_size]                          ; nNumberOfBytesToRead (1024 bytes)
     lea r9, [rsp+8]                   ; lpNumberOfBytesRead
     sub rsp, 32                           ; Shadow space
@@ -84,15 +85,8 @@ main:
     call CloseHandle
     add rsp, 0x28
 
-    ; Now do something with the data
-
-    lea rcx, [game_buffer]
-    mov rdx, [file_size]
-    call StripWhitespace
-
-    lea rcx, [game_buffer]
-    call WriteText
-    ; Parse
+    lea rcx, [file_buffer]
+    call ParseGameFile
 
 exit:
     mov rcx, 0x07
@@ -102,6 +96,8 @@ exit:
     xor ecx, ecx
     call ExitProcess
     add rsp, 0x28
+
+
 
 StripWhitespace:
     ; rcx = address of buffer
