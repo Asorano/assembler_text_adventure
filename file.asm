@@ -89,6 +89,7 @@ main:
     add rsp, 0x28
 
     lea rcx, [file_buffer]
+    mov rdx, [file_size]
     call ParseGameFile
 
     test rax, rax

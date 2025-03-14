@@ -1,6 +1,8 @@
 default rel
 BITS 64
 
+
+
 section .data
     GAME_DECISION_BUFFER_SIZE equ 1048576     ; 1MB
     GAME_TEXT_BUFFER_SIZE equ 1048576     ; 1MB
@@ -16,8 +18,10 @@ section .text
     ParseGameFile:
         ; Arguments:
         ; - rcx = unparsed data buffer
+        ; - rdx = length of buffer
         ; Registers:
         ; - rax = current char
+        ; - r9  = end address of data_buffer
         ; - r10 = current_decision_address
         ; - r11 = current_text_address
         ; - r12 = current searched char
@@ -45,6 +49,11 @@ section .text
 
         mov r10, game_decision_buffer           ; Load game_decision_buffer
         mov r11, game_text_buffer               ; Load game_text_buffer
+        
+        ; Move the last adress of the data_buffer to r9
+        mov r9 , rdx                           
+        add r9, rcx
+        dec r9
 
         mov [game_decision_count], word 0       ; Total number of decisions, initialized to 0
 
@@ -59,6 +68,10 @@ section .text
         cmp rax, '['                            ; Check that the decision starts with [
         jne _file_parsing_error                 
 
+        ; Mov current text address to current decision
+        mov [r10], r11
+        add r10, 8
+
         ; Parse decision id
         inc rcx
         mov al, byte [rcx]
@@ -68,21 +81,53 @@ section .text
         mov r12, ' '
         call SkipChar
 
-        ; Check that the next sign is a "
-        cmp rax, 0x3D
-        jne _file_parsing_error
+        ; Check that the next sign is a " and jump over it
+        mov r12, 0x22
+        call CheckCharAndSkip
+
+        ; Parse the decision text
+        mov r12, 0x22
+        call ParseTextIntoBuffer
+
+        mov r12, ' '
+        call SkipChar
+
+        ; Check that the next sign is a ]
+        mov r12, ']'
+        call CheckCharAndSkip
+
+        mov r12, ' '
+        call SkipChar
+
+        ; Check that the next two chars are CRLF
+        mov r12, 0x0D
+        call CheckCharAndSkip
+        mov r12, 0x0A
+        call CheckCharAndSkip
 
         ; Increment decision count
         inc word [game_decision_count]
-
-        mov rax, [game_decision_count]
-        jmp _end_parsing
+        jmp _parse_decision
 
     _file_parsing_error:
         mov rax, 0
 
     _end_parsing:
+        mov al, byte [game_decision_count]
         pop r12
+        ret
+
+    ; Checks whether the are at least rax bytes til the end of the buffer
+    ValidateRemainingLength:
+        ; r12 = min required bytes
+        push rax    ; Save the current char on the stack
+
+        mov rax, r9
+        sub rax, rcx
+
+        cmp rax, r12
+
+        pop rax     ; Restore current char
         ret
 
     ; Parses a text into the buffer passed via rcx
@@ -101,7 +146,22 @@ section .text
     _end_text_parse:
         mov [r11], byte 0                ; Add string terminator
         inc r11
+
+        inc rcx
+        mov al, byte [rcx]
         ret
+
+    CheckCharAndSkip:
+        ; r12 = target char
+        cmp rax, r12
+        jne _fail_char_check
+
+        inc rcx
+        mov al, byte [rcx]
+        ret
+    _fail_char_check:
+        add rsp, 8 ; Remove the call address from the stack
+        jmp _file_parsing_error
 
     ; Skips chars as long as they are equal to the char in r12 
     SkipChar:
