@@ -24,7 +24,8 @@ section .bss
 
 section .text
     global main
-    extern ParseGameFile, log_parsed_decisions, game_decision_count, game_decision_buffer
+    extern log_decisions, log_decision ; C
+    extern ParseGameFile, GetGameDecisionByIndex, game_decision_count, game_decision_buffer
     extern ExitProcess, CreateFileA, ReadFile, CloseHandle, GetFileSize, Sleep
 
 main:
@@ -95,12 +96,22 @@ main:
     test rax, rax
     jz _parse_file_error
 
+    ; push rbp
+    ; sub rsp, 32
+    ; mov rcx, game_decision_buffer
+    ; mov rdx, [game_decision_count]
+    ; call log_decicion
+    ; mov ax, [game_decision_count]
+    ; add rsp, 32
+    ; pop rbp
+
+    mov rcx, 0
+    call GetGameDecisionByIndex
+    mov rcx, rax
+
     push rbp
     sub rsp, 32
-    mov rcx, game_decision_buffer
-    mov rdx, [game_decision_count]
-    call log_parsed_decisions
-    mov ax, [game_decision_count]
+    call log_decision
     add rsp, 32
     pop rbp
 

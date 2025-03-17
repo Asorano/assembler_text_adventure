@@ -1,31 +1,9 @@
 default rel
 BITS 64
 
-struc GameAction
-    .linked_decision    resq 1  ; Pointer to linked decision
-    .text               resq 1  ; Pointer to text   
-endstruc
-
-struc GameDecision 
-    .id:        resq 1  ; Pointer to id string
-    .text:      resq 1  ; Pointer to text string
-    .action_0   resb GameAction_size  ; Pointer to first action
-    .action_1   resq GameAction_size  ; Pointer to second action
-    .action_2   resq GameAction_size  ; Pointer to third action
-    .action_3   resq GameAction_size  ; Pointer to fourth action
-endstruc
-
-section .data
-    GAME_DECISION_BUFFER_SIZE equ 1048576     ; 1MB
-    GAME_TEXT_BUFFER_SIZE equ 1048576     ; 1MB
-
-section .bss
-    game_decision_count resw 1
-    game_decision_buffer resb GAME_DECISION_BUFFER_SIZE  ; 1MB buffer
-    game_text_buffer resb GAME_TEXT_BUFFER_SIZE  ; 1MB buffer
-
 section .text
-    global game_decision_count, game_decision_buffer
+    extern game_decision_buffer, game_decision_count, game_text_buffer, GameAction_size
+
     global ParseGameFile
 
     ParseGameFile:

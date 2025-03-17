@@ -24,18 +24,21 @@ void log_action(const GameAction* action) {
     printf("   - Action: %s => %s\n", action->linkedDecisionId, action->text);
 }
 
-void log_parsed_decisions(const GameDecision* decisions, uint16_t decisionCount) {
+void log_decision(const GameDecision* decision) {
+    printf(" - Decision: %s -> %s\n", decision->id, decision->text);
+
+    log_action(&decision->action_0);
+    log_action(&decision->action_1);
+    log_action(&decision->action_2);
+    log_action(&decision->action_3);
+}
+
+void log_decisions(const GameDecision* decisions, uint16_t decisionCount) {
     printf("Parsed %i decisions:\n", decisionCount);
 
     for(int index = 0; index < decisionCount; index++)
     {
-        GameDecision decision = decisions[index];
-        printf(" - Decision %i: %s -> %s\n", index, decision.id, decision.text);
-
-        log_action(&decision.action_0);
-        log_action(&decision.action_1);
-        log_action(&decision.action_2);
-        log_action(&decision.action_3);
+        log_decision(decisions + index);
     }
 
     //gameData->decisionCount = data.num1;
