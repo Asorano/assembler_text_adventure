@@ -19,8 +19,9 @@ tasks:
     cmds:
       - clang -c src/c/debugging.c -o ./build/debugging_c.obj
       - nasm -f win64 -g src/asm/parse_file.asm -o ./build/parse_file.obj
-      - nasm -f win64 -g src/asm/game.asm -o ./build/game.obj
-      - lld-link ./build/game.obj ./build/parse_file.obj ./build/debugging_c.obj -entry:main -subsystem:console /defaultlib:kernel32.lib /defaultlib:msvcrt.lib /defaultlib:vcruntime.lib /defaultlib:ucrt.lib -out:./build/game_debug.exe /debug /pdb:./build/file_debug.pdb
+      - nasm -f win64 -g src/asm/game.asm -o ./build/adventure.obj
+      - lld-link ./build/adventure.obj ./build/parse_file.obj ./build/debugging_c.obj -entry:main -subsystem:console /defaultlib:kernel32.lib /defaultlib:msvcrt.lib /defaultlib:vcruntime.lib /defaultlib:ucrt.lib -out:./build/adventure.exe /debug /pdb:./build/adventure.pdb
+      - x64dbg "C:\Development\Private\assembler\build\adventure.exe"
 
   run:
     desc: "Start the built executable"
