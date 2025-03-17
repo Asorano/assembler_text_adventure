@@ -1,8 +1,10 @@
 default rel
 BITS 64
 
+%include "data.inc"
+
 section .text
-    extern game_decision_buffer, game_decision_count, game_text_buffer, GameAction_size
+    extern game_decision_buffer, game_decision_count, game_text_buffer
 
     global ParseGameFile
 

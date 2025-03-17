@@ -3,6 +3,7 @@ BITS 64
 
 %include "src/include/output.inc"
 %include "src/include/error.inc"
+%include "src/include/data.inc"
 
 section .data
     BUFFER_SIZE equ 1048576               ; 1MB
@@ -25,7 +26,7 @@ section .bss
 section .text
     global main
     extern log_decisions, log_decision ; C
-    extern ParseGameFile, GetGameDecisionByIndex, game_decision_count, game_decision_buffer
+    extern ParseGameFile, GetGameDecisionByIndex, game_decision_count, game_decision_buffer, FindGameDecisionById
     extern ExitProcess, CreateFileA, ReadFile, CloseHandle, GetFileSize, Sleep
 
 main:
@@ -109,8 +110,16 @@ main:
     call GetGameDecisionByIndex
     mov rcx, rax
 
+    add rax, GameDecision.action_1
+    mov rcx, rax
+    call FindGameDecisionById
+
+    cmp rax, 0
+    je _parse_file_error
+
     push rbp
     sub rsp, 32
+    mov rcx, rax
     call log_decision
     add rsp, 32
     pop rbp

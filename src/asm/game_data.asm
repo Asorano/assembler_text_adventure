@@ -1,19 +1,7 @@
 default rel
 BITS 64
 
-struc GameAction
-    .linked_decision    resq 1  ; Pointer to linked decision
-    .text               resq 1  ; Pointer to text   
-endstruc
-
-struc GameDecision 
-    .id:        resq 1  ; Pointer to id string
-    .text:      resq 1  ; Pointer to text string
-    .action_0   resb GameAction_size  ; Pointer to first action
-    .action_1   resb GameAction_size  ; Pointer to second action
-    .action_2   resb GameAction_size  ; Pointer to third action
-    .action_3   resb GameAction_size  ; Pointer to fourth action
-endstruc
+%include "data.inc"
 
 section .data
     GAME_DECISION_BUFFER_SIZE equ 1048576     ; 1MB
@@ -25,12 +13,13 @@ section .bss
     game_text_buffer resb GAME_TEXT_BUFFER_SIZE  ; 1MB buffer
 
 section .text
-    global GameAction_size
     global game_decision_count
     global game_decision_buffer
     global game_text_buffer
 
-    global GetGameDecisionByIndex
+    global GetGameDecisionByIndex, FindGameDecisionById
+
+    extern strcmp
 
     GetGameDecisionByIndex:
         ; rcx = decision index
@@ -53,5 +42,65 @@ section .text
         ret
 
     _invalid_decision_index:
-        mov rax, qword 0
+        xor rax, rax
         jmp _return_decision_by_index
+
+    FindGameDecisionById:
+        ; Arguments:
+        ; - rcx = decision id
+        ;
+        ; Registers:
+        ; - r12 = decision id (saved)
+        ; - r13 = remaining decision loop count
+        ; - r14 = current decision buffer address
+        ;
+        ; Returns in rax:
+        ;   = 0 => decision not found
+        ;   > 0 => address of decision
+        ;
+        ; Iterates over the decision buffer and tries to find a decision which has the passed decision id
+
+        push r12
+        push r13
+        push r14
+
+        mov r12, rcx                            ; Move decision id
+        movzx r13, word [game_decision_count]   ; Move decision count
+        lea r14, [game_decision_buffer]         ; Lead first decision address
+
+    _find_decision_loop:
+        ; Check that there are remaining decisions in the buffer
+        cmp r13, 0
+        je _decision_not_found
+
+        ; Call the c string comparison function
+        push rbp
+        sub rsp, 40
+        mov rcx, [r12]
+        mov rdx, [r14]
+        call strcmp
+        add rsp, 40
+        pop rbp
+
+        ; Check compare result. If 0, the decision has been found
+        cmp rax, 0
+        je _end_decision_search
+
+        ; Prepare the registers for the next decision in the buffer
+        dec qword r13
+        add r14, GameDecision_size
+        jmp _find_decision_loop
+
+    ; End the search sucessfully
+    _end_decision_search:
+        mov rax, r14
+        jmp _end_search
+    ; End the search without a found decision
+    _decision_not_found:
+        xor rax, rax
+        
+    _end_search:
+        pop r14
+        pop r13
+        pop r12
+        ret
