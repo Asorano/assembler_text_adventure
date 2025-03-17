@@ -25,8 +25,8 @@ section .bss
     game_text_buffer resb GAME_TEXT_BUFFER_SIZE  ; 1MB buffer
 
 section .text
+    global game_decision_count, game_decision_buffer
     global ParseGameFile
-    extern log_parsed_decisions
 
     ParseGameFile:
         ; Arguments:
@@ -80,6 +80,9 @@ section .text
         cmp rax, '['                            ; Check that the decision starts with [
         jne _file_parsing_error                 
 
+        ; Increment decision count
+        inc word [game_decision_count]
+
         ; Mov current text address to current decision
         mov [r10], r11
         add r10, 8
@@ -131,9 +134,6 @@ section .text
         call ParseActions
         call ParseActions
 
-        ; Increment decision count
-        inc word [game_decision_count]
-
         cmp rax, 0
         je _end_parsing
 
@@ -143,16 +143,7 @@ section .text
         mov rax, 0
 
     _end_parsing:
-
-        push rbp
-        sub rsp, 32
-        mov rcx, game_decision_buffer
-        mov rdx, [game_decision_count]
-        call log_parsed_decisions
-        mov ax, [game_decision_count]
-        add rsp, 32
-        pop rbp
-
+        mov rax, [game_decision_count]
         pop r12
         ret
 
@@ -206,19 +197,6 @@ section .text
 
     _skip_action:
         add r10, GameAction_size
-        ret
-
-    ; Checks whether the are at least rax bytes til the end of the buffer
-    ValidateRemainingLength:
-        ; r12 = min required bytes
-        push rax    ; Save the current char on the stack
-
-        mov rax, r9
-        sub rax, rcx
-
-        cmp rax, r12
-
-        pop rax     ; Restore current char
         ret
 
     ; Parses a text into the buffer passed via rcx

@@ -24,7 +24,7 @@ section .bss
 
 section .text
     global main
-    extern ParseGameFile
+    extern ParseGameFile, log_parsed_decisions, game_decision_count, game_decision_buffer
     extern ExitProcess, CreateFileA, ReadFile, CloseHandle, GetFileSize, Sleep
 
 main:
@@ -95,18 +95,14 @@ main:
     test rax, rax
     jz _parse_file_error
 
-    push rax
-
-    mov rcx, txt_file_parsed
-    call WriteText
-
-    mov rcx, txt_game_data_decision,
-    call WriteText
-
-    pop rax
-
-    movzx rcx, ax
-    call WriteNumber
+    push rbp
+    sub rsp, 32
+    mov rcx, game_decision_buffer
+    mov rdx, [game_decision_count]
+    call log_parsed_decisions
+    mov ax, [game_decision_count]
+    add rsp, 32
+    pop rbp
 
 exit:
     mov rcx, 0x07
