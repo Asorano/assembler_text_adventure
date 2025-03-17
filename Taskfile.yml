@@ -19,7 +19,7 @@ tasks:
       - clang -c include/debug_log.c -o ./build/file/debug_log.obj
       - nasm -f win64 include/game_file_parser.asm -o ./build/file/game_file_parser.obj
       - nasm -f win64 file.asm -o ./build/file/file.obj
-      - lld-link ./build/file/file.obj ./build/file/test_c.obj ./build/file/game_file_parser.obj ./build/file/debug_log.obj -entry:main -subsystem:console -defaultlib:kernel32.lib -out:./build/file.exe
+      - lld-link ./build/file/file.obj ./build/file/game_file_parser.obj ./build/file/debug_log.obj -entry:main -subsystem:console /defaultlib:kernel32.lib /defaultlib:msvcrt.lib /defaultlib:vcruntime.lib /defaultlib:ucrt.lib -out:./build/file.exe
       - ./build/file.exe
 
   debugfile:
@@ -27,7 +27,7 @@ tasks:
     cmds:
       - nasm -f win64 -g include/game_file_parser.asm -o ./build/file/game_file_parser.obj
       - nasm -f win64 -g file.asm -o ./build/file/file.obj
-      - lld-link ./build/file/file.obj ./build/file/test_c.obj ./build/file/game_file_parser.obj -entry:main -subsystem:console -defaultlib:kernel32.lib -out:./build/file_debug.exe /debug /pdb:./build/file_debug.pdb
+      - lld-link ./build/file/file.obj ./build/file/game_file_parser.obj ./build/file/debug_log.obj -entry:main -subsystem:console /defaultlib:kernel32.lib /defaultlib:msvcrt.lib /defaultlib:vcruntime.lib /defaultlib:ucrt.lib -out:./build/file_debug.exe /debug /pdb:./build/file_debug.pdb
 
   debug:
     cmds: 

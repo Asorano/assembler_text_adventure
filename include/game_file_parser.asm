@@ -1,6 +1,20 @@
 default rel
 BITS 64
 
+struc GameAction
+    .linked_decision    resq 1  ; Pointer to linked decision
+    .text               resq 1  ; Pointer to text   
+endstruc
+
+struc GameDecision 
+    .id:        resq 1  ; Pointer to id string
+    .text:      resq 1  ; Pointer to text string
+    .action_0   resb GameAction_size  ; Pointer to first action
+    .action_1   resq GameAction_size  ; Pointer to second action
+    .action_2   resq GameAction_size  ; Pointer to third action
+    .action_3   resq GameAction_size  ; Pointer to fourth action
+endstruc
+
 section .data
     GAME_DECISION_BUFFER_SIZE equ 1048576     ; 1MB
     GAME_TEXT_BUFFER_SIZE equ 1048576     ; 1MB
@@ -12,7 +26,7 @@ section .bss
 
 section .text
     global ParseGameFile
-    extern debug_log_decision
+    extern log_parsed_decisions
 
     ParseGameFile:
         ; Arguments:
@@ -32,7 +46,6 @@ section .text
         ; 4) Parse decision id until first =                   ; search: =
         ;   1) Throw error if whitespace
         ;   2) Until first =
-        ;   3) Max length 32 bytes
         ; 5) Check next char to be " and skip it
         ;   1) Throw error if not "
         ; 6) Parse decision text until first "
@@ -84,6 +97,10 @@ section .text
         mov r12, 0x22
         call CheckCharAndSkip
 
+        ; Set decision text pointer
+        mov [r10], r11
+        add r10, 8
+
         ; Parse the decision text
         mov r12, 0x22
         call ParseTextIntoBuffer
@@ -99,24 +116,96 @@ section .text
         call SkipChar
 
         ; Check that the next two chars are CRLF
-        mov r12, 0x0D
-        call CheckCharAndSkip
         mov r12, 0x0A
         call CheckCharAndSkip
 
+        mov r12, ' '
+        call SkipChar
+
+        cmp rax, 0
+        je _end_parsing
+
+        ; ACTION PARSING
+        call ParseActions
+        call ParseActions
+        call ParseActions
+        call ParseActions
+
         ; Increment decision count
         inc word [game_decision_count]
+
+        cmp rax, 0
+        je _end_parsing
+
         jmp _parse_decision
 
     _file_parsing_error:
         mov rax, 0
 
     _end_parsing:
-        mov al, byte [game_decision_count]
 
-        mov rcx, [game_decision_buffer]
-        call debug_log_decision
+        push rbp
+        sub rsp, 32
+        mov rcx, game_decision_buffer
+        mov rdx, [game_decision_count]
+        call log_parsed_decisions
+        mov ax, [game_decision_count]
+        add rsp, 32
+        pop rbp
+
         pop r12
+        ret
+
+    ParseActions:
+        mov r12, ' '
+        call SkipChar
+
+        ; If char is [, it is the next decision and we need to stop
+        cmp rax, '['
+        je _skip_action
+
+        ; Set linked decision pointer to current text addres
+        mov [r10], r11
+        add r10, 8
+
+        ; Read id til next space
+        mov r12, ' '
+        call ParseTextIntoBuffer
+
+        ; Skip following spaces
+        mov r12, ' '
+        call SkipChar
+
+        mov r12, '='
+        call CheckCharAndSkip
+
+        mov r12, '>'
+        call CheckCharAndSkip
+
+        ; Skip following spaces
+        mov r12, ' '
+        call SkipChar
+
+        mov r12, 0x22
+        call CheckCharAndSkip
+
+        ; Set text address pointer
+        mov [r10], r11
+        add r10, 8  
+
+        ; Read text until next "
+        mov r12, 0x22
+        call ParseTextIntoBuffer
+
+        mov r12, ' '
+        call SkipChar
+
+        mov r12, 0x0A
+        call SkipChar
+        ret
+
+    _skip_action:
+        add r10, GameAction_size
         ret
 
     ; Checks whether the are at least rax bytes til the end of the buffer

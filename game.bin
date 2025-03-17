@@ -1,3 +1,8 @@
-[act_0_initial_decision="Hello there, how are you?"]
-[act_0_i_am_bored="Oh no, we could play a game together if you want!\nOr what do you think?"]
-[act_1_just_some_test="Oha that is a really nice test!"]
+[act_0_initial_decision="You are in a dark room. What do you do?"]
+act_0_turn_light_on => "Turn on the light"
+act_0_end_game_immediately => "Turn on the light"
+
+[act_0_turn_light_on="The light turns on. You see a carnage in front of you. A massacre. A whole pile of corpse."]
+act_0_initial_decision => "Turn the light off"
+
+[act_0_end_game_immediately="The dream is over! Head back to reality."]

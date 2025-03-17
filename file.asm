@@ -103,7 +103,9 @@ main:
     mov rcx, txt_game_data_decision,
     call WriteText
 
-    pop rcx
+    pop rax
+
+    movzx rcx, ax
     call WriteNumber
 
 exit:
