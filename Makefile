@@ -16,7 +16,7 @@ OBJ_DIR = $(BUILD_DIR)/obj/$(CONFIG)
 BIN_DIR = $(BUILD_DIR)/bin/$(CONFIG)
 
 # Primary target name
-TARGET = adventure_debug
+TARGET = game
 
 # File extensions
 ASM_EXT = .asm
