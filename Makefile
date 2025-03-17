@@ -58,8 +58,8 @@ ifeq ($(CONFIG),debug)
     LINKFLAGS = /debug /map:$(BIN_DIR)/$(TARGET)$(MAP_EXT) /pdb:$(BIN_DIR)/$(TARGET)$(PDB_EXT) $(COMMON_LINKFLAGS)
 else ifeq ($(CONFIG),dev)
     # Development configuration (faster iteration, skips animations)
-    ASMFLAGS = -f win64 -g -DDEV_BUILD=1 -DSKIP_ANIMATIONS=1 -I$(INCLUDE_DIR)
-    CFLAGS = -c -O1 -DDEV_BUILD=1 -DSKIP_ANIMATIONS=1 -I$(INCLUDE_DIR)
+    ASMFLAGS = -f win64 -g -DDEV_BUILD=1 -DSKIP_INTRO=1 -I$(INCLUDE_DIR)
+    CFLAGS = -c -O1 -DDEV_BUILD=1 -DSKIP_INTRO=1 -I$(INCLUDE_DIR)
     LINKFLAGS = /debug /map:$(BIN_DIR)/$(TARGET)$(MAP_EXT) /pdb:$(BIN_DIR)/$(TARGET)$(PDB_EXT) $(COMMON_LINKFLAGS)
 else
     # Release configuration
