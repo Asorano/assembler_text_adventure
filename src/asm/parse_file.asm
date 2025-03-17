@@ -129,6 +129,7 @@ section .text
         je _end_parsing
 
         ; ACTION PARSING
+        ; An action can only have up to 4 decisions. They can be null
         call ParseActions
         call ParseActions
         call ParseActions

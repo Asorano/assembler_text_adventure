@@ -1,8 +1,8 @@
 default rel
 BITS 64
 
-%include "include/output.inc"
-%include "include/error.inc"
+%include "src/include/output.inc"
+%include "src/include/error.inc"
 
 section .data
     BUFFER_SIZE equ 1048576               ; 1MB

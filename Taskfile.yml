@@ -10,29 +10,17 @@ tasks:
   build:
     desc: "Assembles and links the executable"
     cmds:
-      - nasm -f win64 game.asm -o ./build/game.obj 
-      - lld-link ./build/game.obj -entry:main -subsystem:console -defaultlib:kernel32.lib -out:./build/game.exe
-
-  file:
-    desc: "Assembles and links the executable"
-    cmds:
-      - clang -c include/debug_log.c -o ./build/file/debug_log.obj
-      - nasm -f win64 include/game_file_parser.asm -o ./build/file/game_file_parser.obj
-      - nasm -f win64 file.asm -o ./build/file/file.obj
-      - lld-link ./build/file/file.obj ./build/file/game_file_parser.obj ./build/file/debug_log.obj -entry:main -subsystem:console /defaultlib:kernel32.lib /defaultlib:msvcrt.lib /defaultlib:vcruntime.lib /defaultlib:ucrt.lib -out:./build/file.exe
-      - ./build/file.exe
-
-  debugfile:
-    desc: "Assembles and links the executable"
-    cmds:
-      - nasm -f win64 -g include/game_file_parser.asm -o ./build/file/game_file_parser.obj
-      - nasm -f win64 -g file.asm -o ./build/file/file.obj
-      - lld-link ./build/file/file.obj ./build/file/game_file_parser.obj ./build/file/debug_log.obj -entry:main -subsystem:console /defaultlib:kernel32.lib /defaultlib:msvcrt.lib /defaultlib:vcruntime.lib /defaultlib:ucrt.lib -out:./build/file_debug.exe /debug /pdb:./build/file_debug.pdb
-
+      - clang -c src/c/debugging.c -o ./build/debugging_c.obj
+      - nasm -f win64 src/asm/parse_file.asm -o ./build/parse_file.obj
+      - nasm -f win64 src/asm/game.asm -o ./build/game.obj
+      - lld-link ./build/game.obj ./build/parse_file.obj ./build/debugging_c.obj -entry:main -subsystem:console /defaultlib:kernel32.lib /defaultlib:msvcrt.lib /defaultlib:vcruntime.lib /defaultlib:ucrt.lib -out:./build/game.exe
   debug:
-    cmds: 
-      - nasm -f win64 -g game.asm -o ./build/game_debug.obj
-      - lld-link ./build/game_debug.obj -entry:main -subsystem:console -defaultlib:kernel32.lib -out:./build/game_debug.exe /debug /pdb:./build/game_debug.pdb
+    desc: "Assembles and links the executable"
+    cmds:
+      - clang -c src/c/debugging.c -o ./build/debugging_c.obj
+      - nasm -f win64 -g src/asm/parse_file.asm -o ./build/parse_file.obj
+      - nasm -f win64 -g src/asm/game.asm -o ./build/game.obj
+      - lld-link ./build/game.obj ./build/parse_file.obj ./build/debugging_c.obj -entry:main -subsystem:console /defaultlib:kernel32.lib /defaultlib:msvcrt.lib /defaultlib:vcruntime.lib /defaultlib:ucrt.lib -out:./build/game_debug.exe /debug /pdb:./build/file_debug.pdb
 
   run:
     desc: "Start the built executable"

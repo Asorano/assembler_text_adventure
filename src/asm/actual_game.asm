@@ -10,12 +10,12 @@
 
 default rel  ; Enables RIP-relative addressing for 64-bit mode
 
-%include "include/decisions.inc"
-%include "include/input.inc"
-%include "include/output.inc"
-%include "include/view.inc"
-%include "include/animations.inc"
-%include "include/content.inc"
+%include "src/include/decisions.inc"
+%include "src/include/input.inc"
+%include "src/include/output.inc"
+%include "src/include/view.inc"
+%include "src/include/animations.inc"
+%include "src/include/content.inc"
 
 section .data    
     INITIAL_HEALTH equ 100
