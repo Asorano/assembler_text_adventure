@@ -35,9 +35,6 @@ main:
 
     mov [current_decision], rax
 
-    mov rcx, txt_file_loaded
-    call AnimateText
-
     mov rcx, 250
     sub rsp, 32
     call Sleep
@@ -111,6 +108,9 @@ WriteActions:
     mov r13, 1
 
 _write_actions_loop:
+    cmp r13, MAX_ACTION_COUNT
+    jae _end_write_actions_loop
+    
     mov rax, [r12]
     test rax, rax
     jz _end_write_actions_loop
@@ -119,7 +119,7 @@ _write_actions_loop:
     mov rdx, r13
     call WriteAction
 
-    add r12, GameDecision_size
+    add r12, GameAction_size
     inc r13
     jmp _write_actions_loop
 

@@ -1,8 +1,238 @@
-[act_0_initial_decision="You are in a dark room. What do you do?"]
-act_0_turn_light_on => "Turn on the light"
-act_0_end_game_immediately => "Turn on the light"
+[act_0_initial_landing="You are Zorb, an alien who has just crash-landed on Earth. Your spacecraft is damaged and emitting blue smoke. The night is dark and you can see lights from a small town in the distance. What do you do?"]
+act_0_go_to_town => "Head toward the town"
+act_0_hide_in_woods => "Hide in the nearby woods"
+act_0_fix_ship => "Try to fix your ship"
 
-[act_0_turn_light_on="The light turns on. You see a carnage in front of you. A massacre. A whole pile of corpse."]
-act_0_initial_decision => "Turn the light off"
+[act_0_go_to_town="As you approach the town, you notice humans throwing plastic into the ocean and driving large vehicles that spew smoke. A group of teenagers wearing bright blue jackets spots you. They look shocked and pull out their phones."]
+act_0_run_away => "Run away!"
+act_0_communicate => "Try to communicate peacefully"
+act_0_use_cloaking => "Activate your cloaking device"
 
-[act_0_end_game_immediately="The dream is over! Head back to reality."]
+[act_0_hide_in_woods="You find shelter beneath strange trees. The forest is quiet except for small creatures scurrying about. Suddenly, your scanner picks up approaching humans - forest rangers wearing blue uniforms."]
+act_0_remain_still => "Remain perfectly still"
+act_0_climb_tree => "Climb up a tree"
+act_0_create_distraction => "Create a distraction"
+
+[act_0_fix_ship="You examine your ship's damaged engine. The blue power core is leaking dangerous radiation. You'll need Earth materials to repair it, but your scanner indicates humans nearby who might help."]
+act_0_search_materials => "Search for materials yourself"
+act_0_signal_for_help => "Send a distress signal"
+act_0_wait_for_night => "Wait until deeper night to move"
+
+[act_0_run_away="You panic at the sight of the blue jackets and flee, but trip over a shopping cart. The teenagers surround you, their phones recording everything. Government vehicles arrive within minutes. Game over - you've been captured!"]
+act_0_initial_landing => "Try again"
+
+[act_0_communicate="Despite your fear of their blue jackets, you attempt peaceful communication using universal gestures. One teenager steps forward, removing her jacket. 'Are you hurt?' she asks. She seems genuinely concerned."]
+act_0_trust_teenager => "Trust the kind teenager"
+act_0_ask_about_earth => "Ask about Earth's pollution"
+act_0_request_help => "Request help with your ship"
+
+[act_0_use_cloaking="You activate your cloaking device just in time. The teenagers look confused where you vanished. You slip away unseen, but your device's power is limited and the blue energy crystal is fading."]
+act_0_find_power_source => "Find a power source"
+act_0_observe_humans => "Observe humans from hiding"
+act_0_return_to_ship => "Return to your ship while invisible"
+
+[act_0_remain_still="You freeze in place as the rangers pass. One stops near you, sensing something. She has kind eyes but her blue uniform terrifies you. Your trembling causes a twig to snap."]
+act_0_greet_ranger => "Reveal yourself cautiously"
+act_0_teleport_away => "Use emergency teleport"
+act_0_mimic_animal => "Mimic an Earth animal"
+
+[act_0_climb_tree="From your perch, you watch the rangers pass below. They're discussing environmental protection measures. You realize they care for this planet despite how some humans treat it. Your grip slips on a blue moss patch."]
+act_0_grab_branch => "Grab another branch"
+act_0_control_fall => "Control your fall"
+act_0_call_for_help => "Call for help"
+
+[act_0_create_distraction="You use your technology to create lights in the opposite direction. The rangers run toward it, but one stays behind - an older human with gray hair and gentle eyes. She looks directly at your hiding spot."]
+act_0_meet_old_ranger => "Emerge and meet the ranger"
+act_0_stay_hidden => "Stay completely hidden"
+act_0_scan_ranger => "Scan ranger for trustworthiness"
+
+[act_0_search_materials="You venture out to find repair materials. In a junkyard, you discover usable parts, but the watchman's flashlight emits a terrifying blue light. You'll need to be careful."]
+act_0_sneak_past => "Sneak past the watchman"
+act_0_hypnotize_watchman => "Use hypnosis device"
+act_0_wait_for_watchman => "Wait for watchman to leave"
+
+[act_0_signal_for_help="Your distress signal attracts attention - both good and bad. A young scientist driving by stops to investigate. She seems trustworthy, but she's wearing a blue watch."]
+act_0_approach_scientist => "Approach the scientist"
+act_0_hide_from_scientist => "Hide from the scientist"
+act_0_test_scientist => "Test if she's trustworthy"
+
+[act_0_wait_for_night="You wait until the night is darker. A child walking their dog discovers you. The child seems pure-hearted and curious, not afraid at all. The dog wags its tail."]
+act_0_befriend_child => "Befriend the child"
+act_0_erase_memory => "Erase their memory"
+act_0_give_gift => "Offer a gift from your world"
+
+[act_0_trust_teenager="The kind teenager, Emma, offers to help. She brings you to a shed where her friends - a diverse group of eco-conscious youths - promise to protect you. They remove all blue items when they notice your fear."]
+act_0_share_knowledge => "Share your advanced knowledge"
+act_0_learn_about_earth => "Learn about Earth's problems"
+act_0_plan_repair => "Plan your ship repair"
+
+[act_0_ask_about_earth="When you ask about the pollution, the teenagers look sad. 'Not all humans are destructive,' Emma explains. 'Many of us are fighting to protect our planet. We can show you.' You sense their sincerity."]
+act_0_join_movement => "Join their environmental movement"
+act_0_offer_technology => "Offer your clean technology"
+act_0_request_sanctuary => "Ask for temporary sanctuary"
+
+[act_0_request_help="You explain your ship needs repairs. The teenagers offer to help, gathering their scientifically-minded friends. Their ingenuity surprises you. With their help, you might fix your ship and share your knowledge."]
+act_0_collaborative_repair => "Work together on repairs"
+act_0_teach_technology => "Teach them about your technology"
+act_0_contact_home => "Try to contact your homeworld"
+
+[act_0_find_power_source="You locate a power station and carefully absorb energy. A security guard approaches, but a woman in a lab coat intervenes. 'I'll handle this,' she tells the guard. She whispers to you, 'I know what you are. I can help.'"]
+act_0_trust_scientist => "Trust the scientist"
+act_0_flee_immediately => "Flee immediately"
+act_0_question_intentions => "Question her intentions"
+
+[act_0_observe_humans="From hiding, you watch humans. Some discard trash carelessly, but others collect it, cleaning their environment. A group plants trees while discussing 'climate action.' Perhaps not all humans are destructive."]
+act_0_contact_environmentalists => "Contact the environmentalists"
+act_0_continue_observation => "Continue observation"
+act_0_leave_message => "Leave a message for good humans"
+
+[act_0_return_to_ship="You return to your ship unseen. A family having a picnic has discovered it. The parents keep their distance, but their curious daughter places a flower on your ship. You're touched by this peace offering."]
+act_0_meet_family => "Reveal yourself to the family"
+act_0_thank_anonymously => "Thank them anonymously"
+act_0_invite_to_ship => "Invite them into your ship"
+
+[act_0_greet_ranger="You cautiously reveal yourself. The ranger gasps but doesn't flee. 'I won't hurt you,' she promises, removing her blue cap. 'Let me help you.' Her heart rate suggests she's telling the truth."]
+act_0_accept_ranger_help => "Accept her help"
+act_0_share_concerns => "Share your environmental concerns"
+act_0_show_ship => "Show her your damaged ship"
+
+[act_0_teleport_away="Your emergency teleport activates, but malfunctions due to damage. You reappear in a school classroom! Children stare in amazement while their teacher stands speechless. This is not the landing you planned."]
+act_0_calm_children => "Try to calm the children"
+act_0_win_teacher_trust => "Win the teacher's trust"
+act_0_demonstrate_powers => "Demonstrate harmless powers"
+
+[act_0_mimic_animal="You mimic a local deer. The rangers pause, then continue on. Later, a real deer approaches you curiously. You've accidentally mimicked the deer's mate call. This could get awkward."]
+act_0_communicate_deer => "Try to communicate with the deer"
+act_0_return_normal => "Return to normal form"
+act_0_follow_deer => "Follow the deer deeper into forest"
+
+[act_0_grab_branch="You grab another branch just in time. From your new position, you see a young ranger taking water samples and looking worried. She's measuring pollution levels and documenting environmental damage. You realize she could be an ally."]
+act_0_help_ranger => "Help the ranger"
+act_0_continue_watching => "Continue watching"
+act_0_make_contact => "Make careful contact"
+
+[act_0_control_fall="You control your fall but land in front of a young ranger. She's startled but quickly regains composure. 'I won't hurt you,' she says gently. 'Are you the one cleaning the riverbank at night? We've noticed something removing pollution.'"]
+act_0_admit_cleaning => "Admit you've been cleaning"
+act_0_deny_everything => "Deny everything"
+act_0_show_technology => "Show your cleaning technology"
+
+[act_0_call_for_help="Your distress call is answered by a ranger who hurries to help what she thinks is an injured animal. When she discovers you, she's amazed but not frightened. 'Are you all right?' she asks with genuine concern."]
+act_0_trust_compassion => "Trust her compassion"
+act_0_probe_mind => "Probe her mind gently"
+act_0_explain_situation => "Explain your situation"
+
+[act_0_meet_old_ranger="You emerge cautiously. The old ranger smiles, unsurprised. 'I've been hoping to meet you,' she says. 'I've seen evidence of your presence - and the good you've been doing for our forest. Thank you.'"]
+act_0_share_mission => "Share your mission"
+act_0_request_alliance => "Request an alliance"
+act_0_warn_about_dangers => "Warn about environmental dangers"
+
+[act_0_stay_hidden="You remain hidden. The ranger places a container of fresh water and fruits nearby. 'For our forest friend, whoever you are,' she says before leaving. She knows of your presence but respects your privacy."]
+act_0_take_offering => "Take the offering"
+act_0_leave_gift => "Leave a gift in return"
+act_0_follow_ranger => "Follow the ranger discreetly"
+
+[act_0_scan_ranger="Your scan reveals a lifetime devoted to protecting Earth's wilderness. Her thoughts show concern for a planet in peril and hope for its recovery. She has encountered evidence of your presence and kept it secret from authorities."]
+act_0_reveal_yourself => "Reveal yourself to her"
+act_0_send_message => "Send her a telepathic message"
+act_0_help_secretly => "Help her mission secretly"
+
+[act_0_collaborative_repair="Working together, you repair your ship using Earth materials and your advanced knowledge. Emma and her friends learn quickly. Despite differences, human ingenuity combined with your technology creates something beautiful."]
+act_0_offer_space_journey => "Offer them a journey to space"
+act_0_establish_communication => "Establish ongoing communication"
+act_0_share_environmental_tech => "Share environmental technology"
+
+[act_0_teach_technology="You teach the teenagers about sustainable technology from your world. They absorb the knowledge eagerly, already thinking of applications to help Earth. Their passion gives you hope for this planet's future."]
+act_0_build_prototype => "Build a prototype together"
+act_0_create_network => "Create a network of young scientists"
+act_0_plan_global_solution => "Plan a global solution"
+
+[act_0_contact_home="With the teenagers' help, you establish contact with your homeworld. Your people are relieved you're safe and intrigued by your reports of Earth's potential. They agree to send a diplomatic mission - not to conquer, but to help."]
+act_0_prepare_for_delegation => "Prepare for the delegation"
+act_0_introduce_earth_culture => "Introduce Earth culture to your people"
+act_0_organize_first_contact => "Organize first contact protocol"
+
+[act_0_join_movement="You join the teenagers' environmental movement, using your alien perspective to offer new insights. Your presence inspires more people to join. Together, you begin cleaning rivers and planting trees. Earth might have hope after all."]
+
+[act_0_offer_technology="You share your clean energy technology with these trustworthy humans. They understand its importance and vow to use it responsibly. This could be the turning point Earth needs to heal its environment."]
+
+[act_0_request_sanctuary="The teenagers provide you sanctuary in an old observatory they've converted into their clubhouse. From this safe place, you can observe stars while planning your next steps on Earth. You've found allies in an unexpected place."]
+
+[act_0_trust_scientist="Dr. Chen takes you to her private lab. She's been studying anomalies that match your species' energy signature. 'I want to help you,' she explains, 'and learn from you. Together, we might save both our worlds.'"]
+
+[act_0_flee_immediately="Your instincts tell you to run, but Dr. Chen calls after you, 'Your ship's radiation is harmful to Earth! Please, let me help contain it!' You must decide if protecting your secret is worth potential environmental damage."]
+
+[act_0_question_intentions="When questioned, Dr. Chen explains she's been tracking cosmic anomalies. She shows you her research on environmental protection and interstellar physics. 'Earth needs help,' she says simply. 'I think that's why you're here.'"]
+
+[act_0_contact_environmentalists="You approach the tree-planting group carefully. Their leader, an elderly man with kind eyes, sees you and smiles. 'Friends,' he says to the others, 'I believe we have a visitor who shares our concern for Earth.'"]
+
+[act_0_continue_observation="You continue watching humanity's contradictions. For every act of destruction, you witness acts of protection and care. Perhaps this species deserves a chance. Your mission to understand Earth becomes more complex and hopeful."]
+
+[act_0_leave_message="You leave a coded message only environmentally-conscious humans would understand. Two days later, you return to find responses from various Earth protectors, offering alliance and friendship. You are not alone on this planet."]
+
+[act_0_meet_family="The family is startled but not afraid. The father steps forward protectively but without aggression. The daughter offers you the flower again. 'Are you lost?' she asks. 'We could help you get home.'"]
+
+[act_0_thank_anonymously="You use your technology to create beautiful lights around your ship - a thank you gift. The family watches in wonder. The little girl laughs with delight. You've created a memory they'll cherish forever."]
+
+[act_0_invite_to_ship="You carefully invite them aboard. The family enters with respectful curiosity. You show them sustainable technology beyond Earth's development. 'Please,' the mother says, 'share this knowledge with humanity.'"]
+
+[act_0_accept_ranger_help="Ranger Sarah brings you to her cabin, avoiding other humans. She helps tend your wounds and offers to help repair your ship. 'Not all humans fear differences,' she explains. 'Some of us celebrate them.'"]
+
+[act_0_share_concerns="You tell the ranger about your horror at Earth's environmental state. She nods sadly. 'Many of us are fighting to save it,' she explains. 'We could use an ally with your perspective and knowledge.'"]
+
+[act_0_show_ship="You lead the ranger to your damaged ship. She studies it with amazement rather than fear. 'I can help get materials,' she offers. 'And I know a physicist who would keep your secret while helping with repairs.'"]
+
+[act_0_calm_children="You create gentle lights from your fingertips, calming the startled children. 'I come in peace,' you explain in their language. 'I'm a traveler who crashed on your world and needs help.'"]
+
+[act_0_win_teacher_trust="The teacher, Ms. Rodriguez, quickly recovers her composure. 'Class, it seems we have an unexpected guest lecturer today on... interplanetary travel.' Her quick thinking impresses you. This human might be an ideal ally."]
+
+[act_0_demonstrate_powers="You levitate a globe from the teacher's desk, showing your peaceful intentions through a display of gentle control. The children applaud. The teacher, though stunned, recognizes an educational opportunity. 'Would you tell us about your world?'"]
+
+[act_0_help_ranger="You use your technology to analyze the water samples more thoroughly, revealing pollution sources the ranger's equipment couldn't detect. She's amazed by your help and offers alliance. 'Together, we could make a real difference,' she says."]
+
+[act_0_make_contact="You carefully reveal yourself. The young ranger is startled but recovers quickly. 'The anomalous readings make sense now,' she says with scientific interest rather than fear. 'You've been purifying the watershed, haven't you?'"]
+
+[act_0_admit_cleaning="You admit to cleaning the river using your advanced filtration technology. The ranger smiles widely. 'Thank you,' she says sincerely. 'Would you consider working together? Your methods are clearly superior to ours.'"]
+
+[act_0_show_technology="You demonstrate your cleaning technology. The ranger watches in amazement as pollutants separate from water molecules. 'This could save ecosystems worldwide,' she whispers. 'Would you share this knowledge?'"]
+
+[act_0_trust_compassion="The ranger, Maya, proves trustworthy. She brings medical supplies and food, helping you recover. She introduces you to her partner, an astronomer who might help repair your ship. They keep your existence secret."]
+
+[act_0_explain_situation="You explain your crash landing and mission to understand Earth. The ranger listens thoughtfully. 'I'm honored to be your first human contact,' she says. 'Let me show you that humanity, despite our flaws, has beauty worth knowing.'"]
+
+[act_0_share_mission="You explain your scientific mission to study developing planets. The ranger nods understandingly. 'Our world needs help,' she admits. 'Would you consider sharing your knowledge to save Earth's ecosystems?'"]
+
+[act_0_request_alliance="The ranger agrees to an alliance immediately. 'I've spent my life protecting this forest,' she explains. 'With your knowledge and my understanding of Earth systems, we could make real change.'"]
+
+[act_0_warn_about_dangers="Your warnings about environmental collapse match her own observations. 'We still have time,' she insists, 'especially with your help. There are networks of humans working to save Earth. You're not alone in this fight.'"]
+
+[act_0_take_offering="The fresh water and fruits sustain you. Each day, the ranger leaves new offerings. Eventually, she leaves a note: 'Friend, I respect your privacy, but if you need help, leave a sign. You are welcome here.'"]
+
+[act_0_leave_gift="You leave a crystal from your world that purifies water. The next day, the ranger leaves a note: 'The crystal saved the sick beavers downstream. Thank you, friend. Your secret is safe with me.'"]
+
+[act_0_follow_ranger="Following discreetly, you discover the ranger reporting to a small group of scientists about forest health. They discuss diminishing biodiversity and climate impacts with genuine concern. These humans truly care for their world."]
+
+[act_0_reveal_yourself="The ranger accepts your appearance with remarkable composure. 'I've felt your presence for weeks,' she admits. 'The forest is healthier where you've been. I think we were meant to meet.'"]
+
+[act_0_send_message="Your telepathic message startles her briefly, but she responds with openness. 'Yes, I'll help you,' she thinks back. 'And yes, I'll keep your secret. Some mysteries deserve protection.'"]
+
+[act_0_help_secretly="You begin assisting the ranger's conservation efforts secretly, accelerating forest recovery. She leaves notes thanking her 'unseen helper.' Your partnership, though unconventional, becomes a model for peaceful coexistence."]
+
+[act_0_prepare_for_delegation="Emma and her friends help prepare for your people's arrival. They select a remote meeting location and recruit trustworthy scientists. Earth's first official alien contact will be with those who truly care for its future."]
+
+[act_0_introduce_earth_culture="You carefully explain Earth culture to your people, highlighting humanity's complexity - their capacity for both destruction and remarkable compassion. Your leaders agree this planet deserves careful, respectful contact."]
+
+[act_0_organize_first_contact="The first contact is a success. Your people meet with selected Earth representatives who understand the gravity of the moment. Treaties are formed focusing on environmental restoration and cultural exchange rather than technology transfer."]
+
+[act_0_build_prototype="Together, you build a prototype clean energy device. When demonstrated at a science fair, it attracts attention from environmental investors. Your teenage friends ensure the technology benefits Earth rather than being exploited."]
+
+[act_0_create_network="Emma connects you with young scientists globally. Using secure communications, you establish a network dedicated to implementing sustainable technologies. This youth movement, guided by your knowledge, begins changing Earth's trajectory."]
+
+[act_0_plan_global_solution="Your collaborative plan for environmental restoration gains momentum. Starting locally, then expanding through a network of committed young scientists, the movement grows. Earth's future brightens as technology meets compassion."]
+
+[act_0_communicate_deer="You attempt deer communication, creating an unexpected bond with the forest creatures. They lead you to their feeding grounds, where you discover rare medicinal plants that could help both your species and humans."]
+
+[act_0_return_normal="Returning to normal form startles nearby deer, who flee - except one curious fawn who approaches you. This innocent creature's trust touches your heart. Perhaps Earth's animals sense your peaceful intentions better than its humans."]
+
+[act_0_follow_deer="The deer leads you deeper into the forest to a hidden valley untouched by pollution. Here, you find remnants of another alien visit centuries ago. Your people have been watching Earth longer than you realized."]
+
+[act_0_continue_watching="Your continued observations reveal the ranger's dedication. She works tirelessly, often alone, to protect this forest. One night, you witness her confronting poachers despite personal danger. Her courage confirms humanity's potential."]

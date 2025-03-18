@@ -98,9 +98,11 @@ section .text
         mov r12, ' '
         call SkipChar
 
-        ; Check that the next two chars are CRLF
         mov r12, 0x0A
         call CheckCharAndSkip
+
+        mov r12, 0x0A
+        call SkipChar
 
         mov r12, ' '
         call SkipChar
@@ -131,6 +133,9 @@ section .text
     ParseActions:
         mov r12, ' '
         call SkipChar
+
+        cmp rax, 0
+        je _skip_action
 
         ; If char is [, it is the next decision and we need to stop
         cmp rax, '['
