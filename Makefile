@@ -56,17 +56,17 @@ COMMON_LINKFLAGS = -entry:main -subsystem:console /defaultlib:kernel32.lib /defa
 # Configuration-specific flags
 ifeq ($(CONFIG),debug)
     # Debug configuration
-    ASMFLAGS = -f win64 -g -DDEBUG=1 -DDEBUG_LOG=1 -DSKIP_INTRO=$(SKIP_INTRO) -I$(INCLUDE_DIR)
+    ASMFLAGS = -f win64 -g -DDEBUG=1 -DDEBUG_LOG=1 -DSKIP_ANIMATIONS=$(SKIP_ANIMATIONS) -I$(INCLUDE_DIR)
     CFLAGS = -c -g -DDEBUG=1 -I$(INCLUDE_DIR) -Wall -Wextra
     LINKFLAGS = /debug /map:$(BIN_DIR)/$(TARGET)$(MAP_EXT) /pdb:$(BIN_DIR)/$(TARGET)$(PDB_EXT) $(COMMON_LINKFLAGS)
 else ifeq ($(CONFIG),dev)
     # Development configuration (faster iteration, skips animations)
-    ASMFLAGS = -f win64 -g -DDEV_BUILD=1 -DDEBUG_LOG=1 -DSKIP_INTRO=$(SKIP_INTRO) -I$(INCLUDE_DIR)
+    ASMFLAGS = -f win64 -g -DDEV_BUILD=1 -DDEBUG_LOG=1 -DSKIP_ANIMATIONS=$(SKIP_ANIMATIONS) -I$(INCLUDE_DIR)
     CFLAGS = -c -O1 -DDEV_BUILD=1 -I$(INCLUDE_DIR)
     LINKFLAGS = /debug /map:$(BIN_DIR)/$(TARGET)$(MAP_EXT) /pdb:$(BIN_DIR)/$(TARGET)$(PDB_EXT) $(COMMON_LINKFLAGS)
 else
     # Release configuration
-    ASMFLAGS = -f win64 -I$(INCLUDE_DIR) -DSKIP_INTRO=0
+    ASMFLAGS = -f win64 -I$(INCLUDE_DIR) -DSKIP_ANIMATIONS=0
     CFLAGS = -c -O2 -I$(INCLUDE_DIR)
     LINKFLAGS = /release $(COMMON_LINKFLAGS)
 endif

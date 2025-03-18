@@ -1,11 +1,10 @@
 ; A simple text adventure in x64 assembler
 default rel
 
-%include "src/include/input.inc"
-%include "src/include/output.inc"
-%include "src/include/view.inc"
-%include "src/include/animations.inc"
-%include "src/include/content.inc"
+%include "input.inc"
+%include "view.inc"
+%include "animations.inc"
+%include "text.inc"
 %include "data.inc"
 
 section .data    
@@ -18,6 +17,7 @@ section .text
     global main
     ; Project
     extern ReadGameDataFile, GameDecision, GetActionCount, GetActionTarget
+    extern SetupOutput, ClearOutput, ResetCursorPosition, WriteText, WriteChar, WriteNumber, SetTextColor, CalculateTextLength
     ; Windows
     extern Sleep, ExitProcess
 
@@ -80,6 +80,10 @@ game_loop:
     mov rcx, [current_decision]
     mov rdx, rax
     call GetActionTarget
+
+    test rax, rax
+    jz _invalid_decision
+
     mov [current_decision], rax
 
     ; Increment decisions_taken
@@ -89,6 +93,11 @@ game_loop:
 
 _end_game_loop:
     add rsp, 16
+    jmp EndGame
+
+_invalid_decision:
+    mov rcx, err_invalid_decision_id
+    call WriteText
     jmp EndGame
 
 _invalid_action:
@@ -160,7 +169,7 @@ EndGame:
 
 _exit:
     ; Exit the process
-    sub rsp, 0x28
+    sub rsp, 40
     xor ecx, ecx
     call ExitProcess
-    add rsp, 0x28
+    add rsp, 40

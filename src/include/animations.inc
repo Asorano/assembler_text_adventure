@@ -17,10 +17,12 @@ section .text
         push rdx
         push rax
 
+%if SKIP_ANIMATIONS == 0
         sub rsp, 0x28
         mov ecx, 15
         call Sleep
         add rsp, 0x28
+%endif
 
         pop rax
         pop rdx

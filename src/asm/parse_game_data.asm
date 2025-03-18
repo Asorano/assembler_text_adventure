@@ -37,7 +37,8 @@ section .text
 
         ; PREPARATION
 
-        push r12                                ; Save non-volatile register for restoring at the end
+        sub rsp, 16
+        mov [rsp+8], r12                                ; Save non-volatile register for restoring at the end
 
         mov r10, game_decision_buffer           ; Load game_decision_buffer
         mov r11, game_text_buffer               ; Load game_text_buffer
@@ -127,7 +128,8 @@ section .text
 
     _end_parsing:
         mov rax, [game_decision_count]
-        pop r12
+        mov r12, [rsp+8]
+        add rsp, 16
         ret
 
     ParseActions:

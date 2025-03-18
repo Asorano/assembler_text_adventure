@@ -1,8 +1,6 @@
 default rel
 BITS 64
 
-%include "src/include/output.inc"
-%include "src/include/error.inc"
 %include "src/include/data.inc"
 
 section .data
@@ -16,7 +14,6 @@ section .data
     txt_game_data_decision db "Decisions: ", 0
 
     filename db "./game.bin", 0          ; File name (null-terminated)
-
     file_handle dq -1                        ; File handle
 
 section .bss
@@ -28,6 +25,7 @@ section .text
 
     extern ParseGameData, game_decision_buffer
     extern CreateFileA, ReadFile, CloseHandle, GetFileSize, Sleep
+    extern WriteText, WriteNumber, WriteChar, SetTextColor, WriteLastError
 
 ReadGameDataFile:
     ; Open file using CreateFileA
@@ -90,7 +88,7 @@ ReadGameDataFile:
 
     lea rax, [game_decision_buffer]
 
-_exit:
+_read_game_data_file_exit:
     ret
 
 _parse_file_error:
@@ -103,7 +101,8 @@ _parse_file_error:
     mov rcx, 0x07
     call SetTextColor
 
-    jmp _exit 
+    mov rax, 0
+    jmp _read_game_data_file_exit 
 
 _create_file_error:
     mov rcx, 0x04
@@ -117,7 +116,8 @@ _create_file_error:
     mov rcx, 0x07
     call SetTextColor
 
-    jmp _exit
+    mov rax, 0
+    jmp _read_game_data_file_exit
 
 _file_too_large_error:
     mov rcx, 0x04
@@ -132,4 +132,5 @@ _file_too_large_error:
     mov rcx, 0x07
     call SetTextColor
 
-    jmp _exit
+    mov rax, 0
+    jmp _read_game_data_file_exit
