@@ -19,10 +19,23 @@ section .text
     global game_text_buffer
 
     ; Global functions
-    global GetGameDecisionByIndex, FindGameDecisionById, GetActionCount
+    global GetGameDecisionByIndex, FindGameDecisionById, GetActionCount, GetActionTarget
 
     ; Imported functions
     extern strcmp
+
+    GetActionTarget:
+        ; rcx => decision address
+        ; rdx => action index
+        ; rax = returns action target decision address
+
+        ; Get the id of the target decision of the action
+        add rcx, GameDecision.action_0
+        imul rdx, GameAction_size
+        add rcx, rdx
+
+        call FindGameDecisionById
+        ret
 
     GetGameDecisionByIndex:
         ; rcx = decision index
@@ -105,11 +118,11 @@ section .text
 
         ; Call the c string comparison function
         push rbp
-        sub rsp, 40
+        sub rsp, 32
         mov rcx, [r12]
         mov rdx, [r14]
         call strcmp
-        add rsp, 40
+        add rsp, 32
         pop rbp
 
         ; Check compare result. If 0, the decision has been found

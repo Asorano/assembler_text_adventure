@@ -70,35 +70,6 @@ section .text
         mov rcx, 10
         call WriteChar
 
-        ; mov rcx, txt_health
-        ; call WriteText
-
-        ; ; Write current health
-        ; mov rcx, 0x06
-        ; call SetTextColor
-
-        ; mov rax, [health]
-        ; mov ecx, eax
-        ; call WriteNumber
-
-        ; mov rcx, 0x07
-        ; call SetTextColor
-
-        ; mov rcx, '/'
-        ; call WriteChar
-
-        ; mov rcx, 0x06
-        ; call SetTextColor
-
-        ; ; Write max health
-        ; mov rax, [health]
-        ; shr rax, 32
-        ; mov ecx, eax
-        ; call WriteNumber
-
-        ; mov rcx, 0x07
-        ; call SetTextColor
-
         mov rcx, txt_decision_taken
         call WriteText
 

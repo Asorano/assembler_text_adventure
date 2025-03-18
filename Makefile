@@ -110,7 +110,7 @@ run: build
 	$(BIN_DIR)/$(TARGET)$(EXE_EXT)
 
 debug: build
-	x64dbg $(CURDIR)/$(BIN_DIR)/$(TARGET)$(EXE_EXT)
+	x64dbg $(CURDIR)/$(BIN_DIR)/$(TARGET)$(EXE_EXT) "" "$(CURDIR)"
 
 # Help information
 help:

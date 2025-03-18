@@ -26,7 +26,7 @@ section .bss
 section .text
     global ReadGameDataFile
 
-    extern ParseGameData
+    extern ParseGameData, game_decision_buffer
     extern CreateFileA, ReadFile, CloseHandle, GetFileSize, Sleep
 
 ReadGameDataFile:
@@ -88,9 +88,9 @@ ReadGameDataFile:
     test rax, rax
     jz _parse_file_error
 
+    lea rax, [game_decision_buffer]
+
 _exit:
-    mov rcx, 0x07
-    call SetTextColor
     ret
 
 _parse_file_error:
@@ -99,6 +99,9 @@ _parse_file_error:
 
     mov rcx, txt_err_file_parsing
     call WriteText
+
+    mov rcx, 0x07
+    call SetTextColor
 
     jmp _exit 
 
@@ -111,6 +114,9 @@ _create_file_error:
 
     call WriteLastError
 
+    mov rcx, 0x07
+    call SetTextColor
+
     jmp _exit
 
 _file_too_large_error:
@@ -122,5 +128,8 @@ _file_too_large_error:
 
     mov rcx, BUFFER_SIZE
     call WriteNumber
+
+    mov rcx, 0x07
+    call SetTextColor
 
     jmp _exit
