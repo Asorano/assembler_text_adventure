@@ -1,14 +1,5 @@
 ; A simple text adventure in x64 assembler
-
-; The game is based on "decisions"
-; Each decision consists of:
-;   - 8 bytes (dq) pointer_to_text
-;   - 0..9 -> 8 bytes (dq) action / address of next decision 
-;   - dq 0 -> Delimiter
-
-; The game starts with the dc_initial decision.
-
-default rel  ; Enables RIP-relative addressing for 64-bit mode
+default rel
 
 %include "src/include/input.inc"
 %include "src/include/output.inc"
@@ -18,13 +9,7 @@ default rel  ; Enables RIP-relative addressing for 64-bit mode
 %include "data.inc"
 
 section .data    
-    INITIAL_HEALTH equ 100
-    health dq (INITIAL_HEALTH << 32) | INITIAL_HEALTH
-
     decisions_taken dq 0
-
-    txt_read_file db "Loading file...", 10, 0
-    txt_file_loaded db "Game data loaded!", 10, 0
 
 section .bss
     current_decision resq 1
@@ -32,7 +17,7 @@ section .bss
 section .text
     global main
     ; Project
-    extern ReadGameDataFile, game_decision_count, GameDecision, GetActionCount, GetActionTarget
+    extern ReadGameDataFile, GameDecision, GetActionCount, GetActionTarget
     ; Windows
     extern Sleep, ExitProcess
 
@@ -43,8 +28,6 @@ main:
     call ClearOutput
     call ResetCursorPosition
 
-    mov rcx, txt_read_file
-    call AnimateText
     call ReadGameDataFile
 
     test rax, rax
@@ -62,7 +45,8 @@ main:
 
     call RenderGameIntro
 
-main_loop:
+    sub rsp, 16
+game_loop:
     call ClearOutput
     call ResetCursorPosition
 
@@ -82,20 +66,18 @@ main_loop:
     mov rcx, [current_decision]
     call GetActionCount
 
+    mov [rsp+8], rax
+
     cmp rax, 0x0                    ; Check whether action count of current decision is 0
-    je EndGame
-
-    push rax                        ; push action count on stack
-
+    je _end_game_loop
+ 
     mov rcx, [current_decision]
     call WriteActions
 
     mov rcx, [rsp+8]
     call ReadActionIndex                  ; selected digit in rax
 
-    pop rdx
-
-    cmp rax, rdx
+    cmp rax, [rsp+8]
     jae _invalid_action
 
     mov rcx, [current_decision]
@@ -106,25 +88,16 @@ main_loop:
     ; Increment decisions_taken
     inc word [decisions_taken]
 
-    ; mov ecx, 100
-    ; call Sleep
+    jmp game_loop
 
-    jmp main_loop
+_end_game_loop:
+    add rsp, 16
+    jmp EndGame
 
 _invalid_action:
     mov rcx, err_invalid_action
     call WriteText
-    jmp main_loop
-
-EndGame:
-    call RenderGameEnd
-
-_exit:
-    ; Exit the process
-    sub rsp, 0x28
-    xor ecx, ecx
-    call ExitProcess
-    add rsp, 0x28
+    jmp game_loop
 
 WriteActions:
     ; Arguments:
@@ -181,3 +154,13 @@ WriteAction:
     call WriteChar
 
     ret
+
+EndGame:
+    call RenderGameEnd
+
+_exit:
+    ; Exit the process
+    sub rsp, 0x28
+    xor ecx, ecx
+    call ExitProcess
+    add rsp, 0x28
