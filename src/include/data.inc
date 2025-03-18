@@ -11,3 +11,6 @@ struc GameDecision
     .action_2   resb GameAction_size  ; Pointer to third action
     .action_3   resb GameAction_size  ; Pointer to fourth action
 endstruc
+
+section .data
+    MAX_ACTION_COUNT equ 4

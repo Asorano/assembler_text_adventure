@@ -13,12 +13,15 @@ section .bss
     game_text_buffer resb GAME_TEXT_BUFFER_SIZE  ; 1MB buffer
 
 section .text
+    ; Global data
     global game_decision_count
     global game_decision_buffer
     global game_text_buffer
 
-    global GetGameDecisionByIndex, FindGameDecisionById
+    ; Global functions
+    global GetGameDecisionByIndex, FindGameDecisionById, GetActionCount
 
+    ; Imported functions
     extern strcmp
 
     GetGameDecisionByIndex:
@@ -44,6 +47,33 @@ section .text
     _invalid_decision_index:
         xor rax, rax
         jmp _return_decision_by_index
+
+    GetActionCount:
+        ; Arguments:
+        ; - rcx = decision address
+        ;
+        ; Registers:
+        ; - rax = counter
+        ; - rdx = action address
+
+        add rcx, GameDecision.action_0
+        xor rax, rax
+
+    _get_action_count_loop:
+        cmp rax, MAX_ACTION_COUNT
+        jge _return_action_count
+
+        mov rdx, [rcx]
+        test rdx, rdx
+        jz _return_action_count
+
+        inc rax
+
+        add rcx, GameAction_size
+        jmp _get_action_count_loop
+
+    _return_action_count:
+        ret
 
     FindGameDecisionById:
         ; Arguments:

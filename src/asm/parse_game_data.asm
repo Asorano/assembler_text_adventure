@@ -6,9 +6,9 @@ BITS 64
 section .text
     extern game_decision_buffer, game_decision_count, game_text_buffer
 
-    global ParseGameFile
+    global ParseGameData
 
-    ParseGameFile:
+    ParseGameData:
         ; Arguments:
         ; - rcx = unparsed data buffer
         ; - rdx = length of buffer
