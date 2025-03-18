@@ -15,7 +15,7 @@ section .data
     txt_file_parsed db "File parse sucessfully!", 10, 0
     txt_game_data_decision db "Decisions: ", 0
 
-    filename db "C:\\Development\\Private\\assembler\\game.bin", 0          ; File name (null-terminated)
+    filename db "./game.bin", 0          ; File name (null-terminated)
 
     file_handle dq -1                        ; File handle
 
@@ -31,24 +31,31 @@ section .text
 
 main:
     call SetupOutput
+    call ReadGameFile
 
+    movzx rcx, word [game_decision_count]
+    call WriteNumber
+
+    jmp _exit
+
+ReadGameFile:
     ; Open file using CreateFileA
-    sub rsp, 40                ; Reserve shadow space (32 bytes) + alignment
 
     mov rcx, filename          ; lpFileName (RCX) -> Pointer to file name
     mov rdx, 0x80000000        ; dwDesiredAccess (RDX) -> GENERIC_WRITE (0x40000000)
     mov r8, 0                  ; dwShareMode (R8) -> 0 (no sharing)
     mov r9, 0                  ; lpSecurityAttributes (R9) -> NULL
 
-    mov qword [rsp+32], 3      ; dwCreationDisposition -> CREATE_ALWAYS (2)
-    mov qword [rsp+40], 0      ; dwFlagsAndAttributes -> 0 (default)
-    mov qword [rsp+48], 0      ; hTemplateFile -> NULL
+    sub rsp, 64                ; Reserve shadow space (32 bytes) + alignment
+    mov QWORD [rsp+32], 3      ; 5th parameter - dwCreationDisposition -> OPEN_EXISTING (3)
+    mov QWORD [rsp+40], 0   ; 6th parameter - dwFlagsAndAttributes -> FILE_ATTRIBUTE_NORMAL (0x80)
+    mov QWORD [rsp+48], 0      ; 7th parameter - hTemplateFile -> NULL
 
     call CreateFileA           ; Call the function
 
     mov [file_handle], rax           ; Store the file handle
 
-    add rsp, 40                ; Restore the stack
+    add rsp, 64                ; Restore the stack
 
     cmp rax, -1
     je _create_file_error          
@@ -56,20 +63,20 @@ main:
     mov [file_handle], rax                      ; Store file handle
 
     ; Get and print file size
-    sub rsp, 32
     mov rcx, rax           ; file handle
     xor rdx, rdx           ; NULL for high part
+    sub rsp, 32
     call GetFileSize
     mov [file_size], rax
     add rsp, 32
 
-    mov rcx, txt_file_size
-    call WriteText
-    mov rcx, [file_size]
-    call WriteNumber
+    ; mov rcx, txt_file_size
+    ; call WriteText
+    ; mov rcx, [file_size]
+    ; call WriteNumber
 
-    mov rcx, 10
-    call WriteChar
+    ; mov rcx, 10
+    ; call WriteChar
 
     ; Check file size
     cmp qword [file_size], BUFFER_SIZE-1
@@ -79,16 +86,17 @@ main:
     mov rcx, [file_handle]                          ; file_handle (file handle)
     lea rdx, [file_buffer]                     ; lpBuffer (buffer)
     mov r8, [file_size]                          ; nNumberOfBytesToRead (1024 bytes)
-    lea r9, [rsp+8]                   ; lpNumberOfBytesRead
-    sub rsp, 32                           ; Shadow space
+    mov QWORD r9, 0
+    sub rsp, 48                           ; Shadow space
+    mov QWORD [rsp+32], 0
     call ReadFile                         ; Call ReadFile
-    add rsp, 32                           ; Clean up stack
+    add rsp, 48                           ; Clean up stack
 
-    ; ; Close file handle
-    sub rsp, 0x28
+    ; Close file handle
+    sub rsp, 32
     mov rcx, [file_handle]                      ; hObject (file handle)
     call CloseHandle
-    add rsp, 0x28
+    add rsp, 32
 
     lea rcx, [file_buffer]
     mov rdx, [file_size]
@@ -96,43 +104,9 @@ main:
 
     test rax, rax
     jz _parse_file_error
+    ret
 
-    ; push rbp
-    ; sub rsp, 32
-    ; mov rcx, game_decision_buffer
-    ; mov rdx, [game_decision_count]
-    ; call log_decicion
-    ; mov ax, [game_decision_count]
-    ; add rsp, 32
-    ; pop rbp
-
-    mov rcx, 0
-    call GetGameDecisionByIndex
-    mov rcx, rax
-
-    ; add rax, GameDecision.action_0
-    ; mov rcx, rax
-    ; call FindGameDecisionById
-
-    cmp rax, 0
-    je _parse_file_error
-
-    mov rcx, rax
-    call GetActionCount
-
-    mov rcx, rax
-    call WriteNumber
-
-    ; push rbp
-    ; sub rsp, 32
-    ; mov rcx, rax
-    ; call log_decision
-    ; add rsp, 32
-    ; pop rbp
-
-
-
-exit:
+_exit:
     mov rcx, 0x07
     call SetTextColor
 
@@ -141,31 +115,6 @@ exit:
     call ExitProcess
     add rsp, 0x28
 
-
-
-StripWhitespace:
-    ; rcx = address of buffer
-    ; rdx = length
-    mov rax, rcx
-    mov r9, rcx
-    add r9, rdx
-
-_strip_loop:
-    cmp rax, r9
-    je _end_strip
-
-    movzx r8, byte [rax]
-    cmp r8, ' '
-    jnz _increment
-
-    mov byte [rax], '_'
-_increment:
-    inc rax
-    jmp _strip_loop
-
-_end_strip:
-    ret
-
 _parse_file_error:
     mov rcx, 0x04
     call SetTextColor   
@@ -173,7 +122,7 @@ _parse_file_error:
     mov rcx, txt_err_file_parsing
     call WriteText
 
-    jmp exit 
+    jmp _exit 
 
 _create_file_error:
     mov rcx, 0x04
@@ -184,7 +133,7 @@ _create_file_error:
 
     call WriteLastError
 
-    jmp exit
+    jmp _exit
 
 _file_too_large_error:
     mov rcx, 0x04
@@ -196,4 +145,4 @@ _file_too_large_error:
     mov rcx, BUFFER_SIZE
     call WriteNumber
 
-    jmp exit
+    jmp _exit
