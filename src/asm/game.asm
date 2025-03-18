@@ -1,148 +1,102 @@
-default rel
-BITS 64
+; A simple text adventure in x64 assembler
 
+; The game is based on "decisions"
+; Each decision consists of:
+;   - 8 bytes (dq) pointer_to_text
+;   - 0..9 -> 8 bytes (dq) action / address of next decision 
+;   - dq 0 -> Delimiter
+
+; The game starts with the dc_initial decision.
+
+default rel  ; Enables RIP-relative addressing for 64-bit mode
+
+%include "src/include/decisions.inc"
+%include "src/include/input.inc"
 %include "src/include/output.inc"
-%include "src/include/error.inc"
-%include "src/include/data.inc"
+%include "src/include/view.inc"
+%include "src/include/animations.inc"
+%include "src/include/content.inc"
 
-section .data
-    BUFFER_SIZE equ 1048576               ; 1MB
+section .data    
+    INITIAL_HEALTH equ 100
+    health dq (INITIAL_HEALTH << 32) | INITIAL_HEALTH
 
-    txt_err_file_handle db "Could not get file handle: ", 0
-    txt_err_file_too_large db "File is too large. Maximum is: ", 0
-    txt_err_file_parsing db "Failed to parse file", 0
-    txt_file_size db "File size: ", 0
-    txt_file_parsed db "File parse sucessfully!", 10, 0
-    txt_game_data_decision db "Decisions: ", 0
-
-    filename db "./game.bin", 0          ; File name (null-terminated)
-
-    file_handle dq -1                        ; File handle
+    decisions_taken dq 0
 
 section .bss
-    file_buffer resb BUFFER_SIZE  ; 1MB buffer
-    file_size resq 1
+    current_decision resq 1
 
 section .text
     global main
-    extern log_decisions, log_decision ; C
-    extern ParseGameData, GetGameDecisionByIndex, game_decision_count, game_decision_buffer, FindGameDecisionById, GetActionCount
-    extern ExitProcess, CreateFileA, ReadFile, CloseHandle, GetFileSize, Sleep
+    ; Project
+    extern ReadGameDataFile
+    ; Windows
+    extern Sleep, ExitProcess
 
 main:
+    call SetupInput
     call SetupOutput
-    call ReadGameFile
 
-    movzx rcx, word [game_decision_count]
-    call WriteNumber
+    call RenderGameIntro
 
-    jmp _exit
+    call ReadGameDataFile
 
-ReadGameFile:
-    ; Open file using CreateFileA
+    ; Initialize initial decision
+    mov rsi, dc_initial                         
+    mov [current_decision], rsi
 
-    mov rcx, filename          ; lpFileName (RCX) -> Pointer to file name
-    mov rdx, 0x80000000        ; dwDesiredAccess (RDX) -> GENERIC_WRITE (0x40000000)
-    mov r8, 0                  ; dwShareMode (R8) -> 0 (no sharing)
-    mov r9, 0                  ; lpSecurityAttributes (R9) -> NULL
+main_loop:
+    call ClearOutput
+    call ResetCursorPosition
 
-    sub rsp, 64                ; Reserve shadow space (32 bytes) + alignment
-    mov QWORD [rsp+32], 3      ; 5th parameter - dwCreationDisposition -> OPEN_EXISTING (3)
-    mov QWORD [rsp+40], 0   ; 6th parameter - dwFlagsAndAttributes -> FILE_ATTRIBUTE_NORMAL (0x80)
-    mov QWORD [rsp+48], 0      ; 7th parameter - hTemplateFile -> NULL
+    call RenderGameHeader
 
-    call CreateFileA           ; Call the function
+    ; Print the current decision text
+    mov rcx, [current_decision]
+    mov rcx, [rcx]
+    call AnimateText
 
-    mov [file_handle], rax           ; Store the file handle
+    ; Get the action count of the decision
+    mov rcx, [current_decision]
+    call GetActionCount
 
-    add rsp, 64                ; Restore the stack
+    cmp rax, 0x0                    ; Check whether action count of current decision is 0
+    je EndGame
 
-    cmp rax, -1
-    je _create_file_error          
+    push rax                        ; push action count on stack
 
-    mov [file_handle], rax                      ; Store file handle
+    mov rcx, rax
+    call ReadActionIndex                  ; selected digit in rax
 
-    ; Get and print file size
-    mov rcx, rax           ; file handle
-    xor rdx, rdx           ; NULL for high part
-    sub rsp, 32
-    call GetFileSize
-    mov [file_size], rax
-    add rsp, 32
+    pop rdx
 
-    ; mov rcx, txt_file_size
-    ; call WriteText
-    ; mov rcx, [file_size]
-    ; call WriteNumber
 
-    ; mov rcx, 10
-    ; call WriteChar
+    cmp rax, rdx
+    jae _invalid_action
 
-    ; Check file size
-    cmp qword [file_size], BUFFER_SIZE-1
-    ja _file_too_large_error
+    mov rcx, [current_decision]
+    mov rdx, rax
+    call GetActionTarget
+    mov [current_decision], rax
 
-    ; ; Read file using ReadFile
-    mov rcx, [file_handle]                          ; file_handle (file handle)
-    lea rdx, [file_buffer]                     ; lpBuffer (buffer)
-    mov r8, [file_size]                          ; nNumberOfBytesToRead (1024 bytes)
-    mov QWORD r9, 0
-    sub rsp, 48                           ; Shadow space
-    mov QWORD [rsp+32], 0
-    call ReadFile                         ; Call ReadFile
-    add rsp, 48                           ; Clean up stack
+    ; Increment decisions_taken
+    inc word [decisions_taken]
 
-    ; Close file handle
-    sub rsp, 32
-    mov rcx, [file_handle]                      ; hObject (file handle)
-    call CloseHandle
-    add rsp, 32
+    ; mov ecx, 100
+    ; call Sleep
 
-    lea rcx, [file_buffer]
-    mov rdx, [file_size]
-    call ParseGameData
+    jmp main_loop
 
-    test rax, rax
-    jz _parse_file_error
-    ret
+_invalid_action:
+    mov rcx, err_invalid_action
+    call WriteText
+    jmp main_loop
 
-_exit:
-    mov rcx, 0x07
-    call SetTextColor
+EndGame:
+    call RenderGameEnd
 
+    ; Exit the process
     sub rsp, 0x28
     xor ecx, ecx
     call ExitProcess
     add rsp, 0x28
-
-_parse_file_error:
-    mov rcx, 0x04
-    call SetTextColor   
-
-    mov rcx, txt_err_file_parsing
-    call WriteText
-
-    jmp _exit 
-
-_create_file_error:
-    mov rcx, 0x04
-    call SetTextColor
-
-    mov rcx, txt_err_file_handle
-    call WriteText
-
-    call WriteLastError
-
-    jmp _exit
-
-_file_too_large_error:
-    mov rcx, 0x04
-    call SetTextColor
-
-    mov rcx, txt_err_file_too_large
-    call WriteText
-
-    mov rcx, BUFFER_SIZE
-    call WriteNumber
-
-    jmp _exit

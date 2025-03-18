@@ -14,7 +14,7 @@ section .data
 section .text
 
     RenderGameIntro:
-%ifdef SKIP_INTRO
+%if SKIP_INTRO == 1
         ret
 %endif
         call ClearOutput
