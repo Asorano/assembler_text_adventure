@@ -66,7 +66,7 @@ else ifeq ($(CONFIG),dev)
     LINKFLAGS = /debug /map:$(BIN_DIR)/$(TARGET)$(MAP_EXT) /pdb:$(BIN_DIR)/$(TARGET)$(PDB_EXT) $(COMMON_LINKFLAGS)
 else
     # Release configuration
-    ASMFLAGS = -f win64 -I$(INCLUDE_DIR)
+    ASMFLAGS = -f win64 -I$(INCLUDE_DIR) -DSKIP_INTRO=0
     CFLAGS = -c -O2 -I$(INCLUDE_DIR)
     LINKFLAGS = /release $(COMMON_LINKFLAGS)
 endif

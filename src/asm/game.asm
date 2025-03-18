@@ -23,13 +23,16 @@ section .data
 
     decisions_taken dq 0
 
+    txt_read_file db "Loading file...", 10, 0
+    txt_file_loaded db "Game data loaded!", 10, 0
+
 section .bss
     current_decision resq 1
 
 section .text
     global main
     ; Project
-    extern ReadGameDataFile
+    extern ReadGameDataFile, game_decision_count
     ; Windows
     extern Sleep, ExitProcess
 
@@ -37,9 +40,22 @@ main:
     call SetupInput
     call SetupOutput
 
-    call RenderGameIntro
+    call ClearOutput
+    call ResetCursorPosition
 
+    mov rcx, txt_read_file
+    call AnimateText
     call ReadGameDataFile
+
+    mov rcx, txt_file_loaded
+    call AnimateText
+
+    mov rcx, 500
+    sub rsp, 32
+    call Sleep
+    add rsp, 32
+
+    call RenderGameIntro
 
     ; Initialize initial decision
     mov rsi, dc_initial                         
