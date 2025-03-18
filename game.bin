@@ -1,5 +1,5 @@
-a[act_0_initial_landing="You are Zorb, an alien who has just crash-landed on Earth. Your spacecraft is damaged and emitting blue smoke. The night is dark and you can see lights from a small town in the distance. What do you do?"]
-act_0_go_to_town1 => "Head toward the town"
+[act_0_initial_landing="You are Zorb, an alien who has just crash-landed on Earth. Your spacecraft is damaged and emitting blue smoke. The night is dark and you can see lights from a small town in the distance. What do you do?"]
+act_0_go_to_town => "Head toward the town"
 act_0_hide_in_woods => "Hide in the nearby woods"
 act_0_fix_ship => "Try to fix your ship"
 
@@ -56,48 +56,12 @@ act_0_approach_scientist => "Approach the scientist"
 act_0_hide_from_scientist => "Hide from the scientist" 
 act_0_test_scientist => "Test if she's trustworthy"
 
-[act_0_approach_scientist="Despite your fear of her blue watch, you approach cautiously. Dr. Lin gasps but remains calm. 'Extraordinary,' she whispers. 'I've theorized about extraterrestrial life, but to actually meet you...' She removes her watch when she notices your discomfort."]
-act_0_explain_situation => "Explain your situation"
-act_0_request_scientific_help => "Request scientific help with repairs"
-act_0_scan_for_intentions => "Scan her mind for true intentions"
-
-[act_0_hide_from_scientist="You remain hidden, observing. The scientist searches the area with genuine curiosity rather than fear. She leaves her card under a rock: 'If you're out there and need help, call me. I believe in peaceful contact.' Her sincerity seems real."]
-act_0_take_card => "Take her card after she leaves"
-act_0_follow_scientist => "Follow her discreetly"
-act_0_send_message => "Send her a telepathic message"
-
-[act_0_test_scientist="You leave a simple alien artifact where she can find it. The scientist discovers it, examines it carefully, then places it back exactly as found. 'I respect your privacy,' she says to the empty forest. 'But I'm here to help if needed.'"]
-act_0_reveal_yourself => "Reveal yourself to her"
-act_0_continue_testing => "Continue testing her intentions"
-act_0_communicate_remotely => "Communicate through the artifact"
-act_0_approach_scientist => "Approach the scientist"
-act_0_hide_from_scientist => "Hide from the scientist"
-act_0_test_scientist => "Test if she's trustworthy"
-
-[act_0_wait_for_night="You wait until the night is darker. A child walking their dog discovers you. The child seems pure-hearted and curious, not afrai
+[act_0_wait_for_night="You wait until the night is darker. A child walking their dog discovers you. The child seems pure-hearted and curious, not afraid at all. The dog wags its tail."]
 act_0_befriend_child => "Befriend the child"
 act_0_erase_memory => "Erase their memory"
 act_0_give_gift => "Offer a gift from your world"
 
 [act_0_trust_teenager="The kind teenager, Emma, offers to help. She brings you to a shed where her friends - a diverse group of eco-conscious youths - promise to protect you. They remove all blue items when they notice your fear."]
-act_0_share_knowledge => "Share your advanced knowledge"
-act_0_learn_about_earth => "Learn about Earth's problems"
-act_0_plan_repair => "Plan your ship repair"
-
-[act_0_share_knowledge="You share knowledge about sustainable technologies from your world. The teenagers absorb it eagerly, already thinking of applications to help Earth. Their passion gives you hope for this planet's future despite its environmental challenges."]
-act_0_build_prototype => "Build a prototype together"
-act_0_create_network => "Create a network of young scientists"
-act_0_plan_global_solution => "Plan a global solution"
-
-[act_0_learn_about_earth="The teenagers explain Earth's environmental crisis - rising temperatures, plastic pollution, species extinction. 'But many humans are fighting to change things,' Emma insists. 'We just need better solutions.' You realize you might help."]
-act_0_offer_technology => "Offer your clean technology"
-act_0_join_movement => "Join their environmental movement"
-act_0_contact_home => "Contact your homeworld for assistance"
-
-[act_0_plan_repair="Together, you develop a plan to repair your ship. The teenagers prove remarkably resourceful, gathering materials and offering insights. With their help, you might be able to leave Earth - but you're beginning to wonder if you should."]
-act_0_collaborative_repair => "Work together on repairs"
-act_0_teach_technology => "Teach them about your technology"
-act_0_establish_base => "Establish a longer-term base on Earth"
 act_0_share_knowledge => "Share your advanced knowledge"
 act_0_learn_about_earth => "Learn about Earth's problems"
 act_0_plan_repair => "Plan your ship repair"
@@ -152,14 +116,6 @@ act_0_admit_cleaning => "Admit you've been cleaning"
 act_0_deny_everything => "Deny everything"
 act_0_show_technology => "Show your cleaning technology"
 
-[act_0_deny_everything="You shake your head, denying involvement. The ranger looks disappointed but still friendly. 'Well, whatever or whoever is doing it, they're helping. If you ever meet them, tell them thanks.' She walks away, leaving you with mixed feelings."]
-act_0_follow_ranger => "Follow the ranger discreetly"
-act_0_clean_river => "Clean the river again tonight"
-act_0_reveal_truth => "Call her back and reveal the truth"
-act_0_admit_cleaning => "Admit you've been cleaning"
-act_0_deny_everything => "Deny everything"
-act_0_show_technology => "Show your cleaning technology"
-
 [act_0_call_for_help="Your distress call is answered by a ranger who hurries to help what she thinks is an injured animal. When she discovers you, she's amazed but not frightened. 'Are you all right?' she asks with genuine concern."]
 act_0_trust_compassion => "Trust her compassion"
 act_0_probe_mind => "Probe her mind gently"
@@ -181,14 +137,6 @@ act_0_send_message => "Send her a telepathic message"
 act_0_help_secretly => "Help her mission secretly"
 
 [act_0_collaborative_repair="Working together, you repair your ship using Earth materials and your advanced knowledge. Emma and her friends learn quickly. Despite differences, human ingenuity combined with your technology creates something beautiful."]
-act_0_offer_space_journey => "Offer them a journey to space"
-act_0_establish_communication => "Establish ongoing communication"
-act_0_share_environmental_tech => "Share environmental technology"
-
-[act_0_probe_mind="You gently probe the ranger's mind. You discover a lifetime devoted to protecting Earth's wilderness. Her thoughts reveal genuine concern for a planet in peril and hope for its recovery. She has encountered traces of your presence before and kept them secret from authorities."]
-act_0_reveal_yourself => "Reveal yourself to her"
-act_0_send_message => "Send her a telepathic message"
-act_0_help_secretly => "Help her mission secretly"
 act_0_offer_space_journey => "Offer them a journey to space"
 act_0_establish_communication => "Establish ongoing communication"
 act_0_share_environmental_tech => "Share environmental technology"
@@ -288,3 +236,58 @@ act_0_organize_first_contact => "Organize first contact protocol"
 [act_0_follow_deer="The deer leads you deeper into the forest to a hidden valley untouched by pollution. Here, you find remnants of another alien visit centuries ago. Your people have been watching Earth longer than you realized."]
 
 [act_0_continue_watching="Your continued observations reveal the ranger's dedication. She works tirelessly, often alone, to protect this forest. One night, you witness her confronting poachers despite personal danger. Her courage confirms humanity's potential."]
+
+[act_0_probe_mind="You gently probe the ranger's mind. You discover a lifetime devoted to protecting Earth's wilderness. Her thoughts reveal genuine concern for a planet in peril and hope for its recovery. She has encountered traces of your presence before and kept them secret from authorities."]
+act_0_reveal_yourself => "Reveal yourself to her"
+act_0_send_message => "Send her a telepathic message"
+act_0_help_secretly => "Help her mission secretly"
+
+[act_0_approach_scientist="Despite your fear of her blue watch, you approach cautiously. Dr. Lin gasps but remains calm. 'Extraordinary,' she whispers. 'I've theorized about extraterrestrial life, but to actually meet you...' She removes her watch when she notices your discomfort."]
+act_0_explain_situation => "Explain your situation"
+act_0_request_scientific_help => "Request scientific help with repairs"
+act_0_scan_for_intentions => "Scan her mind for true intentions"
+
+[act_0_hide_from_scientist="You remain hidden, observing. The scientist searches the area with genuine curiosity rather than fear. She leaves her card under a rock: 'If you're out there and need help, call me. I believe in peaceful contact.' Her sincerity seems real."]
+act_0_take_card => "Take her card after she leaves"
+act_0_follow_scientist => "Follow her discreetly"
+act_0_send_message => "Send her a telepathic message"
+
+[act_0_test_scientist="You leave a simple alien artifact where she can find it. The scientist discovers it, examines it carefully, then places it back exactly as found. 'I respect your privacy,' she says to the empty forest. 'But I'm here to help if needed.'"]
+act_0_reveal_yourself => "Reveal yourself to her"
+act_0_continue_testing => "Continue testing her intentions"
+act_0_communicate_remotely => "Communicate through the artifact"
+
+[act_0_befriend_child="The child approaches without fear. 'Hello,' they say simply. 'Are you lost?' Their dog sniffs you curiously but doesn't bark. This young human seems to accept your strangeness without judgment or fear."]
+act_0_communicate => "Try to communicate"
+act_0_give_gift => "Offer a small gift"
+act_0_ask_for_help => "Ask for their help"
+
+[act_0_erase_memory="You attempt to erase the child's memory, but your equipment malfunctions. Instead of forgetting you, the child now sees colorful auras around living things. 'Wow,' they whisper, 'the trees are singing!' An unexpected but harmless side effect."]
+act_0_explain_gift => "Explain this new perception as a gift"
+act_0_request_secrecy => "Ask them to keep your existence secret"
+act_0_flee_scene => "Leave quickly before parents arrive"
+
+[act_0_give_gift="You offer a small crystal from your world, which glows softly in the child's hand. 'It's beautiful,' they whisper. 'I'll keep it safe.' The crystal has properties that will subtly purify water around it - a gift for this child and their planet."]
+act_0_explain_crystal => "Explain the crystal's purpose"
+act_0_request_assistance => "Ask for their help finding materials"
+act_0_follow_child => "Accept their invitation to safety"
+
+[act_0_share_knowledge="You share knowledge about sustainable technologies from your world. The teenagers absorb it eagerly, already thinking of applications to help Earth. Their passion gives you hope for this planet's future despite its environmental challenges."]
+act_0_build_prototype => "Build a prototype together"
+act_0_create_network => "Create a network of young scientists"
+act_0_plan_global_solution => "Plan a global solution"
+
+[act_0_learn_about_earth="The teenagers explain Earth's environmental crisis - rising temperatures, plastic pollution, species extinction. 'But many humans are fighting to change things,' Emma insists. 'We just need better solutions.' You realize you might help."]
+act_0_offer_technology => "Offer your clean technology"
+act_0_join_movement => "Join their environmental movement"
+act_0_contact_home => "Contact your homeworld for assistance"
+
+[act_0_plan_repair="Together, you develop a plan to repair your ship. The teenagers prove remarkably resourceful, gathering materials and offering insights. With their help, you might be able to leave Earth - but you're beginning to wonder if you should."]
+act_0_collaborative_repair => "Work together on repairs"
+act_0_teach_technology => "Teach them about your technology"
+act_0_establish_base => "Establish a longer-term base on Earth"
+
+[act_0_deny_everything="You shake your head, denying involvement. The ranger looks disappointed but still friendly. 'Well, whatever or whoever is doing it, they're helping. If you ever meet them, tell them thanks.' She walks away, leaving you with mixed feelings."]
+act_0_follow_ranger => "Follow the ranger discreetly"
+act_0_clean_river => "Clean the river again tonight"
+act_0_reveal_truth => "Call her back and reveal the truth"
