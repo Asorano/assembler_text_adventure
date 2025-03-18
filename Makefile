@@ -41,11 +41,14 @@ INCLUDE_DIR = $(SRC_DIR)/include
 # Find all source files
 ASM_SRCS = $(wildcard $(ASM_DIR)/*$(ASM_EXT))
 C_SRCS = $(wildcard $(C_DIR)/*$(C_EXT))
+INC_SRCS = $(wildcard $(INCLUDE_DIR)/*$(INC_EXT))
 
 # Generate object file paths
 ASM_OBJS = $(patsubst $(ASM_DIR)/%$(ASM_EXT),$(OBJ_DIR)/asm/%$(OBJ_EXT),$(ASM_SRCS))
 C_OBJS = $(patsubst $(C_DIR)/%$(C_EXT),$(OBJ_DIR)/c/%$(OBJ_EXT),$(C_SRCS))
 ALL_OBJS = $(ASM_OBJS) $(C_OBJS)
+# Make all assembly objects depend on all include files
+$(ASM_OBJS): $(INC_SRCS)
 
 # Common linker settings
 COMMON_LINKFLAGS = -entry:main -subsystem:console /defaultlib:kernel32.lib /defaultlib:msvcrt.lib /defaultlib:vcruntime.lib /defaultlib:ucrt.lib
@@ -98,13 +101,12 @@ clean:
 rebuild: clean all
 
 # Phony targets
-.PHONY: all prepare clean rebuild run debug help release dev debug-build run-release run-dev run-debug debug-release debug-dev debug-debug
+.PHONY: all prepare clean rebuild run debug help release
 
 # Build-specific targets for convenience
-build:
-	$(MAKE) all
+build: all
 
-run: all
+run: build
 	$(BIN_DIR)/$(TARGET)$(EXE_EXT)
 
 debug: build
