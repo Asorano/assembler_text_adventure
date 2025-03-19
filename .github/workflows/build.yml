@@ -19,10 +19,7 @@ jobs:
         uses: ilammy/setup-nasm@v1
 
       - name: Install LLVM
-        run: choco install llvm
-
-      - name: Install Clang
-        run: choco install llvm -y  # Includes Clang
+        run: choco install llvm -y
 
       - name: Install make
         run: choco install make
@@ -30,11 +27,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Check Paths
+        run: |
+          echo %PATH%
+          where clang
+          where lld-link
+
       - name: Build with Makefile
         run: |
-          echo "Checking Clang installation:"
-          where clang
-          
+          mkdir -Force -Path build\obj\release\asm, build\obj\release\c, build\bin\release
           make build CONFIG=release FILE_NAME=game.bin SKIP_ANIMATIONS=0
           copy build\bin\release\game.exe game.exe
         
