@@ -1,3 +1,6 @@
+default rel
+BITS 64
+
 ; Define structures correctly for NASM
 section .data
     ; Define the COORD structure (4 bytes in total)
@@ -40,9 +43,11 @@ section .bss
     num_chars_written resq 1
     console_info resb CONSOLE_SCREEN_BUFFER_INFO_size  ; Console info structure
     cursor_coords resb COORD_size         ; X=5, Y=10 (Little-endian format)
+    error_buffer resb 1024
 
 section .text
-    extern GetStdHandle, WriteConsoleA, GetConsoleScreenBufferInfo, SetConsoleCursorPosition, FillConsoleOutputCharacterA, SetConsoleWindowInfo
+    global SetupOutput, ResetCursorPosition, ClearOutput, WriteText, WriteBuffer, WriteNumber, WriteChar, SetTextColor, CalculateTextLength, WriteLastError
+    extern GetStdHandle, WriteConsoleA, GetConsoleScreenBufferInfo, SetConsoleCursorPosition, FillConsoleOutputCharacterA, SetConsoleWindowInfo, SetConsoleTextAttribute, GetLastError, FormatMessageA
 
     SetupOutput:
         sub rsp, 0x28
@@ -88,8 +93,8 @@ section .text
 
     _calc_length_loop:
         movzx rdx, byte [rcx]
-        test rdx, rdx
-        jz _return_length
+        cmp rdx, 0
+        je _return_length
 
         inc rax
         inc rcx
@@ -111,9 +116,8 @@ section .text
         lea r9, [rsp-8]                 ; Pointer to number of chars written
 
         sub rsp, 0x28
-        push 0                          ; Reserved parameter (must be 0)
         call WriteConsoleA
-        add rsp, 0x30
+        add rsp, 0x28
         ret
 
     WriteBuffer:
@@ -189,5 +193,44 @@ section .text
 
         ; Restore registers
         pop rdi
+
+        ret
+
+    SetTextColor:
+        ; rcx = color
+        sub rsp, 0x28                    ; Shadow space for function call
+
+        mov rdx, rcx
+        mov rcx, [handle_console_out]     ; Console handle
+        call SetConsoleTextAttribute      ; Change text color
+
+        add rsp, 0x28
+        ret
+
+    WriteLastError:
+        mov rcx, 0x04
+        call SetTextColor
+
+        sub rsp, 72        
+        call GetLastError
+
+        mov rcx, 0x00001000      ; FORMAT_MESSAGE_FROM_SYSTEM
+        xor rdx, rdx             ; NULL source
+        mov r8, rax     ; Error code
+        mov r9d, 0               ; Language ID (default)
+        lea rax, [error_buffer]
+        mov [rsp+32], rax        ; Output buffer (5th parameter)
+        mov qword [rsp+40], 1024 ; Buffer size (6th parameter)
+        mov qword [rsp+48], 0    ; Arguments (7th parameter)
+        
+        call FormatMessageA
+        
+        add rsp, 72              ; Restore stack
+
+        lea rcx, [error_buffer]
+        call WriteText
+
+        mov rcx, 0x07
+        call SetTextColor
 
         ret

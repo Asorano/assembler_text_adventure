@@ -1,3 +1,4 @@
+# build.yml
 name: Build and Release x64 Assembly
 
 on:
@@ -17,23 +18,27 @@ jobs:
         uses: ilammy/setup-nasm@v1
 
       - name: Install LLVM
-        run: choco install llvm
+        run: choco install llvm -y
+
+      - name: Install make
+        run: choco install make
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # THe makefile commands for creating the directories are ignored by the Github Action
+      - name: Build with Makefile
+        run: |
+          mkdir -Force -Path build\obj\release\asm, build\obj\release\c, build\bin\release
+          make build CONFIG=release FILE_NAME=game.bin SKIP_ANIMATIONS=0
+          copy build\bin\release\game.exe game.exe
+        
+      # Setting file information
 
       - name: Install rcedit
         run: |
           $rceditUrl = "https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe"
           Invoke-WebRequest -Uri $rceditUrl -OutFile "C:\rcedit.exe"
-
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Assemble Code
-        run: |
-          nasm -f win64 game.asm -o game.obj
-          $WindowsKits = "C:\Program Files (x86)\Windows Kits\10"
-          $LatestSDK = (Get-ChildItem "$WindowsKits\Lib" | Sort-Object -Property Name -Descending)[0].Name
-          $LibPath = "$WindowsKits\Lib\$LatestSDK\um\x64"
-          lld-link game.obj -entry:main -subsystem:console -libpath:"$LibPath" -defaultlib:kernel32.lib -out:game.exe
 
       - name: Add version information
         run: |
@@ -46,8 +51,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: game
-          path: game.exe
-
+          path: |
+            game.exe
+            game.bin
+  
       - name: Set up Git user
         run: |
             git config --global user.name "github-actions[bot]"
@@ -57,7 +64,8 @@ jobs:
         run: |
             git tag -f latest
             git push origin latest --force
-
+    
+  # Create the new release
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -71,10 +79,14 @@ jobs:
           name: game
           path: ./
 
+      - name: Create ZIP Archive
+        run: zip -r game.zip game.exe game.bin
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: game.exe
+          files: |
+            game.zip
           tag_name: latest
           generate_release_notes: true
         env:
