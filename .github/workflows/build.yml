@@ -27,6 +27,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # THe makefile commands for creating the directories are ignored by the Github Action
       - name: Build with Makefile
         run: |
           mkdir -Force -Path build\obj\release\asm, build\obj\release\c, build\bin\release
@@ -51,7 +52,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: game
-          path: game.exe
+          path: |
+            game.exe
+            game.bin
   
       - name: Set up Git user
         run: |
@@ -80,7 +83,9 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: game.exe
+          files: |
+            game.exe
+            game.bin
           tag_name: latest
           generate_release_notes: true
         env:

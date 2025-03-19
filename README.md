@@ -6,3 +6,4 @@
 - Add parsing support for \" and \n etc
 - Print a proper error when the parsing failed due to wrong symbols
 - Support a dynamic count of actions per decision (currently limited to 4)
+- Fix the makefile directory creation on Github Actions

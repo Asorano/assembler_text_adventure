@@ -52,8 +52,6 @@ ALL_OBJS = $(ASM_OBJS) $(C_OBJS)
 # Make all assembly objects depend on all include files
 $(ASM_OBJS): $(INC_SRCS)
 
-
-
 # Common linker settings
 COMMON_LINKFLAGS = -entry:main -subsystem:console /defaultlib:kernel32.lib /defaultlib:msvcrt.lib /defaultlib:vcruntime.lib /defaultlib:ucrt.lib
 
@@ -70,20 +68,14 @@ else
     LINKFLAGS = /release $(COMMON_LINKFLAGS)
 endif
 
-ifeq ($(OS),Windows_NT)
-    MKDIR = -@md $(subst /,\,$1) 2>NUL || echo.
-else
-    MKDIR = mkdir -p $1
-endif
-
 # Default rule
 all: prepare $(EXE_FILE)
 
 # Create necessary directories
 prepare:
-	$(call MKDIR,$(BIN_DIR))
-	$(call MKDIR,$(OBJ_DIR)/asm)
-	$(call MKDIR,$(OBJ_DIR)/c)
+	-@md $(subst /,\,$(BIN_DIR)) 2>NUL || echo.
+	-@md $(subst /,\,$(OBJ_DIR)\asm) 2>NUL || echo.
+	-@md $(subst /,\,$(OBJ_DIR)\c) 2>NUL || echo.
 
 # Link all object files into the final executable
 $(EXE_FILE): $(ALL_OBJS)
