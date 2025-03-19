@@ -1,6 +1,9 @@
 section .data
     ; Game Start
-    txt_start_box db 10, 10, "*-------------------------------------------------*", 10, "|-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-|", 10, "|-*-*-*-*-*-*-*-*- x64 Adventure -*-*-*-*-*-*-*-*-|", 10, "|-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-|", 10, "|----------------- @2025 Asorano -----------------|", 0
+    txt_start_box_line_top db 10, 10, "*-------------------------------------------------*", 10, 0
+    txt_start_box_line_star db "|-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-|", 10, 0
+    txt_start_box_line_game_name db "|-*-*-*-*-*-*-*-*- x64 Adventure -*-*-*-*-*-*-*-*-|", 10, 0
+    txt_start_box_line_copyright db "|----------------- @2025 Asorano -----------------|", 0
 
     ; Header
     txt_cut_line db "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*", 0
@@ -23,13 +26,55 @@ section .text
         mov rcx, 0x03
         call SetTextColor
 
-        mov rcx, txt_start_box
-        call AnimateText
+        mov rcx, txt_start_box_line_top
+        call WriteText
+
+        ; End intro
+        sub rsp, 0x28
+        mov ecx, 200
+        call Sleep
+        add rsp, 0x28
+
+        mov rcx, txt_start_box_line_star
+        call WriteText
+
+        ; End intro
+        sub rsp, 0x28
+        mov ecx, 200
+        call Sleep
+        add rsp, 0x28
+
+        mov rcx, txt_start_box_line_game_name
+        call WriteText
+
+        ; End intro
+        sub rsp, 0x28
+        mov ecx, 200
+        call Sleep
+        add rsp, 0x28
+
+        mov rcx, txt_start_box_line_star
+        call WriteText
+
+        ; End intro
+        sub rsp, 0x28
+        mov ecx, 200
+        call Sleep
+        add rsp, 0x28
+
+        mov rcx, txt_start_box_line_copyright
+        call WriteText
+
+        ; End intro
+        sub rsp, 0x28
+        mov ecx, 500
+        call Sleep
+        add rsp, 0x28
 
         mov rdi, 0
     _intro_color_loop:
         sub rsp, 0x28
-        mov ecx, 250
+        mov ecx, 200
         call Sleep
         add rsp, 0x28
 
@@ -39,7 +84,15 @@ section .text
         mov rcx, rdi
         call SetTextColor
 
-        mov rcx, txt_start_box
+        mov rcx, txt_start_box_line_top
+        call WriteText
+        mov rcx, txt_start_box_line_star
+        call WriteText
+        mov rcx, txt_start_box_line_game_name
+        call WriteText
+        mov rcx, txt_start_box_line_star
+        call WriteText
+        mov rcx, txt_start_box_line_copyright
         call WriteText
 
         inc rdi
@@ -48,7 +101,7 @@ section .text
 
         ; End intro
         sub rsp, 0x28
-        mov ecx, 1000
+        mov ecx, 300
         call Sleep
         add rsp, 0x28
 
