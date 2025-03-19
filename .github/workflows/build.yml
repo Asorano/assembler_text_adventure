@@ -21,13 +21,11 @@ jobs:
       - name: Install LLVM
         run: choco install llvm
 
+      - name: Install Clang
+        run: choco install llvm -y  # Includes Clang
+
       - name: Install make
         run: choco install make
-
-      - name: Install rcedit
-        run: |
-          $rceditUrl = "https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe"
-          Invoke-WebRequest -Uri $rceditUrl -OutFile "C:\rcedit.exe"
 
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -40,6 +38,13 @@ jobs:
           echo "Current directory: $PWD"
           dir
         
+      # Setting file information
+
+      - name: Install rcedit
+        run: |
+          $rceditUrl = "https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe"
+          Invoke-WebRequest -Uri $rceditUrl -OutFile "C:\rcedit.exe"
+
       - name: Add version information
         run: |
           C:\rcedit.exe game.exe --set-version-string "CompanyName" "Benjamin Berger" 
