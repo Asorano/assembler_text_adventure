@@ -20,6 +20,9 @@ jobs:
       - name: Install LLVM
         run: choco install llvm
 
+      - name: Install make
+        run: choco install make
+
       - name: Install rcedit
         run: |
           $rceditUrl = "https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe"
@@ -28,11 +31,9 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install make
-        run: choco install make
-
       - name: Build with Makefile
         run: |
+          mkdir -Force -Path build\obj\release\asm, build\bin\release
           make CONFIG=release FILE_NAME="game.bin" SKIP_ANIMATIONS=0
           copy build\bin\release\game.exe game.exe
         
