@@ -3,6 +3,30 @@ name: Build and Release x64 Assembly
 
 on:
   workflow_dispatch:
+    inputs:
+      release:
+        description: 'Release Tag'
+        required: true
+        default: 'latest'
+        type: string
+      config:
+        description: 'Build mode'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - 'release'
+          - 'dev'
+      story_file:
+        description: 'Path to the story file'
+        required: true
+        default: 'stories/game.bin'
+        type: string
+      skip_animations:
+        description: 'Skip animations'
+        required: true
+        default: false
+        type: boolean
   push:
     branches:
       - master
@@ -14,6 +38,18 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Verify story file exists
+        run: |
+          $storyPath = "${{ github.event.inputs.story_file || 'stories/game.bin' }}"
+          if (-not (Test-Path $storyPath)) {
+            Write-Error "Story file not found: $storyPath"
+            exit 1
+          }
+          Write-Output "Story file verified: $storyPath"
+
       - name: Set up NASM
         uses: ilammy/setup-nasm@v1
 
@@ -23,15 +59,12 @@ jobs:
       - name: Install make
         run: choco install make
 
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
       # THe makefile commands for creating the directories are ignored by the Github Action
       - name: Build with Makefile
         run: |
-          mkdir -Force -Path build\obj\release\asm, build\obj\release\c, build\bin\release
-          make build CONFIG=release FILE_NAME=game.bin SKIP_ANIMATIONS=0
-          copy build\bin\release\game.exe game.exe
+          mkdir -Force -Path build\obj\${{ github.event.inputs.config || 'release' }}\asm, build\obj\${{ github.event.inputs.config || 'release' }}\c, build\bin\${{ github.event.inputs.config || 'release' }}
+          make build CONFIG=${{ github.event.inputs.config || 'release' }} FILE_NAME=${{ github.event.inputs.story_file || 'stories/game.bin' }} SKIP_ANIMATIONS=${{ github.event.inputs.skip_animations == 'true' && '1' || '0' }}
+          copy build\bin\${{ github.event.inputs.config || 'release' }}\game.exe game.exe
         
       # Setting file information
 
@@ -53,7 +86,7 @@ jobs:
           name: game
           path: |
             game.exe
-            game.bin
+            ${{ github.event.inputs.story_file || 'stories/game.bin' }}
   
       - name: Set up Git user
         run: |
@@ -80,14 +113,14 @@ jobs:
           path: ./
 
       - name: Create ZIP Archive
-        run: zip -r game.zip game.exe game.bin
+        run: zip -r game.zip game.exe ${{ github.event.inputs.story_file || 'stories/game.bin' }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             game.zip
-          tag_name: latest
+          tag_name: ${{ github.event.inputs.release || 'latest' }}
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

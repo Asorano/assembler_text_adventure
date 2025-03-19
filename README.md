@@ -46,6 +46,7 @@ The Makefile tasks are:
 - Allocate memory on the heap for the file content and the game data instead of fixed-sized buffers
 - Support dynamic action count instead of the currently hardcoded limit of 4
 - Print a proper error when the parsing of the file fails
+- Make Makefile aware of environment variable changes (currently it is not rebuilt when they change)
 
 ## Code Improvements
 - Replace strcmp with an own implementation

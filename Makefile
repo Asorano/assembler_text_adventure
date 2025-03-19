@@ -9,7 +9,7 @@ LINK = lld-link
 # Build configuration (can be overridden via command line)
 # Options: release, debug, dev
 CONFIG ?= dev
-FILE_NAME ?= "game.bin"
+FILE_NAME ?= "stories/game.bin"
 SKIP_ANIMATIONS ?= 0
 
 # Output directory structure
@@ -63,7 +63,7 @@ ifeq ($(CONFIG),dev)
     LINKFLAGS = /debug /map:$(BIN_DIR)/$(TARGET)$(MAP_EXT) /pdb:$(BIN_DIR)/$(TARGET)$(PDB_EXT) $(COMMON_LINKFLAGS)
 else
     # Release configuration
-    ASMFLAGS = -f win64 -I$(INCLUDE_DIR) -DSKIP_ANIMATIONS=0 -DFILE_NAME="\"$(FILE_NAME)\""
+    ASMFLAGS = -f win64 -I$(INCLUDE_DIR) -DSKIP_ANIMATIONS=$(SKIP_ANIMATIONS) -DFILE_NAME="\"$(FILE_NAME)\""
     CFLAGS = -c -O2 -I$(INCLUDE_DIR)
     LINKFLAGS = /release $(COMMON_LINKFLAGS)
 endif
