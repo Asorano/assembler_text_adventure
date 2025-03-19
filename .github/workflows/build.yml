@@ -80,12 +80,14 @@ jobs:
           name: game
           path: ./
 
+      - name: Create ZIP Archive
+        run: zip -r game.zip game.exe game.bin
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            game.exe
-            game.bin
+            game.zip
           tag_name: latest
           generate_release_notes: true
         env:
