@@ -35,7 +35,8 @@ jobs:
         run: |
           mkdir -Force -Path build\obj\release\asm, build\bin\release
           make CONFIG=release FILE_NAME=game.bin SKIP_ANIMATIONS=0
-          copy build\bin\release\game.exe game.exe
+          echo "Current directory: $PWD"
+          dir
         
       - name: Add version information
         run: |
