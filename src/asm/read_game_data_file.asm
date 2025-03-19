@@ -12,8 +12,7 @@ section .data
     txt_file_size db "File size: ", 0
     txt_file_parsed db "File parse sucessfully!", 10, 0
     txt_game_data_decision db "Decisions: ", 0
-
-    filename db "./game.bin", 0          ; File name (null-terminated)
+    
     file_handle dq -1                        ; File handle
 
 section .bss
@@ -29,8 +28,8 @@ section .text
 
 ReadGameDataFile:
     ; Open file using CreateFileA
+    ; rcx = file name
 
-    mov rcx, filename          ; lpFileName (RCX) -> Pointer to file name
     mov rdx, 0x80000000        ; dwDesiredAccess (RDX) -> GENERIC_WRITE (0x40000000)
     mov r8, 0                  ; dwShareMode (R8) -> 0 (no sharing)
     mov r9, 0                  ; lpSecurityAttributes (R9) -> NULL

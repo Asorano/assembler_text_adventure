@@ -22,7 +22,7 @@ section .text
     global GetGameDecisionByIndex, FindGameDecisionById, GetActionCount, GetActionTarget
 
     ; Imported functions
-    extern strcmp, WriteText, WriteChar
+    extern strcmp
 
     GetActionTarget:
         ; rcx => decision address
@@ -119,11 +119,6 @@ section .text
         ; Call the c string comparison function
         push rbp
         sub rsp, 32
-        mov rcx, [r14]
-        call WriteText
-
-        mov rcx, 10
-        call WriteChar
 
         mov rcx, [r12]
         mov rdx, [r14]

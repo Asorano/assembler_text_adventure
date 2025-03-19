@@ -8,6 +8,7 @@ default rel
 %include "data.inc"
 
 section .data    
+    file_name db FILE_NAME, 0
     decisions_taken dq 0
 
 section .bss
@@ -28,6 +29,7 @@ main:
     call ClearOutput
     call ResetCursorPosition
 
+    mov rcx, file_name
     call ReadGameDataFile
 
     test rax, rax

@@ -8,7 +8,9 @@ LINK = lld-link
 
 # Build configuration (can be overridden via command line)
 # Options: release, debug, dev
-CONFIG ?= release
+CONFIG ?= dev
+FILE_NAME ?= "game.bin"
+SKIP_ANIMATIONS ?= 0
 
 # Output directory structure
 BUILD_DIR = build
@@ -54,14 +56,9 @@ $(ASM_OBJS): $(INC_SRCS)
 COMMON_LINKFLAGS = -entry:main -subsystem:console /defaultlib:kernel32.lib /defaultlib:msvcrt.lib /defaultlib:vcruntime.lib /defaultlib:ucrt.lib
 
 # Configuration-specific flags
-ifeq ($(CONFIG),debug)
-    # Debug configuration
-    ASMFLAGS = -f win64 -g -DDEBUG=1 -DDEBUG_LOG=1 -DSKIP_ANIMATIONS=$(SKIP_ANIMATIONS) -I$(INCLUDE_DIR)
-    CFLAGS = -c -g -DDEBUG=1 -I$(INCLUDE_DIR) -Wall -Wextra
-    LINKFLAGS = /debug /map:$(BIN_DIR)/$(TARGET)$(MAP_EXT) /pdb:$(BIN_DIR)/$(TARGET)$(PDB_EXT) $(COMMON_LINKFLAGS)
-else ifeq ($(CONFIG),dev)
+ifeq ($(CONFIG),dev)
     # Development configuration (faster iteration, skips animations)
-    ASMFLAGS = -f win64 -g -DDEV_BUILD=1 -DDEBUG_LOG=1 -DSKIP_ANIMATIONS=$(SKIP_ANIMATIONS) -I$(INCLUDE_DIR)
+    ASMFLAGS = -f win64 -g -DDEV_BUILD=1 -DDEBUG_LOG=1 -DFILE_NAME="\"$(FILE_NAME)\"" -DSKIP_ANIMATIONS=$(SKIP_ANIMATIONS) -I$(INCLUDE_DIR)
     CFLAGS = -c -O1 -DDEV_BUILD=1 -I$(INCLUDE_DIR)
     LINKFLAGS = /debug /map:$(BIN_DIR)/$(TARGET)$(MAP_EXT) /pdb:$(BIN_DIR)/$(TARGET)$(PDB_EXT) $(COMMON_LINKFLAGS)
 else
