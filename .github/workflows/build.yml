@@ -27,12 +27,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Check Paths
-        run: |
-          echo %PATH%
-          where clang
-          where lld-link
-
       - name: Build with Makefile
         run: |
           mkdir -Force -Path build\obj\release\asm, build\obj\release\c, build\bin\release
@@ -53,4 +47,42 @@ jobs:
           C:\rcedit.exe game.exe --set-version-string "ProductName" "x64 Assembly Text Adventure"
           C:\rcedit.exe game.exe --set-version-string "LegalCopyright" "Copyright © 2025 [Asorano]"
 
-      # Rest of the workflow remains the same
+
+          - name: Upload Artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: game
+            path: game.exe
+  
+      - name: Set up Git user
+        run: |
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+  
+      - name: Create/Update latest tag
+        run: |
+            git tag -f latest
+            git push origin latest --force
+    
+  # Create the new release
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write 
+
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: game
+          path: ./
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: game.exe
+          tag_name: latest
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
