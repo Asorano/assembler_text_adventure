@@ -35,6 +35,7 @@ jobs:
         run: |
           mkdir -Force -Path build\obj\release\asm, build\bin\release
           make CONFIG=release FILE_NAME=game.bin SKIP_ANIMATIONS=0
+          cd build\bin\release
           echo "Current directory: $PWD"
           dir
         
