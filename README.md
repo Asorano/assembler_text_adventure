@@ -43,9 +43,8 @@ The Makefile tasks are:
 
 ## Feature Ideas
 - Pass the file name via command line instead of using an environment variable during building
-- Allocate memory on the heap for the file content and the game data instead of fixed-sized buffers
 - Support dynamic action count instead of the currently hardcoded limit of 4
-- Print a proper error when the parsing of the file fails
+- Add story title to data file and display it in the intro
 - Make Makefile aware of environment variable changes (currently it is not rebuilt when they change)
 
 ## Code Improvements
@@ -53,3 +52,5 @@ The Makefile tasks are:
 - Improve the file parsing by allowing characters like \"
 - Use the makefile prepare for creating the directories on the Github Runner (fails currently)
 - Define proper stack frames for the functions
+- Allocate memory on the heap for the file content and the game data instead of fixed-sized buffers
+- Print a proper error when the parsing of the file fails
