@@ -29,7 +29,6 @@ jobs:
 
       - name: Build with Makefile
         run: |
-          mkdir -Force -Path build\obj\release\asm, build\obj\release\c, build\bin\release
           make build CONFIG=release FILE_NAME=game.bin SKIP_ANIMATIONS=0
           copy build\bin\release\game.exe game.exe
         
@@ -47,12 +46,11 @@ jobs:
           C:\rcedit.exe game.exe --set-version-string "ProductName" "x64 Assembly Text Adventure"
           C:\rcedit.exe game.exe --set-version-string "LegalCopyright" "Copyright © 2025 [Asorano]"
 
-
-          - name: Upload Artifact
-          uses: actions/upload-artifact@v4
-          with:
-            name: game
-            path: game.exe
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: game
+          path: game.exe
   
       - name: Set up Git user
         run: |
