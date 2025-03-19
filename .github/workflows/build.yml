@@ -29,6 +29,7 @@ jobs:
 
       - name: Build with Makefile
         run: |
+          mkdir -Force -Path build\obj\release\asm, build\obj\release\c, build\bin\release
           make build CONFIG=release FILE_NAME=game.bin SKIP_ANIMATIONS=0
           copy build\bin\release\game.exe game.exe
         
