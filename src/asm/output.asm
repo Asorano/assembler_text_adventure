@@ -28,9 +28,6 @@ section .data
     ; Output handle for writing to the console
     handle_console_out dq 0
 
-    WRITE_BUFFER_CAPACITY equ 256
-    write_buffer times WRITE_BUFFER_CAPACITY db 0
-
 section .bss
     num_chars_written resq 1
     console_info resb CONSOLE_SCREEN_BUFFER_INFO_size
@@ -158,16 +155,32 @@ section .text
         add rsp, 16
         ret
 
+    ; Writes all digit of an unsigned number to the console
+    ; # Arguments:
+    ;   - rcx = number to write
+    ; # Registers:
+    ;   - rdi = current buffer address
+    ;   - rbx = divisor
     WriteNumber:
-        ; rcx = number
-        push rdi   ; Preserve rdi
+        ; Stackframe:
+        ; - 32 bytes shadow space
+        ; - 8 bytes for parameters
+        ; - 8 bytes for rdi
+        ; - 32 bytes for buffer
+        sub rsp, 48 + 32
 
-        mov rax, rcx                     ; Use rax because rdx is used by the div op later
-        mov rbx, 10                      ; Prepare divisor
-        mov rdi, write_buffer
-        add rdi, WRITE_BUFFER_CAPACITY-1 ; Move to end of buffer
+        mov [rsp+40], rdi       ; Preserve rdi. +40 because of 32 bytes shadow space and 8 byte for the 5th parameter
 
-        mov byte [rdi], 0                 ; Null terminator (not needed for WriteConsoleA, but useful)
+        mov rax, rcx            ; Use rax because rdx is used by the div op later
+        mov rbx, 10             ; Prepare divisor
+
+        ; 32 bytes were reserved for the output buffer
+        ; Load the end address into rdi
+        ; 48 bytes because of the shadow space, the 5th parameter and rdi
+        ; 31 bytes because the buffer has 32 bytes length and the last address is required 
+        lea rdi, [rsp+48+31]
+
+        mov [rdi], byte 0       ; Null terminator (not needed for WriteConsoleA, but useful)
         dec rdi
 
         ; Check for zero
@@ -180,6 +193,8 @@ section .text
         jmp .write_number_to_console
 
     .write_number_loop:
+        ; Check whether the current char is a 0
+        ; If yes, end the writing
         test rax, rax
         jz .write_number_to_console
 
@@ -194,18 +209,12 @@ section .text
 
     .write_number_to_console:
         ; Move rdi to the start of the number string
-        inc rdi  ; Undo last decrement
-
-        ; Correct length calculation
-        mov rcx, rdi                      ; Pointer to start of number string
-        mov rdx, write_buffer
-        add rdx, WRITE_BUFFER_CAPACITY-1  ; End of buffer
-        sub rdx, rcx                      ; Length = (end - start)
-
-        call WriteBuffer
+        inc rdi           ; Undo last decrement
+        mov rcx, rdi      ; Pointer to start of number string
+        call WriteText
 
         ; Restore registers
-        pop rdi
+        add rsp, 48 + 32
 
         ret
 
@@ -228,7 +237,11 @@ section .text
         mov rcx, 0x04
         call SetTextColor
 
-        ; 32 bytes shadow space + 24 bytes for arguments + 8 bytes alignment + 256 bytes error buffer
+        ; Stackframe:
+        ; - 32 bytes shadow space
+        ; - 24 bytes for arguments
+        ; - 256 bytes error buffer
+        ; - 8 bytes alignment
         sub rsp, 72 + 256       
         call GetLastError
 
@@ -243,6 +256,7 @@ section .text
         
         call FormatMessageA
 
+        ; Load the text from the stack and write it
         lea rcx, [rsp+56]
         call WriteText
 
@@ -250,6 +264,7 @@ section .text
         mov rcx, 0x07
         call SetTextColor
 
+        ; Restore stack
         add rsp, 72 + 256
 
         ret
