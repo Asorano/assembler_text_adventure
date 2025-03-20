@@ -42,10 +42,11 @@ The Makefile tasks are:
 - **debug**: Builds the executable and starts x64dbg with the built file
 
 ## Feature Ideas
-- Pass the file name via command line instead of using an environment variable during building
+- Get a file names of the "stories" directory and show a selection
 - Support dynamic action count instead of the currently hardcoded limit of 4
 - Add story title to data file and display it in the intro
 - Make Makefile aware of environment variable changes (currently it is not rebuilt when they change)
+- Pass the id of the initial decision via command line to continue an adventure
 
 ## Code Improvements
 - Replace strcmp with an own implementation

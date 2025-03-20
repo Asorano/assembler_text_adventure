@@ -1,7 +1,6 @@
 default rel
 BITS 64
 
-; Define structures correctly for NASM
 section .data
     ; Define the COORD structure (4 bytes in total)
     struc COORD
@@ -26,22 +25,15 @@ section .data
         .dwMaximumWindowSize   resw 2   ; Maximum window size (COORD, 4 bytes)
     endstruc
 
-    ; Declare an instance of the structure
-
+    ; Output handle for writing to the console
     handle_console_out dq 0
 
-    newline db 10, 0
-    newline_l equ 2
-
-    whitespace db ' ', 0
-    whitespace_l equ 2
-
     WRITE_BUFFER_CAPACITY equ 256
-    write_buffer times WRITE_BUFFER_CAPACITY db 0 ; Initialize number output to 0
+    write_buffer times WRITE_BUFFER_CAPACITY db 0
 
 section .bss
     num_chars_written resq 1
-    console_info resb CONSOLE_SCREEN_BUFFER_INFO_size  ; Console info structure
+    console_info resb CONSOLE_SCREEN_BUFFER_INFO_size
     cursor_coords resb COORD_size         ; X=5, Y=10 (Little-endian format)
     error_buffer resb 1024
 
@@ -49,9 +41,11 @@ section .text
     global SetupOutput, ResetCursorPosition, ClearOutput, WriteText, WriteBuffer, WriteNumber, WriteChar, SetTextColor, CalculateTextLength, WriteLastError
     extern GetStdHandle, WriteConsoleA, GetConsoleScreenBufferInfo, SetConsoleCursorPosition, FillConsoleOutputCharacterA, SetConsoleWindowInfo, SetConsoleTextAttribute, GetLastError, FormatMessageA
 
+    ; Initializes the handle and screen info for the console output
     SetupOutput:
-        sub rsp, 0x28
         ; Get handle to standard output (console)
+        sub rsp, 32
+
         mov ecx, -11  ; STD_OUTPUT_HANDLE
         call GetStdHandle
         mov [handle_console_out], rax
@@ -61,20 +55,22 @@ section .text
         lea rdx, [console_info]
         call GetConsoleScreenBufferInfo
 
-        add rsp, 0x28
+        add rsp, 32
 
         ret
 
+    ; Resets the cursor position to the initially stored position
     ResetCursorPosition:
-        sub rsp, 0x28
+        sub rsp, 32
         mov rcx, [handle_console_out]
         xor rdx, rdx
         call SetConsoleCursorPosition
-        add rsp, 0x28
+        add rsp, 32
         ret
 
+    ; Clears the written characters until the initial stored cursor position
     ClearOutput:
-        sub rsp, 0x28
+        sub rsp, 48
 
         mov rcx, [handle_console_out]  ; Load console output handle
         mov rdx, ' '
@@ -84,14 +80,17 @@ section .text
         mov [rsp+32], rax
         call FillConsoleOutputCharacterA
 
-        add rsp, 0x28
+        add rsp, 48
         ret
 
+    ; Calculates the length of a text by searching the index of the first 0
+    ; # Arguments:
+    ;   - rcx = address of text, text must end with 0
     CalculateTextLength:
-        ; rcx = address of text, text must end with 0
         mov rax, 0
 
     _calc_length_loop:
+        ; Loads the next byte
         movzx rdx, byte [rcx]
         cmp rdx, 0
         je _return_length
@@ -104,45 +103,60 @@ section .text
     _return_length:
         ret
 
+    ; Writes the text behind an address to the console
+    ; # Arguments:
+    ;   - rcx = address of text, text must end with 0
     WriteText:
-        ; rcx = address of text, text must end with 0
-        
-        push rcx                        ; Push rcx on the stack before calculating the length and later pop it into rdx to use it for the writing
+        ; Allocate:
+        ;   - 8 bytes for saving rcx
+        ;   - 8 bytes for alignment
+        ;   - 32 bytes shadow space
+        sub rsp, 48
+
+        ; Save rcx at the beginning of the stack frame
+        mov [rsp+40], rcx
+
+        ; Calculate the length of the text
         call CalculateTextLength
     
         mov rcx, [handle_console_out]   ; Handle to the console
-        pop rdx         ; Pop the original rcx with the address into rdx
-        mov r8, rax   ; Move the length of the text
-        lea r9, [rsp-8]                 ; Pointer to number of chars written
-
-        sub rsp, 0x28
+        mov rdx, [rsp+40]               ; Pop the original rcx with the address into rdx
+        mov r8, rax                     ; Move the length of the text
+        mov r9, 0                       ; Pointer to number of chars written
         call WriteConsoleA
-        add rsp, 0x28
+
+        add rsp, 48
         ret
 
+    ; Writes the content of the buffer to the console
+    ; # Arguments:
+    ;   - rcx = address of text
+    ;   - rdx = length of the text
     WriteBuffer:
-        ; rcx = address of text
-        ; rdx = length of the text
-        sub rsp, 0x28
+        ; Reserve 32 bytes shadow space + 8 byte for the 5th parameter + 8 bytes alignment
+        sub rsp, 48
 
-        mov r8, rdx             ; Move the length of the text
-        mov rdx, rcx            ; Move the pointer to the text
-        mov rcx, [handle_console_out]  ; Handle to the console
-        lea r9, [rsp-8]         ; Pointer to number of chars written
-        push 0                  ; Reserved parameter (must be 0)
+        mov r8, rdx                     ; Length of text
+        mov rdx, rcx                    ; Pointer to text
+        mov rcx, [handle_console_out]   ; Handle to the console
+        mov r9, 0                       ; Pointer to number of chars written, not required here
+        mov qword[rsp+32], qword 0      ; Reserved parameter (must be 0)
         call WriteConsoleA
-        pop rcx
         
-        add rsp, 0x28
-
+        add rsp, 48
         ret
 
+    ; Writes a single char to the console via the write buffer
     WriteChar:
         ; rcx = char
-        mov [write_buffer], rcx
-        mov rcx, write_buffer
+        sub rsp, 16
+        mov [rsp], rcx
+
+        mov rcx, rsp
         mov rdx, 1
         call WriteBuffer
+
+        add rsp, 16
         ret
 
     WriteNumber:
@@ -196,22 +210,27 @@ section .text
 
         ret
 
+    ; Sets the foreground and background color in the console
+    ; # Arguments:
+    ;   - rcx = color value 0xBF (Background, Foreground) 
     SetTextColor:
-        ; rcx = color
-        sub rsp, 0x28                    ; Shadow space for function call
+        sub rsp, 32
 
         mov rdx, rcx
         mov rcx, [handle_console_out]     ; Console handle
         call SetConsoleTextAttribute      ; Change text color
 
-        add rsp, 0x28
+        add rsp, 32
         ret
 
+    ; Writes the last occured error to the console
     WriteLastError:
+        ; Set text color to red
         mov rcx, 0x04
         call SetTextColor
 
-        sub rsp, 72        
+        ; 32 bytes shadow space + 24 bytes for arguments + 8 bytes alignment
+        sub rsp, 72       
         call GetLastError
 
         mov rcx, 0x00001000      ; FORMAT_MESSAGE_FROM_SYSTEM
@@ -225,11 +244,13 @@ section .text
         
         call FormatMessageA
         
-        add rsp, 72              ; Restore stack
+        ; Restore stack
+        add rsp, 72
 
         lea rcx, [error_buffer]
         call WriteText
 
+        ; Reset text color
         mov rcx, 0x07
         call SetTextColor
 

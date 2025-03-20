@@ -3,13 +3,19 @@ BITS 64
 
 %include "data.inc"
 
+; Currently the content of the file and the runtime data are stored in 1MB buffers
 section .data
-    GAME_DECISION_BUFFER_SIZE equ 1048576     ; 1MB
-    GAME_TEXT_BUFFER_SIZE equ 1048576     ; 1MB
+    ; Size of the buffer for the runtime data
+    GAME_DECISION_BUFFER_SIZE equ 1048576   ; 1MB
+    ; Size of the buffer for the file content
+    GAME_TEXT_BUFFER_SIZE equ 1048576       ; 1MB
 
 section .bss
+    ; Total decision count as word
     game_decision_count resw 1
+    ; Buffer for runtime data
     game_decision_buffer resb GAME_DECISION_BUFFER_SIZE  ; 1MB buffer
+    ; Buffer for file content
     game_text_buffer resb GAME_TEXT_BUFFER_SIZE  ; 1MB buffer
 
 section .text
@@ -24,85 +30,99 @@ section .text
     ; Imported functions
     extern strcmp
 
+    ; Returns the address of the decision of the action if available
+    ; # Arguments:
+    ;   - rcx => decision address
+    ;   - rdx => action index
+    ; # Returns:
+    ;   - rax = action target decision address or 0x0
     GetActionTarget:
-        ; rcx => decision address
-        ; rdx => action index
-        ; rax = returns action target decision address
-
         ; Get the id of the target decision of the action
+        ; Add the offset of the first action of an decision to the decision address
         add rcx, GameDecision.action_0
+        ; Multiply the size of an action in memory with the action index
         imul rdx, GameAction_size
+        ; Calculate the address of the id of the linked decision
         add rcx, rdx
-
+        ; Find the decision, result is placed in rax
         call FindGameDecisionById
         ret
 
+    ; Returns the address of a decision by index in the buffer
+    ; # Arguments:
+    ;   - rcx = decision index
     GetGameDecisionByIndex:
-        ; rcx = decision index
-
         ; Check that the index is at least 0
         cmp rcx, 0
         jl _invalid_decision_index
 
+        ; Load the total decision count
         movzx rax, word [game_decision_count]
 
+        ; Verify that the index is lower than the max count
         cmp rax, rcx
         jle _invalid_decision_index
 
+        ; Use the size of a whole decision struct and multiply it with the index
         mov rax, GameDecision_size
         imul rax, rcx
+        ; Load the start address of the buffer
         lea rcx, [game_decision_buffer]
+        ; Add the total offset
         add rax, qword rcx
-
-    _return_decision_by_index:
         ret
 
+    ; If the index is invalid, set rax to null and return
     _invalid_decision_index:
         xor rax, rax
-        jmp _return_decision_by_index
+        ret
 
+    ; # Arguments:
+    ;   - rcx = decision address
+    ; # Registers:
+    ;   - rax = counter
+    ;   - rdx = action address
     GetActionCount:
-        ; Arguments:
-        ; - rcx = decision address
-        ;
-        ; Registers:
-        ; - rax = counter
-        ; - rdx = action address
-
+        ; Add the offset of the first action to the decision address
         add rcx, GameDecision.action_0
+        ; Set rax to 0
         xor rax, rax
 
     _get_action_count_loop:
+        ; Check that the index is below the max action count
         cmp rax, MAX_ACTION_COUNT
         jge _return_action_count
 
+        ; Check whether the target decision address of the current address is not 0x0
         mov rdx, [rcx]
         test rdx, rdx
         jz _return_action_count
 
+        ; Increment the counter
         inc rax
 
+        ; Add the offset to the next action
         add rcx, GameAction_size
         jmp _get_action_count_loop
 
     _return_action_count:
         ret
 
+    ; Iterates over the decision buffer and tries to find a decision which has the passed decision id
+    ; # Arguments:
+    ;   - rcx = decision id
+    ;
+    ; # Registers:
+    ;   - r12 = decision id (saved)
+    ;   - r13 = remaining decision loop count
+    ;   - r14 = current decision buffer address
+    ;
+    ; Returns in rax:
+    ;   = 0 => decision not found
+    ;   > 0 => address of decision
+    ;
     FindGameDecisionById:
-        ; Arguments:
-        ; - rcx = decision id
-        ;
-        ; Registers:
-        ; - r12 = decision id (saved)
-        ; - r13 = remaining decision loop count
-        ; - r14 = current decision buffer address
-        ;
-        ; Returns in rax:
-        ;   = 0 => decision not found
-        ;   > 0 => address of decision
-        ;
-        ; Iterates over the decision buffer and tries to find a decision which has the passed decision id
-
+        ; Save caller-saved registers
         push r12
         push r13
         push r14
@@ -116,10 +136,10 @@ section .text
         cmp r13, 0
         je _decision_not_found
 
+        ; Compare the searched id and the id of the current decision
         ; Call the c string comparison function
         push rbp
         sub rsp, 32
-
         mov rcx, [r12]
         mov rdx, [r14]
         call strcmp
@@ -144,6 +164,7 @@ section .text
         xor rax, rax
         
     _end_search:
+        ; Restore caller-saved registers
         pop r14
         pop r13
         pop r12
