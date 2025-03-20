@@ -29,7 +29,6 @@ section .data
     handle_console_out dq 0
 
 section .bss
-    num_chars_written resq 1
     console_info resb CONSOLE_SCREEN_BUFFER_INFO_size
     cursor_coords resb COORD_size         ; X=5, Y=10 (Little-endian format)
 
@@ -66,14 +65,20 @@ section .text
 
     ; Clears the written characters until the initial stored cursor position
     ClearOutput:
+        ; Stackframe:
+        ; - 32 bytes shadow space
+        ; - 8 bytes for 5th parameter
+        ; - 8 bytes for out parameter lpNumberOfCharsWritten
         sub rsp, 48
 
-        mov rcx, [handle_console_out]  ; Load console output handle
+        mov rcx, [handle_console_out]   ; Load console output handle
         mov rdx, ' '
-        mov r8d, 10000
-        xor r9d, r9d
-        lea rax, [num_chars_written]
-        mov [rsp+32], rax
+        mov r8d, 10000                  ; Magic number to write enough characters to clear everything
+        xor r9d, r9d                    ; dWriteCoord -> 0/0
+        ; Pointer to the lpNumberOfCharsWritten in the stack frame
+        lea rax, [rsp+40]
+        mov [rsp+32], rax               
+
         call FillConsoleOutputCharacterA
 
         add rsp, 48
