@@ -35,7 +35,6 @@ section .bss
     num_chars_written resq 1
     console_info resb CONSOLE_SCREEN_BUFFER_INFO_size
     cursor_coords resb COORD_size         ; X=5, Y=10 (Little-endian format)
-    error_buffer resb 1024
 
 section .text
     global SetupOutput, ResetCursorPosition, ClearOutput, WriteText, WriteBuffer, WriteNumber, WriteChar, SetTextColor, CalculateTextLength, WriteLastError
@@ -229,29 +228,28 @@ section .text
         mov rcx, 0x04
         call SetTextColor
 
-        ; 32 bytes shadow space + 24 bytes for arguments + 8 bytes alignment
-        sub rsp, 72       
+        ; 32 bytes shadow space + 24 bytes for arguments + 8 bytes alignment + 256 bytes error buffer
+        sub rsp, 72 + 256       
         call GetLastError
 
         mov rcx, 0x00001000      ; FORMAT_MESSAGE_FROM_SYSTEM
         xor rdx, rdx             ; NULL source
-        mov r8, rax     ; Error code
+        mov r8, rax              ; Error code
         mov r9d, 0               ; Language ID (default)
-        lea rax, [error_buffer]
+        lea rax, [rsp+56]
         mov [rsp+32], rax        ; Output buffer (5th parameter)
-        mov qword [rsp+40], 1024 ; Buffer size (6th parameter)
+        mov qword [rsp+40], 256  ; Buffer size (6th parameter)
         mov qword [rsp+48], 0    ; Arguments (7th parameter)
         
         call FormatMessageA
-        
-        ; Restore stack
-        add rsp, 72
 
-        lea rcx, [error_buffer]
+        lea rcx, [rsp+56]
         call WriteText
 
         ; Reset text color
         mov rcx, 0x07
         call SetTextColor
+
+        add rsp, 72 + 256
 
         ret
