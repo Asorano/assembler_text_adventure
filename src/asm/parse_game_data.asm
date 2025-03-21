@@ -50,7 +50,7 @@ section .text
 
         mov [game_decision_count], word 0       ; Total number of decisions, initialized to 0
 
-        mov al, byte [rcx]                      ; Load first character
+        movzx rax, byte [rcx]                      ; Load first character
         
         mov r12, ' '                            ; Replace all whitespaces at the beginning 
         call SkipChar         ; Skip potential initial whitespace
@@ -70,7 +70,7 @@ section .text
 
         ; Parse decision id
         inc rcx
-        mov al, byte [rcx]
+        movzx rax, byte [rcx]
         mov r12, '='
         call ParseTextIntoBuffer
 
@@ -127,7 +127,7 @@ section .text
         mov rax, 0
 
     _end_parsing:
-        mov rax, [game_decision_count]
+        lea rax, [game_decision_buffer]
         mov r12, [rsp+8]
         add rsp, 16
         ret

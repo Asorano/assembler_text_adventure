@@ -17,7 +17,7 @@ section .bss
 section .text
     global main
     ; Project
-    extern ReadGameDataFile, GameDecision, GetActionCount, GetActionTarget
+    extern GameDecision, GetActionCount, GetActionTarget, ReadFileWithCallback, ParseGameData
     extern SetupOutput, ClearOutput, ResetCursorPosition, WriteText, WriteChar, WriteNumber, SetTextColor, CalculateTextLength
     ; Windows
     extern Sleep, ExitProcess
@@ -26,16 +26,16 @@ section .text
 ;   - configures the environment
 ;   - loads the file
 ;   - starts the main loop
-
 main:
     call SetupInput
     call SetupOutput
-    
+
     call ClearOutput
     call ResetCursorPosition
 
     mov rcx, file_name
-    call ReadGameDataFile
+    mov rdx, ParseGameData
+    call ReadFileWithCallback
 
     ; Exit if the loading failed
     test rax, rax
