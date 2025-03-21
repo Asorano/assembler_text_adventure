@@ -9,44 +9,51 @@ section .bss
 
 section .text
     extern FindFirstFileA, FindNextFileA, FindClose
-    
-    global ReadFilesInDirectoryWithCallback
 
-; Gets all files in the passed directory
+    global GetFileNamesInDirectory
+
+; Gets all names of the files fitting to the passed directory filter
+; Call the passed callback (rdx) for every file name
+; Returns the count of found files in rax
+;
+; E.g.: "stories\\*.story", 0
+;
 ; # Arguments:
 ;   - rcx = address to search path
 ;   - rdx = callback address
+;       - rcx => File name
+;       - rdx => File index
 ; # Returns: found file count
-ReadFilesInDirectoryWithCallback:
-    push rbp
-    mov rbp, rsp
-    push rbx
-
+GetFileNamesInDirectory:
     ; Stack frame:
     ; - 32 bytes shadow space
     ; -  8 bytes callback address       (rsp+32)
     ; -  8 bytes file count             (rsp+40)
-    sub rsp, 48
-    
+    ; -  8 bytes file handle            (rsp+48)
+    sub rsp, 64
+    ; Store callback address in stack frame
     mov [rsp+32], rdx
+    ; Zero-out count
+    mov qword [rsp+40], 0
 
     ; FindFirstFile(search_path, &find_data)
     lea rdx, [find_data]         ; Second parameter: find data structure
     call FindFirstFileA
-    mov rbx, rax                 ; Save handle
+    mov [rsp+48], rax                 ; Save handle
     
     cmp rax, -1                   ; Check for INVALID_HANDLE_VALUE
     je no_files
 
 file_loop:
+    ; Call callback
+    lea rcx, [find_data+44]
+    mov rdx, [rsp+40]
+    call [rsp+32]
+
     ; Increment file count
     inc qword [rsp+40]
 
-    ; Call callback
-    lea rcx, [find_data+44]
-    call [rsp+32]
-
-    mov rcx, rbx                ; Handle
+    mov rcx, [rsp+48]                ; Handle
     lea rdx, [find_data]        ; Find data structure
     call FindNextFileA
 
@@ -54,7 +61,7 @@ file_loop:
     jnz file_loop
 
     ; Close find handle
-    mov rcx, rbx
+    mov rcx, [rsp+48]
     call FindClose
     jmp done
 
@@ -63,7 +70,5 @@ no_files:
 
 done:
     mov rax, [rsp+40]
-    add rsp, 48                 ; Restore stack
-    pop rbx                     ; Restore rbx
-    pop rbp                     ; Restore frame pointer
+    add rsp, 64
     ret
