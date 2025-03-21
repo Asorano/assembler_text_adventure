@@ -2,12 +2,18 @@ section .data
     ; STD_INPUT_HANDLE
     handle_console_in dq 06
 
+    err_invalid_input: db "You need to enter a value between 1 and ", 0
+    txt_input_confirm db "Your decision is: ", 0
+
+
 section .bss
     bytes_read resq 1       ; Store number of bytes read
     input_buffer resb 128   ; Buffer for user input
 
 section .text
     extern GetStdHandle, ReadConsoleA
+    extern AnimateText, WriteText
+    global SetupInput, ReadActionIndex
 
     SetupInput:
         sub rsp, 0x28

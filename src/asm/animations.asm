@@ -1,4 +1,7 @@
 section .text
+    extern CalculateTextLength, WriteText, WriteChar
+    global AnimateText
+
     AnimateText:
         ; rcx = address of text
         push rcx

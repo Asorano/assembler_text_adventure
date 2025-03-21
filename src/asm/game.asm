@@ -1,9 +1,7 @@
 ; A simple text adventure in x64 assembler
 default rel
 
-%include "input.inc"
 %include "view.inc"
-%include "animations.inc"
 %include "text.inc"
 %include "data.inc"
 
@@ -18,7 +16,8 @@ section .text
     global main
     ; Project
     extern GameDecision, GetActionCount, GetActionTarget, ReadFileWithCallback, ParseGameData
-    extern SetupOutput, ClearOutput, ResetCursorPosition, WriteText, WriteChar, WriteNumber, SetTextColor, CalculateTextLength
+    extern SetupInput, ReadActionIndex
+    extern SetupOutput, ClearOutput, ResetCursorPosition, WriteText, WriteChar, WriteNumber, SetTextColor, CalculateTextLength, AnimateText
     ; Windows
     extern Sleep, ExitProcess
 
