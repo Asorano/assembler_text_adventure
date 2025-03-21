@@ -16,12 +16,12 @@ section .text
     global SetupInput, ReadActionIndex
 
     SetupInput:
-        sub rsp, 0x28
+        sub rsp, 32
         ; Get handle to standard input (console)
         mov ecx, -10  ; STD_INPUT_HANDLE
         call GetStdHandle
         mov [handle_console_in], rax  ; Store the input handle
-        add rsp, 0x28
+        add rsp, 32
         ret
 
     ReadActionIndex:

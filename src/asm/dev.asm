@@ -7,12 +7,14 @@ section .data
 
 section .text
     extern SetupOutput, WriteText, WriteChar, WriteNumber, printf, ExitProcess, ClearOutput, ResetCursorPosition
+    extern SetupInput, ReadActionIndex
     extern GetFileNamesInDirectory
 
     global RunDev
 
 RunDev:
     call SetupOutput
+    call SetupInput
     call ResetCursorPosition
     call ClearOutput
 
@@ -24,6 +26,8 @@ RunDev:
     add rsp, 40
 
 SelectStoryFile:
+    sub rsp, 8
+
     ; Write question
     lea rcx, [txt_question]
     call WriteText
@@ -31,11 +35,11 @@ SelectStoryFile:
     mov rcx, 10
     call WriteChar
     ; Get file names
-    sub rsp, 8
     lea rcx, [search_path]
     lea rdx, WriteFileEntry
     call GetFileNamesInDirectory
-    add rsp, 8
+    mov [rsp], rax
+
     ; Line break
     mov rcx, 10
     call WriteChar
@@ -44,6 +48,10 @@ SelectStoryFile:
     lea rcx, [txt_input]
     call WriteText
 
+    mov rcx, [rsp]
+    call ReadActionIndex
+
+    add rsp, 8
     ret
 
 WriteFileEntry:
