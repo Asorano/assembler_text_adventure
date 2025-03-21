@@ -33,16 +33,17 @@ main:
     call ClearOutput
     call ResetCursorPosition
 
+    ; Stack frame for file reading:
+    ; - 8 bytes result of callback
+    ; - 8 bytes alignment
     mov rcx, file_name
     mov rdx, ParseGameData
+    lea r8, [current_decision]
     call ReadFileWithCallback
 
     ; Exit if the loading failed
     test rax, rax
     jz _exit
-
-    ; Initialize initial decision
-    mov [current_decision], rax
 
     ; Delay
     mov rcx, 250

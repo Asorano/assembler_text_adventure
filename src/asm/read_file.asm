@@ -18,26 +18,31 @@ section .text
 ; # Arguments:
 ;   - rcx = address to the file name
 ;   - rdx = callback address for parsing content
+;   - r8  = address for callback result (rax), if NULL return value is ignored
 ; # Callback:
 ;   - rcx = address of buffer
 ;   - rdx = length of buffer
 ReadFileWithCallback:
     ; Stackframe:
     ; 32 bytes shadow space
-    ; 24 bytes additional parameters    -> rsp+32
-    ;  8 bytes file handle              -> rsp+56
-    ;  8 bytes address of file name     -> rsp+64
-    ;  8 bytes callback address         -> rsp+72
-    ;  8 bytes heap handle              -> rsp+80
-    ;  8 bytes heap address             -> rsp+88
-    ;  8 bytes file size                -> rsp+96
-    ;  8 bytes number of bytes read     -> rsp+104
-    ;  8 bytes result of callback       -> rsp+112
+    ; 24 bytes additional parameters        -> rsp+32
+    ;  8 bytes file handle                  -> rsp+56
+    ;  8 bytes address of file name         -> rsp+64
+    ;  8 bytes callback address             -> rsp+72
+    ;  8 bytes heap handle                  -> rsp+80
+    ;  8 bytes heap address                 -> rsp+88
+    ;  8 bytes file size                    -> rsp+96
+    ;  8 bytes number of bytes read         -> rsp+104
+    ;  8 bytes address for callback result  -> rsp+112
     ;  8 bytes alignment
     
     sub rsp, 128
     mov [rsp+64], rcx
     mov [rsp+72], rdx
+    mov [rsp+112], r8
+
+    ; Zero-out the bytes read since ReadFile only uses dword
+    mov qword [rsp+104], 0
 
     ; Create file handle
     mov rdx, 0x80000000        ; dwDesiredAccess (RDX) -> GENERIC_READ
@@ -97,9 +102,13 @@ ReadFileWithCallback:
     mov rdx, [rsp+96]
     call [rsp+72]
 
-    ; Store result in stack frame
-    mov [rsp+112], rax
+    ; If the callback result address is not NULL, store the result in it
+    mov rcx, [rsp+112]
+    cmp rcx, 0
+    je _read_file_finalize
+    mov [rcx], rax
 
+_read_file_finalize:
     ; Free the heap memory
     mov rcx, [rsp+80]
     mov rdx, 0          ; flags
@@ -109,7 +118,7 @@ ReadFileWithCallback:
     mov rcx, [rsp+56]
     call CloseHandle
 
-    mov rax, [rsp+112]
+    mov qword rax, 1
     jmp _read_file_end
 
 _read_file_heap_error:
