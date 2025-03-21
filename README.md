@@ -53,5 +53,5 @@ The Makefile tasks are:
 - Improve the file parsing by allowing characters like \"
 - Use the makefile prepare for creating the directories on the Github Runner (fails currently)
 - Define proper stack frames for the functions
-- Allocate memory on the heap for the file content and the game data instead of fixed-sized buffers
+- Replace fixed-size buffers for game data and game texts with dynamic memory allocation
 - Print a proper error when the parsing of the file fails

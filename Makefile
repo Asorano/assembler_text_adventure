@@ -9,6 +9,7 @@ LINK = lld-link
 # Build configuration (can be overridden via command line)
 # Options: release, debug, dev
 CONFIG ?= dev
+APP_ENTRY ?= main
 FILE_NAME ?= "stories/game.bin"
 SKIP_ANIMATIONS ?= 0
 
@@ -53,7 +54,7 @@ ALL_OBJS = $(ASM_OBJS) $(C_OBJS)
 $(ASM_OBJS): $(INC_SRCS)
 
 # Common linker settings
-COMMON_LINKFLAGS = -entry:main -subsystem:console /defaultlib:kernel32.lib /defaultlib:msvcrt.lib /defaultlib:vcruntime.lib /defaultlib:ucrt.lib
+COMMON_LINKFLAGS = -entry:$(APP_ENTRY) -subsystem:console /defaultlib:kernel32.lib /defaultlib:msvcrt.lib /defaultlib:vcruntime.lib /defaultlib:ucrt.lib
 
 # Configuration-specific flags
 ifeq ($(CONFIG),dev)

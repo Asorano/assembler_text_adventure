@@ -63,7 +63,7 @@ jobs:
       - name: Build with Makefile
         run: |
           mkdir -Force -Path build\obj\${{ github.event.inputs.config || 'release' }}\asm, build\obj\${{ github.event.inputs.config || 'release' }}\c, build\bin\${{ github.event.inputs.config || 'release' }}
-          make build CONFIG=${{ github.event.inputs.config || 'release' }} FILE_NAME=${{ github.event.inputs.story_file || 'stories/game.bin' }} SKIP_ANIMATIONS=${{ github.event.inputs.skip_animations == 'true' && '1' || '0' }}
+          make build APP_ENTRY=main CONFIG=${{ github.event.inputs.config || 'release' }} FILE_NAME=${{ github.event.inputs.story_file || 'stories/game.bin' }} SKIP_ANIMATIONS=${{ github.event.inputs.skip_animations == 'true' && '1' || '0' }}
           copy build\bin\${{ github.event.inputs.config || 'release' }}\game.exe game.exe
         
       # Setting file information
