@@ -1,8 +1,6 @@
 default rel
 
 section .data
-    search_path db "stories\\*bin", 0  ; Current directory, all files
-    fmt_str db "First bin file: %s", 10, 0
     txt_no_files db "No files found.", 0
 
 section .bss
@@ -10,27 +8,29 @@ section .bss
     
 
 section .text
-    extern SetupOutput, WriteText, WriteNumber, printf
     extern FindFirstFileA, FindNextFileA, FindClose
-
-    global ReadFilesInDirectoryWithCallback, RunDev
+    
+    global ReadFilesInDirectoryWithCallback
 
 ; Gets all files in the passed directory
 ; # Arguments:
 ;   - rcx = address to search path
-
-RunDev:
-    call ReadFilesInDirectoryWithCallback
-    ret
-
+;   - rdx = callback address
+; # Returns: found file count
 ReadFilesInDirectoryWithCallback:
     push rbp
     mov rbp, rsp
     push rbx
-    sub rsp, 32
+
+    ; Stack frame:
+    ; - 32 bytes shadow space
+    ; -  8 bytes callback address       (rsp+32)
+    ; -  8 bytes file count             (rsp+40)
+    sub rsp, 48
     
+    mov [rsp+32], rdx
+
     ; FindFirstFile(search_path, &find_data)
-    lea rcx, [search_path]       ; First parameter: search path
     lea rdx, [find_data]         ; Second parameter: find data structure
     call FindFirstFileA
     mov rbx, rax                 ; Save handle
@@ -38,22 +38,32 @@ ReadFilesInDirectoryWithCallback:
     cmp rax, -1                   ; Check for INVALID_HANDLE_VALUE
     je no_files
 
-    mov rcx, fmt_str              ; Format string
-    lea rdx, [find_data + 44]     ; Filename is at offset 44
-    call printf
+file_loop:
+    ; Increment file count
+    inc qword [rsp+40]
 
-     ; Close find handle
+    ; Call callback
+    lea rcx, [find_data+44]
+    call [rsp+32]
+
+    mov rcx, rbx                ; Handle
+    lea rdx, [find_data]        ; Find data structure
+    call FindNextFileA
+
+    test rax, rax
+    jnz file_loop
+
+    ; Close find handle
     mov rcx, rbx
     call FindClose
-    jmp done   
+    jmp done
 
 no_files:
-    mov rcx, txt_no_files
-    call printf
+    xor rax, rax
 
 done:
-    add rsp, 32                 ; Restore stack
+    mov rax, [rsp+40]
+    add rsp, 48                 ; Restore stack
     pop rbx                     ; Restore rbx
     pop rbp                     ; Restore frame pointer
-    xor rax, rax                ; Return 0
     ret
