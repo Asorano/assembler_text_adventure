@@ -1,5 +1,5 @@
 section .text
-    extern CalculateTextLength, WriteText, WriteChar
+    extern CalculateTextLength, WriteText, WriteChar, Sleep
     global AnimateText
 
     AnimateText:
