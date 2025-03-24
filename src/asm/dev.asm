@@ -1,6 +1,7 @@
 default rel
 
 section .data
+    txt_no_files db "No files found.", 0
     txt_question db "Which story do you want to load?", 10, 0
     txt_input db "Enter the number: ", 10, 0
     search_path db "stories\\*.story", 0  ; Current directory, all files
@@ -48,7 +49,7 @@ SelectStoryFile:
     lea rcx, [txt_input]
     call WriteText
 
-    mov rcx, [rsp]
+    mov rcx, 15
     call ReadActionIndex
 
     add rsp, 8

@@ -1,14 +1,10 @@
 default rel
 
 section .data
-    txt_no_files db "No files found.", 0
-
-section .bss
-    find_data resb 592        ; WIN32_FIND_DATA structure (592 bytes)
-    
+    FIND_DATA_STRUCT_SIZE equ 592
 
 section .text
-    extern FindFirstFileA, FindNextFileA, FindClose
+    extern FindFirstFileA, FindNextFileA, FindClose, GetProcessHeap, HeapAlloc, HeapFree
 
     global GetFileNamesInDirectory
 
@@ -25,43 +21,63 @@ section .text
 ;       - rdx => File index
 ; # Returns: found file count
 GetFileNamesInDirectory:
+    ; Prologue:
     ; Stack frame:
     ; - 32 bytes shadow space
-    ; -  8 bytes callback address       (rsp+32)
-    ; -  8 bytes file count             (rsp+40)
-    ; -  8 bytes file handle            (rsp+48)
-    sub rsp, 64
+    ; -  8 bytes address of search path (rsp+32)
+    ; -  8 bytes heap handle            (rsp+40)
+    ; -  8 bytes heap address for file  (rsp+48)
+    ; -  8 bytes callback address       (rsp+56)
+    ; -  8 bytes file count             (rsp+64)
+    ; -  8 bytes file handle            (rsp+72)
+
+    push rbp
+    mov rbp, rsp
+    sub rsp, 88
+
     ; Store callback address in stack frame
-    mov [rsp+32], rdx
+    mov [rsp+48], rdx
     ; Zero-out count
-    mov qword [rsp+40], 0
+    mov qword [rsp+56], 0
+
+    ; Get the heap handle and store it in the stack frame
+    call GetProcessHeap
+    mov [rsp+32], rax
+
+    ; Allocate the space for the file data
+    mov rcx, rax
+    mov rdx, 8                          ; flags (HEAP_ZERO_MEMORY = 8)
+    mov r8, FIND_DATA_STRUCT_SIZE       ; File size from the stack
+    call HeapAlloc
+    mov [rsp+40], rax
 
     ; FindFirstFile(search_path, &find_data)
-    lea rdx, [find_data]         ; Second parameter: find data structure
+    mov rdx, [rsp+40]         ; Second parameter: find data structure
     call FindFirstFileA
-    mov [rsp+48], rax                 ; Save handle
+    mov [rsp+64], rax                 ; Save handle
     
     cmp rax, -1                   ; Check for INVALID_HANDLE_VALUE
     je no_files
 
 file_loop:
     ; Call callback
-    lea rcx, [find_data+44]
-    mov rdx, [rsp+40]
-    call [rsp+32]
+    mov rcx, [rsp+40]
+    mov rcx, [rcx+44]
+    mov rdx, [rsp+56]
+    call [rsp+48]
 
     ; Increment file count
-    inc qword [rsp+40]
+    inc qword [rsp+56]
 
-    mov rcx, [rsp+48]                ; Handle
-    lea rdx, [find_data]        ; Find data structure
+    mov rcx, [rsp+64]                ; Handle
+    lea rdx, [rsp+40]        ; Find data structure
     call FindNextFileA
 
     test rax, rax
     jnz file_loop
 
     ; Close find handle
-    mov rcx, [rsp+48]
+    mov rcx, [rsp+64]
     call FindClose
     jmp done
 
@@ -69,6 +85,13 @@ no_files:
     xor rax, rax
 
 done:
-    mov rax, [rsp+40]
-    add rsp, 64
+    ; Free space on heap
+    mov rcx, [rsp+32]
+    mov rdx, 0          ; flags
+    mov r8, [rsp+40]    ; heap address
+    call HeapFree
+
+    mov rax, [rsp+56]
+    add rsp, 88
+    pop rbp
     ret
