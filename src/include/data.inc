@@ -12,5 +12,12 @@ struc GameDecision
     .action_3   resb GameAction_size  ; Pointer to fourth action
 endstruc
 
+struc GameData
+    .title              resq 1  ; Pointer to title text
+    .author             resq 1  ; Pointer to autor
+    .decision_count     resq 1  ; Int
+    .decisions          resq 1  ; Pointer to decisions
+endstruc
+
 section .data
     MAX_ACTION_COUNT equ 4

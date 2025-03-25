@@ -1,9 +1,13 @@
 section .data
     ; Game Start
-    txt_start_box_line_top db 10, 10, "*-------------------------------------------------*", 10, 0
+    txt_start_box_line_top db "*-------------------------------------------------*", 10, 0
     txt_start_box_line_star db "|-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-|", 10, 0
     txt_start_box_line_game_name db "|-*-*-*-*-*-*-*-*- x64 Adventure -*-*-*-*-*-*-*-*-|", 10, 0
     txt_start_box_line_copyright db "|----------------- @2025 Asorano -----------------|", 0
+
+    ; Story intro
+    msg_story_intro_header db "You are playing:", 10, 0
+    msg_story_intro_author db "by ", 0
 
     ; Header
     txt_cut_line db "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*", 0
@@ -15,6 +19,75 @@ section .data
     txt_game_over_goodbye db "Thank you for playing! Better luck next time!", 0
 
 section .text
+
+    ; Renders the title and the author
+    ; # Parameters:
+    ; - [in]    rcx = Pointer to the GameData
+    RenderStoryIntro:
+%if SKIP_ANIMATIONS == 1
+        ret
+%endif
+
+        push rbp
+        mov rbp, rsp
+        ; Stack frame:
+        ; - 8 bytes address to GameData
+        ; - 8 bytes alignment
+        ; -----------------------------
+        ; => 16 bytes
+        sub rsp, 16
+        mov [rsp], rcx
+
+        mov rcx, 0x8
+        call SetTextColor
+
+        mov rcx, txt_start_box_line_top
+        call WriteText
+
+        mov rcx, 0xE
+        call SetTextColor
+
+        mov rcx, msg_story_intro_header
+        call AnimateText
+
+        mov rcx, 0x7
+        call SetTextColor
+
+        mov rcx, [rsp]
+        mov rcx, [rcx]
+        call AnimateText
+
+        mov rcx, 10
+        call WriteChar
+
+        mov rcx, 0x8
+        call SetTextColor
+
+        mov rcx, msg_story_intro_author
+        call AnimateText
+
+        mov rcx, [rsp]
+        mov rcx, [rcx+8]
+        call AnimateText
+
+        mov rcx, 10
+        call WriteChar
+
+        mov rcx, 0x8
+        call SetTextColor
+
+        mov rcx, txt_start_box_line_top
+        call WriteText
+
+        mov rcx, 0x7
+        call SetTextColor
+
+        mov rcx, 2000
+        call Sleep
+
+        add rsp, 16
+        pop rbp
+        ret
 
     RenderGameIntro:
 %if SKIP_ANIMATIONS == 1

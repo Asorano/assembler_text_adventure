@@ -34,7 +34,7 @@ section .text
     extern SetupOutput, WriteText, WriteChar, WriteNumber, ExitProcess, ClearOutput, ResetCursorPosition, SetTextColor
     extern SetupInput, ReadNumber
     extern GetFileNamesInDirectory, FindFileByPathAndIndex, ReadFileWithCallback, CopyMemory
-    extern ParseGameData
+    extern ParseGameData, FreeGameData
     extern RunGame
 
     global BootstrapGame
@@ -50,30 +50,41 @@ section .text
 ; And then the address of the directory on the stack is used (rsp+8) 
 ; This would break if the length of the directory name would change!
 BootstrapGame:
+    ; Proloque:
     push rbp
     mov rbp, rsp
+
+    ; Stack frame:
+    ; - 8 bytes pointer to data
+    ; - 8 bytes alignment
+    ; -------------------------
+    ; => 16 bytes
+    sub rsp, 16
 
     call SetupOutput
     call SetupInput
     call ResetCursorPosition
     call ClearOutput
 
+    ; Returns the pointer to the first decision if successful
     call SelectAndLoadFile
 
     test rax, rax
     jz EndGame
 
     ; Start the game with the chosen file
-    pop rbp
+    mov [rsp], rax
+    mov rcx, rax
+
     call RunGame
 
-
-PrintParseErrorAndEnd:
-    PRINT_ERROR msg_err_file_parsing
-    CLEAN_BOOTSTRAP_STACK
-
+    ; Free memory again
+    mov rcx, [rsp]
+    call FreeGameData
 EndGame:
-    sub rsp, 32
+    ; Epiloque:
+    ; Additional 16 bytes to get the 32 bytes shadow space
+    sub rsp, 16
     xor ecx, ecx
     call ExitProcess
     add rsp, 32
@@ -156,7 +167,7 @@ SelectAndLoadFile:
     test rax, rax
     jz _select_story_file_parse_error
 
-    mov rax, 1
+    mov rax, [rsp+8]
 
 _select_story_file_end:
     ; Epiloque

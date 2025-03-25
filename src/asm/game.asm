@@ -9,6 +9,7 @@ section .data
     decisions_taken dq 0
 
 section .bss
+    game_data resq 1
     current_decision resq 1
 
 section .text
@@ -32,19 +33,24 @@ RunGame:
     ; - 8 bytes alignment
     ; -----------------------
     ; => 8
-    sub rsp, 8
+    sub rsp, 16
 
-    mov [current_decision], rcx
+    mov [game_data], rcx
 
     call ClearOutput
     call ResetCursorPosition
 
     call RenderGameIntro
 
-    ; The game loop requires one qword for the action count of the current decision
-    ; To keep the stack 16-byte aligned, 16 bytes instead of 8 are allocated
-    ; The space is allocated only once instead of everytime
-    sub rsp, 8
+    call ClearOutput
+    call ResetCursorPosition
+
+    mov rcx, [game_data]
+    call RenderStoryIntro
+
+    mov rcx, [game_data]
+    mov rcx, [rcx+GameData.decisions]
+    mov [current_decision], rcx
 
 ; The main game loop
 ;   - Clears the console
