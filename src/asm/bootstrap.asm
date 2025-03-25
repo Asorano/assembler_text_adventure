@@ -1,6 +1,6 @@
 default rel
 
-%macro PRINT_FILE_ERROR 1
+%macro PRINT_ERROR 1
     mov rcx, 0x4
     call SetTextColor
 
@@ -9,9 +9,6 @@ default rel
 
     mov rcx, 0x7
     call SetTextColor
-
-    mov rax, 0
-    jmp _select_story_file_end
 %endmacro
 
 section .data
@@ -20,13 +17,13 @@ section .data
 
     search_path db "stories/*.story", 0
 
-    msg_welcome db "Welcome to the x64 Text Adventures!", 10, 0
-    msg_no_files db "Seems like a black hole ate all the stories! Noooooooo!", 10, "(No stories found. The files must be located in the 'stories' directory and must have the extension '.stories')", 0
-    msg_story_selection db "Which story do you want to play?", 10, 0
-    msg_invalid_input db "This story does not exist!", 10, 0
-    msg_input_request db "Please enter the story number:", 10, 0
+    msg_err_no_files db "Seems like a black hole ate all the stories! Noooooooo!", 10, "(No stories found. The files must be located in the 'stories' directory and must have the extension '.stories')", 0
+    msg_err_file_parsing db "Oh no, the data overloaded the reactor! EMERGENCY SHUTDOWN!! FAST!", 10, "(The story file is corrupted and could not be parse)", 0
+    msg_err_invalid_input db "This story does not exist!", 10, 0
 
-    msg_parsing_file db "Loading game file...", 10, 0
+    msg_welcome db "Welcome to the x64 Text Adventures!", 10, 0
+    msg_story_selection db "Which story do you want to play?", 10, 0
+    msg_input_request db "Please enter the story number:", 10, 0
 
 section .text
     extern SetupOutput, WriteText, WriteChar, WriteNumber, ExitProcess, ClearOutput, ResetCursorPosition, SetTextColor
@@ -66,10 +63,7 @@ BootstrapGame:
     lea rcx, [rsp+16]
     call SelectStoryFile
     test rax, rax
-    jz _end_game
-
-    mov rcx, msg_parsing_file
-    call WriteText
+    jz EndGame
 
     ; Copy the 8 bytes of the directory in front of the file name on the stack
     lea rcx, [story_file_directory]
@@ -89,16 +83,25 @@ BootstrapGame:
     pop rbp
 
     test rax, rax
-    jz _end_game
+    jz PrintParseErrorAndEnd
+
+    test rcx, rcx
+    jz PrintParseErrorAndEnd
 
     ; Start the game with the chosen file
     jmp RunGame
 
-_end_game:
+PrintParseErrorAndEnd:
+    PRINT_ERROR msg_err_file_parsing
+
+EndGame:
+    push rbp
+    mov rbp, rsp
     sub rsp, 32
     xor ecx, ecx
     call ExitProcess
     add rsp, 32
+    pop rbp
 
 ; Shows the file selection in the console and awaits the player input
 ; # Parameters
@@ -162,10 +165,14 @@ _select_story_file_end:
     ret
 
 _select_story_no_files:
-    PRINT_FILE_ERROR msg_no_files
+    PRINT_ERROR msg_err_no_files
+    mov rax, 0
+    jmp _select_story_file_end
 
 _select_story_file_invalid_input:
-    PRINT_FILE_ERROR msg_invalid_input
+    PRINT_ERROR msg_err_invalid_input
+    mov rax, 0
+    jmp _select_story_file_end
 
 ; Prints the name of a file in this format "n) File name"
 ; # Parameters:

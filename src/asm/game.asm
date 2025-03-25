@@ -18,7 +18,7 @@ section .text
     extern ReadActionIndex
     extern ClearOutput, ResetCursorPosition, WriteText, WriteChar, WriteNumber, SetTextColor, CalculateTextLength, AnimateText
     ; Windows
-    extern Sleep, ExitProcess
+    extern Sleep
 
 ; Runs the game with the file passed via rcx
 ;   - configures the environment
@@ -52,7 +52,7 @@ RunGame:
 ;   - Renders the current decision and its actions
 ;   - Awaits the player input
 ;   - Executes the action
-game_loop:
+_run_game_loop:
     call ClearOutput
     call ResetCursorPosition
 
@@ -108,7 +108,7 @@ game_loop:
     inc word [decisions_taken]
 
     ; Repeat game loop
-    jmp game_loop
+    jmp _run_game_loop
 
 ; Called at the end of the game loop
 _end_game_loop:
@@ -126,7 +126,7 @@ _invalid_decision:
 _invalid_action:
     mov rcx, err_invalid_action
     call WriteText
-    jmp game_loop
+    jmp _run_game_loop
 
 ; Prints the action texts of a decision
 ; # Arguments:

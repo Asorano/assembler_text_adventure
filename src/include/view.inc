@@ -110,6 +110,8 @@ section .text
         ret
 
     RenderGameHeader:
+        mov rcx, 0x0B
+        call SetTextColor
 
         mov rcx, '/'
         call WriteChar
@@ -126,7 +128,7 @@ section .text
         mov rcx, txt_decision_taken
         call WriteText
 
-        mov rcx, 0x0E
+        mov rcx, 0x06
         call SetTextColor
 
         ; Write decisions taken
@@ -134,7 +136,7 @@ section .text
         mov ecx, eax
         call WriteNumber
 
-        mov rcx, 0x07
+        mov rcx, 0x0B
         call SetTextColor
 
         mov rcx, 10
@@ -158,6 +160,9 @@ section .text
 
         mov rcx, 10
         call WriteChar
+
+        mov rcx, 0x07
+        call SetTextColor
 
         ret
 
