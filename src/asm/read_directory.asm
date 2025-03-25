@@ -24,11 +24,12 @@ FindFileByPathAndIndex:
     ; -   8 bytes find handle                (rsp+56)     
     ; - 592 bytes Find file data             (rsp+64)
     ; -   8 bytes result                     (rsp+72)
+    ; -   8 bytes alignment
     ; --------------------------------------------
-    ; => 664 bytes
+    ; => 672 bytes
     push rbp
     mov rbp, rsp
-    sub rsp, 664
+    sub rsp, 672
 
     ; Store arguments in stack frame
     mov [rsp+32], rcx
@@ -77,7 +78,7 @@ _find_file_by_path_and_index_end:
     mov rax, [rsp+72]
 
     ; Epilogue
-    add rsp, 664
+    add rsp, 672
     pop rbp
     ret
 
@@ -111,7 +112,7 @@ GetFileNamesInDirectory:
     ; => 656 bytes
     push rbp
     mov rbp, rsp
-    sub rsp, 664
+    sub rsp, 656
 
     ; Store callback address in stack frame
     mov [rsp+32], rcx
@@ -154,6 +155,6 @@ done:
 
     ; Epiloque
     mov rax, [rsp+56]
-    add rsp, 664
+    add rsp, 656
     pop rbp
     ret

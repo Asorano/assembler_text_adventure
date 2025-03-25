@@ -39,6 +39,8 @@ section .text
     ; Initializes the handle and screen info for the console output
     SetupOutput:
         ; Get handle to standard output (console)
+        push rbp
+        mov rbp, rsp
         sub rsp, 32
 
         mov ecx, -11  ; STD_OUTPUT_HANDLE
@@ -51,20 +53,27 @@ section .text
         call GetConsoleScreenBufferInfo
 
         add rsp, 32
-
+        pop rbp
         ret
 
     ; Resets the cursor position to the initially stored position
     ResetCursorPosition:
+        push rbp
+        mov rbp, rsp
         sub rsp, 32
         mov rcx, [handle_console_out]
         xor rdx, rdx
         call SetConsoleCursorPosition
         add rsp, 32
+        pop rbp
         ret
 
     ; Clears the written characters until the initial stored cursor position
     ClearOutput:
+        ; Proloque
+        push rbp
+        mov rbp, rsp
+
         ; Stackframe:
         ; - 32 bytes shadow space
         ; - 8 bytes for 5th parameter
@@ -82,6 +91,7 @@ section .text
         call FillConsoleOutputCharacterA
 
         add rsp, 48
+        pop rbp
         ret
 
     ; Calculates the length of a text by searching the index of the first 0

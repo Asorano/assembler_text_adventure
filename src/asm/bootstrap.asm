@@ -11,6 +11,11 @@ default rel
     call SetTextColor
 %endmacro
 
+%macro CLEAN_BOOTSTRAP_STACK 0
+    add rsp, 272
+    pop rbp
+%endmacro
+
 section .data
     story_file_directory db "stories/" ; Exactly 8 bytes
     STORY_FILE_DIRECTORY_LENGTH equ $ - story_file_directory
@@ -19,7 +24,7 @@ section .data
 
     msg_err_no_files db "Seems like a black hole ate all the stories! Noooooooo!", 10, "(No stories found. The files must be located in the 'stories' directory and must have the extension '.stories')", 0
     msg_err_file_parsing db "Oh no, the data overloaded the reactor! EMERGENCY SHUTDOWN!! FAST!", 10, "(The story file is corrupted and could not be parse)", 0
-    msg_err_invalid_input db "This story does not exist!", 10, 0
+    msg_err_invalid_input db "Seems like you are not good enough with numbers yet to play this game.", 10, 0
 
     msg_welcome db "Welcome to the x64 Text Adventures!", 10, 0
     msg_story_selection db "Which story do you want to play?", 10, 0
@@ -39,64 +44,35 @@ section .text
 ; If a valid file is chosen, parse its content and if the parsing was successful, run the game
 ;
 ; Loading the file from the directory is interesting:
-; SelectStoryFile will only return the name of the selected file without the correct path (./stories/name.story)
+; SelectFile will only return the name of the selected file without the correct path (./stories/name.story)
 ; When a file was successfully selected, the directory ("stories/"), which is exactly 8 bytes long, is copied
 ; in front of the file name on the stack.
 ; And then the address of the directory on the stack is used (rsp+8) 
 ; This would break if the length of the directory name would change!
 BootstrapGame:
-    ; Stack frame:
-    ;   8 bytes result of ParseGameData
-    ;   8 bytes for the directory           (rsp+8)
-    ; 256 bytes for the file name           (rsp+16)
-    ; ---------------------------------------------
-    ; => 272
     push rbp
     mov rbp, rsp
-    sub rsp, 272
 
     call SetupOutput
     call SetupInput
     call ResetCursorPosition
     call ClearOutput
 
-    lea rcx, [rsp+16]
-    call SelectStoryFile
+    call SelectAndLoadFile
+
     test rax, rax
     jz EndGame
 
-    ; Copy the 8 bytes of the directory in front of the file name on the stack
-    lea rcx, [story_file_directory]
-    lea rdx, [rsp+8]
-    mov r8, STORY_FILE_DIRECTORY_LENGTH
-    call CopyMemory
-
-    ; Read and parse the file
-    lea rcx, [rsp+8]
-    mov rdx, ParseGameData
-    lea r8, [rsp]
-    call ReadFileWithCallback
-
-    ; Proloque
-    mov rcx, [rsp]    ; Set first decision as initial decision
-    add rsp, 272
-    pop rbp
-
-    test rax, rax
-    jz PrintParseErrorAndEnd
-
-    test rcx, rcx
-    jz PrintParseErrorAndEnd
-
     ; Start the game with the chosen file
-    jmp RunGame
+    pop rbp
+    call RunGame
+
 
 PrintParseErrorAndEnd:
     PRINT_ERROR msg_err_file_parsing
+    CLEAN_BOOTSTRAP_STACK
 
 EndGame:
-    push rbp
-    mov rbp, rsp
     sub rsp, 32
     xor ecx, ecx
     call ExitProcess
@@ -105,16 +81,20 @@ EndGame:
 
 ; Shows the file selection in the console and awaits the player input
 ; # Parameters
-; [out]     rcx = Pointer to 256-bytes buffer for the file name
-; [out]     rax = 1 if success, 0 if the selection failed
-SelectStoryFile:
+; [out]     rax = Pointer to decision data if successful, 0 if the selection failed
+SelectAndLoadFile:
     ; Prologue
     push rbp
+    mov rbp, rsp
     ; Stack frame:
-    ; - 8 bytes file name buffer address
+    ; -   8 bytes file name buffer address
+    ; -   8 bytes for parse result            (rsp+8)
+    ; -   8 bytes for the directory           (rsp+16)
+    ; - 256 bytes for the file name           (rsp+24)
+    ; -   8 bytes alignment
     ; -----------------------------------
-    ; => 8 bytes
-    sub rsp, 8
+    ; => 288 bytes
+    sub rsp, 288
     mov [rsp], rcx
 
     ; Write question
@@ -150,17 +130,37 @@ SelectStoryFile:
 
     lea rcx, [search_path]
     mov rdx, rax
-    mov r8, [rsp]
+    lea r8, [rsp+24]
     call FindFileByPathAndIndex
 
     cmp rax, 0
     jne _select_story_file_invalid_input
 
+    ; Copy the 8 bytes of the directory in front of the file name on the stack
+    lea rcx, [story_file_directory]
+    lea rdx, [rsp+16]
+    mov r8, STORY_FILE_DIRECTORY_LENGTH
+    call CopyMemory
+
+    ; Read and parse the file
+    lea rcx, [rsp+16]
+    mov rdx, ParseGameData
+    lea r8, [rsp+8]
+    call ReadFileWithCallback 
+
+    ; Check parse result
+    test rax, rax
+    jz _select_story_file_parse_error
+
+    mov rax, [rsp+8]
+    test rax, rax
+    jz _select_story_file_parse_error
+
     mov rax, 1
 
 _select_story_file_end:
     ; Epiloque
-    add rsp, 8
+    add rsp, 288
     pop rbp
     ret
 
@@ -172,6 +172,11 @@ _select_story_no_files:
 _select_story_file_invalid_input:
     PRINT_ERROR msg_err_invalid_input
     mov rax, 0
+    jmp _select_story_file_end
+
+_select_story_file_parse_error:
+    PRINT_ERROR msg_err_file_parsing
+    mov rax, 0    
     jmp _select_story_file_end
 
 ; Prints the name of a file in this format "n) File name"

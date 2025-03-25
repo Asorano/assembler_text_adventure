@@ -20,13 +20,13 @@ section .text
     SetupInput:
         push rbp
         mov rbp, rsp
-        sub rsp, 40
+        sub rsp, 32
         ; Get handle to standard input (console)
         mov ecx, -10  ; STD_INPUT_HANDLE
         call GetStdHandle
         mov [handle_console_in], rax  ; Store the input handle
 
-        add rsp, 40
+        add rsp, 32
         pop rbp
         ret
 
