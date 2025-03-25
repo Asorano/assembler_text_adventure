@@ -6,56 +6,45 @@ default rel
 %include "data.inc"
 
 section .data    
-    file_name db FILE_NAME, 0
     decisions_taken dq 0
 
 section .bss
     current_decision resq 1
 
 section .text
-    global main
+    global RunGame
     ; Project
     extern GameDecision, GetActionCount, GetActionTarget, ReadFileWithCallback, ParseGameData
-    extern SetupInput, ReadActionIndex
-    extern SetupOutput, ClearOutput, ResetCursorPosition, WriteText, WriteChar, WriteNumber, SetTextColor, CalculateTextLength, AnimateText
+    extern ReadActionIndex
+    extern ClearOutput, ResetCursorPosition, WriteText, WriteChar, WriteNumber, SetTextColor, CalculateTextLength, AnimateText
     ; Windows
     extern Sleep, ExitProcess
 
-; Initial game method which
+; Runs the game with the file passed via rcx
 ;   - configures the environment
 ;   - loads the file
 ;   - starts the main loop
 RunGame:
-    call SetupInput
-    call SetupOutput
+    ; Proloque
+    push rbp
+    mov rbp, rsp
+    ; Stack frame:
+    ; - 8 bytes alignment
+    ; -----------------------
+    ; => 8
+    sub rsp, 8
+
+    mov [current_decision], rcx
 
     call ClearOutput
     call ResetCursorPosition
-
-    ; Stack frame for file reading:
-    ; - 8 bytes result of callback
-    ; - 8 bytes alignment
-    mov rcx, file_name
-    mov rdx, ParseGameData
-    lea r8, [current_decision]
-    call ReadFileWithCallback
-
-    ; Exit if the loading failed
-    test rax, rax
-    jz _exit
-
-    ; Delay
-    mov rcx, 250
-    sub rsp, 32
-    call Sleep
-    add rsp, 32
 
     call RenderGameIntro
 
     ; The game loop requires one qword for the action count of the current decision
     ; To keep the stack 16-byte aligned, 16 bytes instead of 8 are allocated
     ; The space is allocated only once instead of everytime
-    sub rsp, 16
+    sub rsp, 8
 
 ; The main game loop
 ;   - Clears the console
@@ -218,11 +207,4 @@ WriteAction:
 ; Renders the game end
 EndGame:
     call RenderGameEnd
-; Exits the process
-_exit:
-    ; The main function is called and the previous address is put on the stack
-    ; That's why 40 bytes must be added to have a proper 16-byte alignment on the stack instead of 32
-    sub rsp, 40
-    xor ecx, ecx
-    call ExitProcess
-    add rsp, 40
+    ret

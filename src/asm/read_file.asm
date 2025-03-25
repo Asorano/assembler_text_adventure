@@ -1,8 +1,6 @@
 default rel
 BITS 64
 
-%include "src/include/data.inc"
-
 section .data
     txt_err_read_file db "Could not read file: ", 0
     txt_err_read_file_heap db "Could not allocate memory on the heap: ", 0
@@ -35,8 +33,11 @@ ReadFileWithCallback:
     ;  8 bytes number of bytes read         -> rsp+104
     ;  8 bytes address for callback result  -> rsp+112
     ;  8 bytes alignment
-    
+    ; ------------------------------------------------
+    ; => 128
+    push rbp
     sub rsp, 128
+
     mov [rsp+64], rcx
     mov [rsp+72], rdx
     mov [rsp+112], r8
@@ -115,6 +116,7 @@ _read_file_finalize:
     mov r8, [rsp+88]    ; heap address
     call HeapFree
 
+    ; Close the handle
     mov rcx, [rsp+56]
     call CloseHandle
 
@@ -143,4 +145,5 @@ _read_file_write_error:
     xor rax, rax
 _read_file_end:
     add rsp, 128
+    pop rbp
     ret

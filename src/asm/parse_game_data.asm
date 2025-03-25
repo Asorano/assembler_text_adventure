@@ -8,17 +8,19 @@ section .text
 
     global ParseGameData
 
+    ; Parses the data rcx points to into the decision buffer and text buffer and returns the pointer to the first decision
+    ; # Parameters:
+    ; - [in]    rcx = unparsed data buffer
+    ; - [in]    rdx = length of buffer
+    ; - [out]   rax = pointer to first decision or 0 if the parsing failed
+    ;
+    ; # Registers:
+    ; - rax = current char
+    ; - r9  = end address of data_buffer
+    ; - r10 = current_decision_address
+    ; - r11 = current_text_address
+    ; - r12 = current searched char
     ParseGameData:
-        ; Arguments:
-        ; - rcx = unparsed data buffer
-        ; - rdx = length of buffer
-        ; Registers:
-        ; - rax = current char
-        ; - r9  = end address of data_buffer
-        ; - r10 = current_decision_address
-        ; - r11 = current_text_address
-        ; - r12 = current searched char
-
         ; Flow:
         ; 1) Skip whitespace
         ; 2) Check that first non-whitespace character is [
@@ -35,7 +37,7 @@ section .text
         ; 9) Add GameDecision_size to current_decision_address (r10)
         ; 10) Parse next decision
 
-        ; PREPARATION
+        ; Proloque
 
         sub rsp, 16
         mov [rsp+8], r12                                ; Save non-volatile register for restoring at the end
