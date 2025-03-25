@@ -1,7 +1,5 @@
 # x64 Text Adventure for Windows
-Little text adventure game with content loaded from a file in x64 assembly for Windows with nasm, lld-link and clang.
-
-The project uses a **Makefile** for building.
+Little text adventure game with content loaded from files in x64 assembly for Windows with nasm, lld-link and clang for learning assembler and how lower levels on a CPU work.
 
 ## Setup
 - Install **NASM**
@@ -33,8 +31,8 @@ The building can be configured by the following environment variables:
 > Use ```make clean``` after changing environment variables since the *Makefile* does not detect the changes currently
 
 The *Makefile* has two configurations:
-- **dev**: Builds the game with debug symbols
-- **release**: Builds the game in release mode with enabled animations
+- **dev** (default): Builds the game with debug symbols 
+- **release**: Builds the game in release mode
 
 The *Makefile* tasks are:
 - **clean**: Removes all built artifacts
@@ -45,8 +43,6 @@ The *Makefile* tasks are:
 ## Current Todos
 - Use ReadNumber in ReadActionIndex function and move it to the game.asm
 - Clean up stack frames in game.asm since the EndGame for example does not properly work due to the stack
-- Files should be in the "stories" directory. Currently the file loading only supports files in the directory of the exe
-- Update README
 
 ## Feature Ideas
 - Support dynamic action count instead of the currently hardcoded limit of 4
