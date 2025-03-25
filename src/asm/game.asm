@@ -25,7 +25,7 @@ section .text
 ;   - configures the environment
 ;   - loads the file
 ;   - starts the main loop
-main:
+RunGame:
     call SetupInput
     call SetupOutput
 

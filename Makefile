@@ -9,7 +9,7 @@ LINK = lld-link
 # Build configuration (can be overridden via command line)
 # Options: release, debug, dev
 CONFIG ?= dev
-APP_ENTRY ?= main
+APP_ENTRY ?= BootstrapGame
 FILE_NAME ?= "stories/game.bin"
 SKIP_ANIMATIONS ?= 0
 
