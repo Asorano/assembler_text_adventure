@@ -14,8 +14,8 @@ section .bss
 
 section .text
     extern GetStdHandle, ReadConsoleA
-    extern AnimateText, WriteText
-    global SetupInput, ReadActionIndex
+    extern AnimateText, WriteText, WriteBuffer
+    global SetupInput, ReadActionIndex, ReadNumber
 
     SetupInput:
         push rbp
@@ -28,6 +28,91 @@ section .text
 
         add rsp, 40
         pop rbp
+        ret
+
+    ; Reads the input from stdin and tries to parse it into a number
+    ; # Parameters:
+    ; - [out] - rax = parsed number
+    ReadNumber:
+        ; Prologue
+        ; Stack frame:
+        ; - 32 bytes shadow space
+        ; -  4 bytes input bytes read   (rsp+32)
+        ; - 32 bytes input buffer       (rsp+)
+        ; -  4 bytes alignment
+        ; -----------------------------
+        ; => 72 bytes
+        push rbp
+        sub rsp, 72
+
+        mov rcx, [handle_console_in]    ; Input handle
+        lea rdx, [rsp+40]               ; Address of buffer
+        mov r8, 32                      ; Max bytes to read
+        lea r9, [rsp+32]
+        call ReadConsoleA
+
+        cmp dword [rsp+32], 0
+        jz _read_number_no_input
+
+        ; The string now contains the input plus CR/LF
+        ; Decrement size by one and replace the CR with a 0
+        sub dword [rsp+32], 2
+        lea rcx, [rsp+40]
+        mov eax, DWORD [rsp+32]
+        add rcx, rax
+        mov [rcx], byte 0
+
+        lea rcx, [rsp+40]
+        call ParseNumberInput
+
+    _read_number_end:
+        ; Epilogue
+        add rsp, 72
+        pop rbp
+        ret
+
+    _read_number_no_input:
+        mov rax, -1
+        jmp _read_number_end
+
+
+    ; Tries to parse a string to a number
+    ; # Parameters:
+    ; - [in]    rcx = address of the text buffer terminated by 0
+    ; - [out]   rax = parsed number
+    ParseNumberInput:
+        push rsi
+        lea rsi, [rcx]
+
+        xor rax, rax
+        xor rdx, rdx
+        xor rcx, rcx
+
+    _parse_number_loop:
+        mov dl, byte [rsi]
+        test dl, dl
+        jz _parse_number_end
+
+        ; Check whether the current byte is less than ASCII 0
+        cmp dl, '0'
+        jl _parse_number_invalid_input
+
+        ; Check whether the current byte is greater than ASCII 9
+        cmp dl, '9'
+        jg _parse_number_invalid_input
+
+        sub dl, '0'     ; Convert the current ASCII byte to a number
+        imul rax, 10    ; Multiply current number by 10
+        add rax, rdx    ; Add the current byte to the number
+
+        inc rsi
+        jmp _parse_number_loop
+
+    _parse_number_invalid_input:
+        mov rax, -1
+
+    _parse_number_end:
+        pop rsi
         ret
 
     ReadActionIndex:

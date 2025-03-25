@@ -1,20 +1,21 @@
 default rel
 
 section .data
-    txt_welcome db "Welcome to the x64 Text Adventures!", 10, 0
+    search_path db "stories\\*.story", 0
 
-    txt_no_files db "No files found.", 0
-    txt_file_not_found db "File not found!", 0
-    txt_question db "Which story do you want to play?", 10, 0
-    txt_input db "Enter the number: ", 10, 0
-    search_path db "stories\\*.story", 0  ; Current directory, all files
+    msg_welcome db "Welcome to the x64 Text Adventures!", 10, 0
+    msg_no_files db "No files found.", 0
+    msg_file_not_found db "This story is not written yet! Invalid input.", 0
+    msg_story_selection db "Which story do you want to play?", 10, 0
+    msg_invalid_input db "This story does not exist!", 10, 0
+    msg_input_request db "Enter the number: ", 10, 0
 
 section .bss
     file_name resb 256
 
 section .text
     extern SetupOutput, WriteText, WriteChar, WriteNumber, printf, ExitProcess, ClearOutput, ResetCursorPosition, SetTextColor
-    extern SetupInput, ReadActionIndex
+    extern SetupInput, ReadNumber
     extern GetFileNamesInDirectory, FindFileByPathAndIndex
 
     global BootstrapGame
@@ -24,34 +25,20 @@ BootstrapGame:
     call SetupInput
     call ResetCursorPosition
     call ClearOutput
- 
-    ; Print welcome text in color
-    mov rcx, 0x3
-    call SetTextColor
-    mov rcx, txt_welcome
-    call WriteText
-    mov rcx, 0x7
-    call SetTextColor
 
     call SelectStoryFile
+    test rax, rax
+    jz EndGame
 
-_end:
-    sub rsp, 40
-    xor ecx, ecx
-    call ExitProcess
-    add rsp, 40
-
-
-_file_not_found:
-    mov rcx, txt_file_not_found
+    mov rcx, msg_welcome
     call WriteText
-    jmp _end
+    jmp EndGame
 
 SelectStoryFile:
     sub rsp, 8
 
     ; Write question
-    lea rcx, [txt_question]
+    lea rcx, [msg_story_selection]
     call WriteText
     ; Line break
     mov rcx, 10
@@ -67,25 +54,45 @@ SelectStoryFile:
     call WriteChar
 
     ; Input text
-    lea rcx, [txt_input]
+    lea rcx, [msg_input_request]
     call WriteText
 
+    ; Read number input
+    call ReadNumber
+    cmp rax, -1
+    je _select_story_file_invalid_input
+
+    ; The user input is 1 - n but the index starts with 0
+    dec rax
+
     lea rcx, [search_path]
-    mov rdx, 1
+    mov rdx, rax
     lea r8, [file_name]
     call FindFileByPathAndIndex
 
     cmp rax, 0
-    jne _file_not_found
+    jne _select_story_file_not_found
+
+    mov rax, 1
 
     lea rcx, [file_name]
     call WriteText
 
-    ; mov rcx, 15
-    ; call ReadActionIndex
-
+_select_story_file_end:
     add rsp, 8
     ret
+
+_select_story_file_invalid_input:
+    mov rcx, msg_invalid_input
+    call WriteText
+    mov rax, 0
+    jmp _select_story_file_end
+
+_select_story_file_not_found:
+    mov rcx, msg_file_not_found
+    call WriteText
+    mov rax, 0
+    jmp _select_story_file_end
 
 WriteFileEntry:
     sub rsp, 16
@@ -109,3 +116,9 @@ WriteFileEntry:
 
     add rsp, 16
     ret
+
+EndGame:
+    sub rsp, 40
+    xor ecx, ecx
+    call ExitProcess
+    add rsp, 40
