@@ -1,10 +1,27 @@
 default rel
 
+%macro PRINT_FILE_ERROR 1
+    mov rcx, 0x4
+    call SetTextColor
+
+    mov rcx, %1
+    call WriteText
+
+    mov rcx, 0x7
+    call SetTextColor
+
+    mov rax, 0
+    jmp _select_story_file_end
+%endmacro
+
 section .data
-    search_path db "*.story", 0
+    story_file_directory db "stories/" ; Exactly 8 bytes
+    STORY_FILE_DIRECTORY_LENGTH equ $ - story_file_directory
+
+    search_path db "stories/*.story", 0
 
     msg_welcome db "Welcome to the x64 Text Adventures!", 10, 0
-    msg_no_files db "No files found.", 0
+    msg_no_files db "Seems like a black hole ate all the stories! Noooooooo!", 10, "(No stories found. The files must be located in the 'stories' directory and must have the extension '.stories')", 0
     msg_story_selection db "Which story do you want to play?", 10, 0
     msg_invalid_input db "This story does not exist!", 10, 0
     msg_input_request db "Please enter the story number:", 10, 0
@@ -14,7 +31,7 @@ section .data
 section .text
     extern SetupOutput, WriteText, WriteChar, WriteNumber, ExitProcess, ClearOutput, ResetCursorPosition, SetTextColor
     extern SetupInput, ReadNumber
-    extern GetFileNamesInDirectory, FindFileByPathAndIndex, ReadFileWithCallback
+    extern GetFileNamesInDirectory, FindFileByPathAndIndex, ReadFileWithCallback, CopyMemory
     extern ParseGameData
     extern RunGame
 
@@ -23,11 +40,18 @@ section .text
 ; Sets up input, output and console
 ; Then shows the story file selection and awaits the input from the player
 ; If a valid file is chosen, parse its content and if the parsing was successful, run the game
+;
+; Loading the file from the directory is interesting:
+; SelectStoryFile will only return the name of the selected file without the correct path (./stories/name.story)
+; When a file was successfully selected, the directory ("stories/"), which is exactly 8 bytes long, is copied
+; in front of the file name on the stack.
+; And then the address of the directory on the stack is used (rsp+8) 
+; This would break if the length of the directory name would change!
 BootstrapGame:
     ; Stack frame:
     ;   8 bytes result of ParseGameData
-    ; 256 bytes for the file name           (rsp+8)
-    ;   8 bytes alignment
+    ;   8 bytes for the directory           (rsp+8)
+    ; 256 bytes for the file name           (rsp+16)
     ; ---------------------------------------------
     ; => 272
     push rbp
@@ -39,7 +63,7 @@ BootstrapGame:
     call ResetCursorPosition
     call ClearOutput
 
-    lea rcx, [rsp+8]
+    lea rcx, [rsp+16]
     call SelectStoryFile
     test rax, rax
     jz _end_game
@@ -47,29 +71,34 @@ BootstrapGame:
     mov rcx, msg_parsing_file
     call WriteText
 
+    ; Copy the 8 bytes of the directory in front of the file name on the stack
+    lea rcx, [story_file_directory]
+    lea rdx, [rsp+8]
+    mov r8, STORY_FILE_DIRECTORY_LENGTH
+    call CopyMemory
+
     ; Read and parse the file
     lea rcx, [rsp+8]
     mov rdx, ParseGameData
     lea r8, [rsp]
     call ReadFileWithCallback
 
+    ; Proloque
+    mov rcx, [rsp]    ; Set first decision as initial decision
+    add rsp, 272
+    pop rbp
+
     test rax, rax
     jz _end_game
 
     ; Start the game with the chosen file
-    mov rcx, [rsp]    ; Set first decision as initial decision
-    call RunGame
+    jmp RunGame
 
 _end_game:
-    ; Restore stack
-    add rsp, 272
-    
     sub rsp, 32
     xor ecx, ecx
     call ExitProcess
     add rsp, 32
-
-    pop rbp
 
 ; Shows the file selection in the console and awaits the player input
 ; # Parameters
@@ -91,10 +120,14 @@ SelectStoryFile:
     ; Line break
     mov rcx, 10
     call WriteChar
+
     ; Get file names
     lea rcx, [search_path]
     lea rdx, WriteFileEntry
     call GetFileNamesInDirectory
+
+    test rax, rax
+    jz _select_story_no_files
 
     ; Line break
     mov rcx, 10
@@ -128,11 +161,11 @@ _select_story_file_end:
     pop rbp
     ret
 
+_select_story_no_files:
+    PRINT_FILE_ERROR msg_no_files
+
 _select_story_file_invalid_input:
-    mov rcx, msg_invalid_input
-    call WriteText
-    mov rax, 0
-    jmp _select_story_file_end
+    PRINT_FILE_ERROR msg_invalid_input
 
 ; Prints the name of a file in this format "n) File name"
 ; # Parameters:
