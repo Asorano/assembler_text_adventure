@@ -10,7 +10,6 @@ LINK = lld-link
 # Options: release, debug, dev
 CONFIG ?= dev
 APP_ENTRY ?= BootstrapGame
-FILE_NAME ?= "stories/game.bin"
 SKIP_ANIMATIONS ?= 0
 
 # Output directory structure
@@ -59,12 +58,12 @@ COMMON_LINKFLAGS = -entry:$(APP_ENTRY) -subsystem:console /defaultlib:kernel32.l
 # Configuration-specific flags
 ifeq ($(CONFIG),dev)
     # Development configuration (faster iteration, skips animations)
-    ASMFLAGS = -f win64 -g -DDEV_BUILD=1 -DDEBUG_LOG=1 -DFILE_NAME="\"$(FILE_NAME)\"" -DSKIP_ANIMATIONS=$(SKIP_ANIMATIONS) -I$(INCLUDE_DIR)
+    ASMFLAGS = -f win64 -g -DDEV_BUILD=1 -DDEBUG_LOG=1 -DSKIP_ANIMATIONS=$(SKIP_ANIMATIONS) -I$(INCLUDE_DIR)
     CFLAGS = -c -O1 -DDEV_BUILD=1 -I$(INCLUDE_DIR)
     LINKFLAGS = /debug /map:$(BIN_DIR)/$(TARGET)$(MAP_EXT) /pdb:$(BIN_DIR)/$(TARGET)$(PDB_EXT) $(COMMON_LINKFLAGS)
 else
     # Release configuration
-    ASMFLAGS = -f win64 -I$(INCLUDE_DIR) -DSKIP_ANIMATIONS=$(SKIP_ANIMATIONS) -DFILE_NAME="\"$(FILE_NAME)\""
+    ASMFLAGS = -f win64 -I$(INCLUDE_DIR) -DSKIP_ANIMATIONS=$(SKIP_ANIMATIONS)
     CFLAGS = -c -O2 -I$(INCLUDE_DIR)
     LINKFLAGS = /release $(COMMON_LINKFLAGS)
 endif

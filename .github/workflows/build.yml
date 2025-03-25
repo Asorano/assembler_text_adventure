@@ -17,11 +17,6 @@ on:
         options:
           - 'release'
           - 'dev'
-      story_file:
-        description: 'Path to the story file'
-        required: true
-        default: 'stories/game.bin'
-        type: string
       skip_animations:
         description: 'Skip animations'
         required: true
@@ -41,15 +36,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Verify story file exists
-        run: |
-          $storyPath = "${{ github.event.inputs.story_file || 'stories/game.bin' }}"
-          if (-not (Test-Path $storyPath)) {
-            Write-Error "Story file not found: $storyPath"
-            exit 1
-          }
-          Write-Output "Story file verified: $storyPath"
-
       - name: Set up NASM
         uses: ilammy/setup-nasm@v1
 
@@ -63,7 +49,7 @@ jobs:
       - name: Build with Makefile
         run: |
           mkdir -Force -Path build\obj\${{ github.event.inputs.config || 'release' }}\asm, build\obj\${{ github.event.inputs.config || 'release' }}\c, build\bin\${{ github.event.inputs.config || 'release' }}
-          make build APP_ENTRY=main CONFIG=${{ github.event.inputs.config || 'release' }} FILE_NAME=${{ github.event.inputs.story_file || 'stories/game.bin' }} SKIP_ANIMATIONS=${{ github.event.inputs.skip_animations == 'true' && '1' || '0' }}
+          make build APP_ENTRY=main CONFIG=${{ github.event.inputs.config || 'release' }} SKIP_ANIMATIONS=${{ github.event.inputs.skip_animations == 'true' && '1' || '0' }}
           copy build\bin\${{ github.event.inputs.config || 'release' }}\game.exe game.exe
         
       # Setting file information
