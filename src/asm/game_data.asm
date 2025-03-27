@@ -7,45 +7,49 @@ BITS 64
 section .data
     ; Size of the buffer for the runtime data
     GAME_DECISION_BUFFER_SIZE equ 1048576   ; 1MB
-    ; Size of the buffer for the file content
-    GAME_TEXT_BUFFER_SIZE equ 1048576       ; 1MB
 
 section .bss
     ; Total decision count as word
     game_decision_count resw 1
     ; Buffer for runtime data
     game_decision_buffer resb GAME_DECISION_BUFFER_SIZE  ; 1MB buffer
-    ; Buffer for file content
-    game_text_buffer resb GAME_TEXT_BUFFER_SIZE  ; 1MB buffer
 
 section .text
     ; Global data
     global game_decision_count
     global game_decision_buffer
-    global game_text_buffer
 
     ; Global functions
-    global GetGameDecisionByIndex, FindGameDecisionById, GetActionCount, GetActionTarget
+    global GetGameDecisionByIndex, GetActionCount, GetActionTarget
 
     ; Imported functions
-    extern strcmp
+    extern strcmp, GetDecisionById
 
     ; Returns the address of the decision of the action if available
     ; # Arguments:
-    ;   - rcx => decision address
-    ;   - rdx => action index
+    ; - [in]    rcx = pointer to game data
+    ; - [in]    rdx = pointer to decision
+    ; - [in]     r8 = action index
     ; # Returns:
     ;   - rax = action target decision address or 0x0
     GetActionTarget:
+        push rbp
+        mov rbp, rsp
+        sub rsp, 32
         ; Get the id of the target decision of the action
         ; Add the offset of the first action of an decision to the decision address
-        add rcx, GameDecision.action_0
+        add rdx, GameDecision.action_0
         ; Multiply the size of an action in memory with the action index
-        imul rdx, GameAction_size
+        imul r8, GameAction_size
         ; Calculate the address of the id of the linked decision
-        add rcx, rdx
+        add rdx, r8
+        mov rdx, [rdx]
         ; Find the decision, result is placed in rax
-        call FindGameDecisionById
+
+        call GetDecisionById
+
+        add rsp, 32
+        pop rbp
         ret
 
     ; Returns the address of a decision by index in the buffer

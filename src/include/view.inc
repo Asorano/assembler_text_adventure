@@ -67,7 +67,7 @@ section .text
         call AnimateText
 
         mov rcx, [rsp]
-        mov rcx, [rcx+8]
+        mov rcx, [rcx+GameData.author]
         call AnimateText
 
         mov rcx, 10

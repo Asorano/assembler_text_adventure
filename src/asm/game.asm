@@ -8,6 +8,8 @@ default rel
 section .data    
     decisions_taken dq 0
 
+    test_id db "act_0_turn_light_on", 0
+
 section .bss
     game_data resq 1
     current_decision resq 1
@@ -15,8 +17,8 @@ section .bss
 section .text
     global RunGame
     ; Project
-    extern GameDecision, GetActionCount, GetActionTarget, ReadFileWithCallback, ParseGameData
-    extern ReadActionIndex
+    extern GameDecision, GetActionCount, GetActionTarget, ReadFileWithCallback, ParseGameData, game_decision_count
+    extern ReadActionIndex, getDecisionById
     extern ClearOutput, ResetCursorPosition, WriteText, WriteChar, WriteNumber, SetTextColor, CalculateTextLength, AnimateText
     ; Windows
     extern Sleep
@@ -49,8 +51,11 @@ RunGame:
     call RenderStoryIntro
 
     mov rcx, [game_data]
-    mov rcx, [rcx+GameData.decisions]
-    mov [current_decision], rcx
+    mov edx, dword [rcx+GameData.decision_count]
+    mov [game_decision_count], rdx
+
+    mov rdx, [rcx+GameData.decisions]
+    mov [current_decision], rdx
 
 ; The main game loop
 ;   - Clears the console
@@ -99,8 +104,9 @@ _run_game_loop:
     jae _invalid_action
 
     ; Get the address of the follow up decision based on the action
-    mov rcx, [current_decision]
-    mov rdx, rax
+    mov rcx, [game_data]
+    mov rdx, [current_decision]
+    mov r8, rax
     call GetActionTarget
 
     ; End the game if the decision does not exist
