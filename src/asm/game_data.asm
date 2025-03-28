@@ -3,27 +3,12 @@ BITS 64
 
 %include "data.inc"
 
-; Currently the content of the file and the runtime data are stored in 1MB buffers
-section .data
-    ; Size of the buffer for the runtime data
-    GAME_DECISION_BUFFER_SIZE equ 1048576   ; 1MB
-
-section .bss
-    ; Total decision count as word
-    game_decision_count resw 1
-    ; Buffer for runtime data
-    game_decision_buffer resb GAME_DECISION_BUFFER_SIZE  ; 1MB buffer
-
 section .text
-    ; Global data
-    global game_decision_count
-    global game_decision_buffer
-
     ; Global functions
-    global GetGameDecisionByIndex, GetActionCount, GetActionTarget
+    global GetActionCount, GetActionTarget
 
     ; Imported functions
-    extern strcmp, GetDecisionById
+    extern strcmp
 
     ; Returns the address of the decision of the action if available
     ; # Arguments:
@@ -52,40 +37,12 @@ section .text
         pop rbp
         ret
 
-    ; Returns the address of a decision by index in the buffer
     ; # Arguments:
-    ;   - rcx = decision index
-    GetGameDecisionByIndex:
-        ; Check that the index is at least 0
-        cmp rcx, 0
-        jl _invalid_decision_index
-
-        ; Load the total decision count
-        movzx rax, word [game_decision_count]
-
-        ; Verify that the index is lower than the max count
-        cmp rax, rcx
-        jle _invalid_decision_index
-
-        ; Use the size of a whole decision struct and multiply it with the index
-        mov rax, GameDecision_size
-        imul rax, rcx
-        ; Load the start address of the buffer
-        lea rcx, [game_decision_buffer]
-        ; Add the total offset
-        add rax, qword rcx
-        ret
-
-    ; If the index is invalid, set rax to null and return
-    _invalid_decision_index:
-        xor rax, rax
-        ret
-
-    ; # Arguments:
-    ;   - rcx = decision address
+    ; - [in]    rcx = Pointer to decision
+    ; - [out]   rax = action count
     ; # Registers:
-    ;   - rax = counter
-    ;   - rdx = action address
+    ; - rax = counter
+    ; - rdx = action address
     GetActionCount:
         ; Add the offset of the first action to the decision address
         add rcx, GameDecision.action_0
@@ -119,14 +76,9 @@ section .text
     ; - [out]   rax = pointer to decision or NULL
     ;
     ; # Registers:
-    ;   - r12 = decision id (saved)
-    ;   - r13 = remaining decision loop count
-    ;   - r14 = current decision buffer address
-    ;
-    ; Returns in rax:
-    ;   = 0 => decision not found
-    ;   > 0 => address of decision
-    ;
+    ; - r12 = decision id (saved)
+    ; - r13 = remaining decision loop count
+    ; - r14 = current decision buffer address
     FindGameDecisionById:
         ; Prologue
         push rbp

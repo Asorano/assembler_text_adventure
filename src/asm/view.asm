@@ -1,3 +1,7 @@
+default rel
+
+%include "data.inc"
+
 section .data
     ; Game Start
     txt_start_box_line_top db "*-------------------------------------------------*", 10, 0
@@ -19,6 +23,9 @@ section .data
     txt_game_over_goodbye db "Thank you for playing! Better luck next time!", 0
 
 section .text
+    extern SetTextColor, WriteText, WriteChar, WriteNumber, AnimateText, ClearOutput, ResetCursorPosition
+    extern Sleep
+    global RenderStoryIntro, RenderGameIntro, RenderGameHeader, RenderGameEnd
 
     ; Renders the title and the author
     ; # Parameters:

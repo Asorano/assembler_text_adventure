@@ -1,7 +1,6 @@
 ; A simple text adventure in x64 assembler
 default rel
 
-%include "view.inc"
 %include "text.inc"
 %include "data.inc"
 
@@ -20,6 +19,7 @@ section .text
     extern GameDecision, GetActionCount, GetActionTarget, ReadFileWithCallback, ParseGameData, game_decision_count
     extern ReadActionIndex, getDecisionById
     extern ClearOutput, ResetCursorPosition, WriteText, WriteChar, WriteNumber, SetTextColor, CalculateTextLength, AnimateText
+    extern RenderStoryIntro, RenderGameIntro, RenderGameHeader, RenderGameEnd
     ; Windows
     extern Sleep
 
@@ -50,10 +50,6 @@ RunGame:
     mov rcx, [game_data]
     call RenderStoryIntro
 
-    mov rcx, [game_data]
-    mov edx, dword [rcx+GameData.decision_count]
-    mov [game_decision_count], rdx
-
     mov rdx, [rcx+GameData.decisions]
     mov [current_decision], rdx
 
@@ -67,6 +63,7 @@ _run_game_loop:
     call ClearOutput
     call ResetCursorPosition
 
+    mov rcx, [decisions_taken]
     call RenderGameHeader
 
     ; Print the current decision text
