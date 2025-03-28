@@ -28,7 +28,8 @@ typedef struct {
     GameDecision* decisions;
 } GameData;
 
-GameData* ParseGameData(char* rawData, int rawDataLength) {
+
+GameData* MockGameData() {
     GameData* gameData = (GameData*) malloc(sizeof(GameData));
     gameData->title = "The biggest adventure yet!";
     gameData->author = "Asorano";
@@ -68,7 +69,10 @@ GameData* ParseGameData(char* rawData, int rawDataLength) {
     return gameData;
 }
 
+GameData* ParseGameData(char* rawData, int rawDataLength) {
+    return MockGameData();
+}
+
 void FreeGameData(GameData* pointer) {
     free(pointer);
 }
-

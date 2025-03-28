@@ -46,7 +46,6 @@ The *Makefile* tasks are:
 
 ## Feature Ideas
 - Support dynamic action count instead of the currently hardcoded limit of 4
-- Add story title to data file and display it in the intro
 - Make Makefile aware of environment variable changes (currently it is not rebuilt when they change)
 - Pass the id of the initial decision via command line to continue an adventure
 
@@ -55,6 +54,5 @@ The *Makefile* tasks are:
 - Replace strcmp with an own implementation
 - Improve the file parsing by allowing characters like \"
 - Use the makefile prepare for creating the directories on the Github Runner (fails currently)
-- Define proper stack frames for the functions
 - Replace fixed-size buffers for game data and game texts with dynamic memory allocation
 - Print a proper error when the parsing of the file fails
