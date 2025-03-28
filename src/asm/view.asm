@@ -19,13 +19,13 @@ section .data
     txt_decision_taken db "   Decisions taken: ", 0
 
     ; Game End
-    txt_game_over_box db 10, "|-------------------------------------------------|", 10, "|-*-*-*-*-*-*-*-*-   GAME OVER   -*-*-*-*-*-*-*-*-|", 10, "|-------------------------------------------------|", 10, 10, 0
+    txt_game_over_box db "|-------------------------------------------------|", 10, "|-*-*-*-*-*-*-*-*-   GAME OVER   -*-*-*-*-*-*-*-*-|", 10, "|-------------------------------------------------|", 10, 10, 0
     txt_game_over_goodbye db "Thank you for playing! Better luck next time!", 0
 
 section .text
     extern SetTextColor, WriteText, WriteChar, WriteNumber, AnimateText, ClearOutput, ResetCursorPosition
     extern Sleep
-    global RenderStoryIntro, RenderGameIntro, RenderGameHeader, RenderGameEnd
+    global RenderStoryIntro, RenderGameIntro, RenderGameHeader, RenderGameEnd, RenderDecision
 
     ; Renders the title and the author
     ; # Parameters:
@@ -269,5 +269,109 @@ section .text
 
         mov rcx, txt_game_over_goodbye
         call AnimateText
+
+        ret
+
+    ; Prints a decision
+    ; # Arguments:
+    ; - [in]    rcx = Pointer to decision
+    RenderDecision:
+        push rbp
+        mov rbp, rsp
+
+        mov rsi, rcx
+
+        mov rcx, [rcx + GameDecision.text]
+        call AnimateText
+
+        mov rcx, 10
+        call WriteChar
+
+        mov rcx, 10
+        call WriteChar
+
+        mov rcx, rsi
+        call RenderActions
+
+        pop rbp
+        ret
+
+    ; Prints the action texts of a decision
+    ; # Arguments:
+    ; - [in]    rcx = Pointer to decision
+    ; # Registers:
+    ; - r12 = Current action address (after initialization)
+    ; - r12 = Current action number (index + 1) 
+    RenderActions:
+        ; Save caller-saved registers (windows calling convetion)
+        push rbp
+        mov rbp, rsp
+
+        push r12
+        push r13
+
+        ; Initialize registers
+        mov r12, rcx                                        ; r12 now contains the address of the decision
+        add r12, GameDecision.action_0 + GameAction.text    ; Add the offset to the first action and the offset of the action target address to get the text address 
+
+        ; Initialize action counter
+        mov r13, 1
+
+    _write_actions_loop:
+        ; Check that the max action count was not reached yet
+        cmp r13, MAX_ACTION_COUNT
+        jae _end_write_actions_loop
+        
+        ; Check whether the text address of the action is valid
+        ; If the address is 0x0, there is no further action
+        mov rax, [r12]
+        test rax, rax
+        jz _end_write_actions_loop
+
+        ; Write action to console
+        mov rcx, r12
+        mov rdx, r13
+        call RenderAction
+
+        ; Update current action address by adding the size of a GameAction
+        add r12, GameAction_size
+        inc r13
+        jmp _write_actions_loop
+
+    _end_write_actions_loop:
+        ; Write line break
+        mov rcx, 10
+        call WriteChar
+
+        ; Restore caller-saved registers (windows calling convention)
+        pop r13
+        pop r12
+        pop rbp
+
+        ret
+
+    ; Prints a single action
+    ; # Arguments:
+    ; - [in]    rcx = Address of the action
+    ; - [in]    rdx = Action index
+    RenderAction:
+        push rcx
+
+        ; Write action number
+        mov rcx, rdx
+        call WriteNumber
+        ; Write )
+        mov rcx, ')'
+        call WriteChar
+        ; Write space
+        mov rcx, ' '
+        call WriteChar
+        ; Write action text
+        pop rcx
+        mov rcx, [rcx]
+        call AnimateText
+        ; Write line break
+        mov rcx, 10
+        call WriteChar
 
         ret
