@@ -46,7 +46,7 @@ section .text
         mov rdx, [rdx]
         ; Find the decision, result is placed in rax
 
-        call GetDecisionById
+        call FindGameDecisionById
 
         add rsp, 32
         pop rbp
@@ -114,7 +114,9 @@ section .text
 
     ; Iterates over the decision buffer and tries to find a decision which has the passed decision id
     ; # Arguments:
-    ;   - rcx = decision id
+    ; - [in]    rcx = pointer to game data
+    ; - [in]    rdx = pointer to decision id
+    ; - [out]   rax = pointer to decision or NULL
     ;
     ; # Registers:
     ;   - r12 = decision id (saved)
@@ -126,14 +128,24 @@ section .text
     ;   > 0 => address of decision
     ;
     FindGameDecisionById:
-        ; Save caller-saved registers
+        ; Prologue
+        push rbp
+        mov rbp, rsp
+        
         push r12
         push r13
         push r14
 
-        mov r12, rcx                            ; Move decision id
-        movzx r13, word [game_decision_count]   ; Move decision count
-        lea r14, [game_decision_buffer]         ; Lead first decision address
+        ; Stack frame:
+        ; - 32 bytes shadow space
+        ; -  6 bytes alignment
+        ; -------------------
+        ; => 40 bytes
+        sub rsp, 40
+
+        mov r12, rdx                            ; Move decision id
+        movzx r13, word [rcx + GameData.decision_count]   ; Move decision count
+        mov r14, [rcx + GameData.decisions]       ; Load first decision address
 
     _find_decision_loop:
         ; Check that there are remaining decisions in the buffer
@@ -142,13 +154,9 @@ section .text
 
         ; Compare the searched id and the id of the current decision
         ; Call the c string comparison function
-        push rbp
-        sub rsp, 32
-        mov rcx, [r12]
+        mov rcx, r12
         mov rdx, [r14]
         call strcmp
-        add rsp, 32
-        pop rbp
 
         ; Check compare result. If 0, the decision has been found
         cmp rax, 0
@@ -168,8 +176,10 @@ section .text
         xor rax, rax
         
     _end_search:
-        ; Restore caller-saved registers
+        ; Epiloque
+        add rsp, 40
         pop r14
         pop r13
         pop r12
+        pop rbp
         ret

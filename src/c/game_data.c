@@ -28,23 +28,6 @@ typedef struct {
     GameDecision* decisions;
 } GameData;
 
-GameDecision* GetDecisionById(GameData* gameData, char* id)
-{
-    printf("Looking for %s in story %s \n", id, gameData->title);
-
-    for(int index = 0; index < gameData->decisionCount; index++)
-    {
-        GameDecision decision = gameData->decisions[index];
-
-        if(strcmp(decision.id, id) == 0)
-        {
-            return &(gameData->decisions[index]);
-        }
-    }
-
-    return NULL;
-}
-
 GameData* ParseGameData(char* rawData, int rawDataLength) {
     GameData* gameData = (GameData*) malloc(sizeof(GameData));
     gameData->title = "The biggest adventure yet!";
