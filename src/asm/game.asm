@@ -111,22 +111,19 @@ _run_game_loop:
 ; Called at the end of the game loop
 _end_game_loop:
     ; Clean up the stack allocation for the game loop
+    call RenderGameEnd
     add rsp, 16
-    jmp EndGame
+    pop rbp
+    ret
 
 ; Called when a decision was not found and ends the game with an error
 _invalid_decision:
     mov rcx, err_invalid_decision_id
-    call WriteText
-    jmp EndGame
+    call AnimateText
+    jmp _end_game_loop
 
 ; Prints an error with the invalid input
 _invalid_action:
     mov rcx, err_invalid_action
-    call WriteText
+    call AnimateText
     jmp _run_game_loop
-
-; Renders the game end
-EndGame:
-    call RenderGameEnd
-    ret

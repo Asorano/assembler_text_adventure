@@ -270,6 +270,9 @@ section .text
         mov rcx, txt_game_over_goodbye
         call AnimateText
 
+        mov rcx, 10
+        call WriteChar
+
         ret
 
     ; Prints a decision
