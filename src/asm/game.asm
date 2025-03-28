@@ -1,17 +1,17 @@
 ; A simple text adventure in x64 assembler
 default rel
 
-%include "text.inc"
 %include "data.inc"
 
 section .data    
-    decisions_taken dq 0
-
-    test_id db "act_0_turn_light_on", 0
+    err_invalid_action: db "Impossible!", 10, 10, 0
+    err_invalid_decision_id: db "A glitch in the space-time continuum has been detected!", 10, "All memories have been erased for safety reasons.", 10, "(The selected action was not properly connected to a decision)", 10, 0
+    msg_total_decisions_taken db " decisions survived: ", 0
 
 section .bss
     game_data resq 1
     current_decision resq 1
+    decisions_taken resq 0
 
 section .text
     global RunGame
