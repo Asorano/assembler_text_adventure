@@ -69,8 +69,83 @@ GameData* MockGameData() {
     return gameData;
 }
 
+int parseNextLine(char* source, char* destination) {
+    char currentChar = source[0];
+
+    int counter = 0;
+    while(currentChar != 0)
+    {
+        if(currentChar == 0x0A)
+        {
+            counter++;
+            break;
+        }
+
+        if(currentChar == 0x0D)
+        {
+            destination[counter] = 0;
+        }
+        else {
+            destination[counter] = currentChar;
+        }
+
+        counter++;
+        currentChar = source[counter];
+    }
+
+    return counter;
+}
+
+void extractContextAndValue(char* line, char* context, char* value)
+{
+    int index = 0;
+    char currentChar = line[0];
+
+    // Remove tabs
+    while(currentChar == '\t' || currentChar == ' ')
+    {
+        index++;
+        currentChar = line[index];   
+    }
+
+    // Check whether array element
+    if(currentChar == '-')
+    {
+        printf("THats an array! using prev conttext");
+    }
+    else {
+        int contextIndex = 0;
+        // Extract context
+        while(currentChar != 0 && currentChar != ':')
+        {
+            context[contextIndex++] = currentChar;
+            index++;
+            currentChar = line[index];
+        }
+    }
+
+    printf("Context: %s\n", context);
+}
+
 GameData* ParseGameData(char* rawData, int rawDataLength) {
-    return MockGameData();
+    GameData* gameData = (GameData*) malloc(sizeof(GameData));
+    
+    char* currentLine = (char*)malloc(1024);
+    char* currentContext = (char*)malloc(1024);
+
+    int length = parseNextLine(rawData, currentLine);
+    int currentPosition = length;
+    while(length != 0)
+    {
+        printf("%i => %s\n", length, currentLine);
+        // extractContextAndValue(currentLine, currentContext, NULL);
+        length = parseNextLine(rawData + currentPosition, currentLine);
+        currentPosition += length;
+    }
+
+    free(currentLine);
+    free(currentContext);
+    return gameData;
 }
 
 void FreeGameData(GameData* pointer) {

@@ -69,8 +69,9 @@ BootstrapGame:
     ; Returns the pointer to the first decision if successful
     call SelectAndLoadFile
 
-    test rax, rax
-    jz EndGame
+    ; test rax, rax
+    ; jz EndGame
+    jmp EndGame
 
     ; Start the game with the chosen file
     mov [rsp], rax
