@@ -96,58 +96,65 @@ int parseNextLine(char* source, char* destination) {
     return counter;
 }
 
-void extractContextAndValue(char* line, char* context, char* value)
-{
-    int index = 0;
-    char currentChar = line[0];
-
-    // Remove tabs
-    while(currentChar == '\t' || currentChar == ' ')
-    {
-        index++;
-        currentChar = line[index];   
-    }
-
-    // Check whether array element
-    if(currentChar == '-')
-    {
-        printf("THats an array! using prev conttext");
-    }
-    else {
-        int contextIndex = 0;
-        // Extract context
-        while(currentChar != 0 && currentChar != ':')
-        {
-            context[contextIndex++] = currentChar;
-            index++;
-            currentChar = line[index];
-        }
-    }
-
-    printf("Context: %s\n", context);
+void FreeGameData(GameData* pointer) {
+    free(pointer->title);
+    free(pointer);
 }
+
+#define FREE_TEMP_BUFFERS \
+    FreeGameData(gameData); \
+    free(currentLine);
+
+#define PARSE_METADATA(name, dest) \
+    length = parseNextLine(rawData + currentPosition, currentLine); \
+    if(length == 0) \
+    { \
+        printf("Missing metadata %s!\n", #name); \
+        FreeGameData(gameData); \
+        free(currentLine); \
+        return NULL; \
+    } \
+    dest = (char*) malloc(length); \
+    strcpy_s(dest, length, currentLine); \
+    printf("[META] %s: %s\n", #name, gameData->name); \
+    currentPosition += length;
 
 GameData* ParseGameData(char* rawData, int rawDataLength) {
     GameData* gameData = (GameData*) malloc(sizeof(GameData));
-    
     char* currentLine = (char*)malloc(1024);
-    char* currentContext = (char*)malloc(1024);
 
-    int length = parseNextLine(rawData, currentLine);
-    int currentPosition = length;
+    // Parse metadata
+    int length;
+    int currentPosition = 0;
+    PARSE_METADATA(title, gameData->title);
+    PARSE_METADATA(author, gameData->author);
+
+    // Parse decisions
+    GameDecision* currentDecision = NULL;
+    int currentActionIndex = 0;
     while(length != 0)
     {
-        printf("%i => %s\n", length, currentLine);
-        // extractContextAndValue(currentLine, currentContext, NULL);
         length = parseNextLine(rawData + currentPosition, currentLine);
         currentPosition += length;
+        // Jump over empty lines
+        if(length == 2)
+        {
+            continue;
+        }
+
+        // New decision?
+        if(currentLine[0] == '[')
+        {
+            currentDecision = (GameDecision*) malloc(sizeof(GameDecision));
+
+        }
+        else {
+            
+        }
+
+        printf("%s\n", currentLine);
     }
 
     free(currentLine);
-    free(currentContext);
     return gameData;
-}
-
-void FreeGameData(GameData* pointer) {
-    free(pointer);
 }
