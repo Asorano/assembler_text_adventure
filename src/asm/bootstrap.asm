@@ -1,5 +1,7 @@
 default rel
 
+%include "data.inc"
+
 %macro PRINT_ERROR 1
     mov rcx, 0x4
     call SetTextColor
@@ -63,25 +65,24 @@ BootstrapGame:
 
     call SetupOutput
     call SetupInput
-    call ResetCursorPosition
-    call ClearOutput
+    ; call ResetCursorPosition
+    ; call ClearOutput
 
     ; Returns the pointer to the first decision if successful
     call SelectAndLoadFile
 
-    ; test rax, rax
-    ; jz EndGame
-    jmp EndGame
+    test rax, rax
+    jz EndGame
 
     ; Start the game with the chosen file
     mov [rsp], rax
-    mov rcx, rax
 
+    mov rcx, [rsp]
     call RunGame
 
     ; Free memory again
-    mov rcx, [rsp]
-    call FreeGameData
+    ; mov rcx, [rsp]
+    ; call FreeGameData
 EndGame:
     ; Epiloque:
     ; Additional 16 bytes to get the 32 bytes shadow space
@@ -167,8 +168,6 @@ SelectAndLoadFile:
     mov rax, [rsp+8]
     test rax, rax
     jz _select_story_file_parse_error
-
-    mov rax, [rsp+8]
 
 _select_story_file_end:
     ; Epiloque

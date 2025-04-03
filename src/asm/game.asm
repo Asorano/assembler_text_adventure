@@ -32,9 +32,6 @@ RunGame:
     push rbp
     mov rbp, rsp
     ; Stack frame:
-    ; - 8 bytes alignment
-    ; -----------------------
-    ; => 8
     sub rsp, 16
 
     mov [game_data], rcx
@@ -42,7 +39,7 @@ RunGame:
     call ClearOutput
     call ResetCursorPosition
 
-    call RenderGameIntro
+    ; call RenderGameIntro
 
     call ClearOutput
     call ResetCursorPosition

@@ -19,5 +19,10 @@ struc GameData
     .decisions          resq 1  ; Pointer to decisions
 endstruc
 
+struc DecisionLinkedList
+    .next               resq 1                  ; Pointer to next decision
+    .decision           resb GameDecision_size  ; Decision
+endstruc
+
 section .data
     MAX_ACTION_COUNT equ 4
