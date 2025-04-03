@@ -83,8 +83,8 @@ BootstrapGame:
     call RunGame
 
     ; Free memory again
-    ; mov rcx, [rsp]
-    ; call FreeGameData
+    mov rcx, [rsp]
+    call FreeGameData
 EndGame:
     ; Epiloque:
     ; Additional 16 bytes to get the 32 bytes shadow space

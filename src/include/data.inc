@@ -16,7 +16,7 @@ struc GameData
     .title              resq 1  ; Pointer to title text
     .author             resq 1  ; Pointer to autor
     .decision_count     resq 1  ; Int
-    .decisions          resq 1  ; Pointer to decisions
+    .decisions          resq 1  ; Pointer to first decision
 endstruc
 
 struc DecisionLinkedList

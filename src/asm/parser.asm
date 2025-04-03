@@ -2,7 +2,8 @@ default rel
 
 %include "data.inc"
 
-%macro PRINT_ERROR 1
+%macro HANDLE_ERROR 1
+    ; Print the error
     mov rcx, 0x4
     call SetTextColor
 
@@ -14,6 +15,14 @@ default rel
 
     mov rcx, 0x7
     call SetTextColor
+
+    ; Free game data
+    mov rcx, [rsp+48]
+    call FreeGameData
+
+    ; Set result
+    mov rax, 0
+    jmp _end_parsing
 %endmacro
 
 section .data
@@ -25,11 +34,12 @@ section .bss
     mock resb DecisionLinkedList
 
 section .text
-    global ParseGameData
+    global ParseGameData, FreeGameData
 
     extern GetProcessHeap, HeapAlloc, HeapFree, SetTextColor
     extern WriteText, WriteNumber, AllocateNextLineOnHeap, SkipEmptyLines
 
+    ; Frees the decisions and metadata and the game data struct from the heap
     ; # Arguments
     ; - [in]    rcx = pointer to game data struct
     FreeGameData:
@@ -112,7 +122,11 @@ section .text
         ; -  8 bytes heap handle                (rsp+40)
         ; -  8 bytes pointer to game data       (rsp+48)       
         ; -  8 bytes decision count             (rsp+56)
-        sub rsp, 64
+        ; -  8 bytes pointer to current item    (rsp+64)
+        ; -  8 bytes alignment
+        ; ----------------------------------------------
+        ; => 80 bytes
+        sub rsp, 80
 
         mov qword [rsp+32], rcx ; Save data pointer in stack frame
         mov qword [rsp+48], 0   ; Ensure that the pointer to the linked list is NULL
@@ -149,26 +163,26 @@ section .text
         test rax, rax
         jz _err_missing_metadata_separation
 
-        ; mov rcx, rax
-        ; call WriteNumber
 
-    ; _parse_decision:
-    ;     ; Allocate the next linked list item
-    ;     mov rcx, [rsp+32]
-    ;     mov rdx, 8                          ; flags (HEAP_ZERO_MEMORY = 8)
-    ;     mov r8, DecisionLinkedList_size     ; Size
-    ;     call HeapAlloc
+        ; Parse decisions
+    _parse_decision:
+        ; Allocate the next linked list item
+        mov rcx, [rsp+40]
+        mov rdx, 8                          ; flags (HEAP_ZERO_MEMORY = 8)
+        mov r8, DecisionLinkedList_size     ; Size
+        call HeapAlloc
         
-    ;     ; Check that the 
-    ;     test rax, rax
-    ;     jz _parse_game_data_heap_alloc_failed
+        ; Check that the allocation was successful
+        test rax, rax
+        jz _err_heap_alloc
 
-    ;     mov rcx, [rsp+40]                   ; Load pointer to previous item
-    ;     mov [rax + DecisionLinkedList.next], rcx
+        ; Load previous item, set it in the new item and update the current item
+        mov rcx, [rsp+64]
+        mov [rax + DecisionLinkedList.next], rcx
+        mov [rsp+64], rax
 
-    ;     mov [rsp+40], rax
-
-    ;     inc byte [rsp+48]
+        ; Increment decision count
+        inc byte [rsp+56]
 
     ;     jmp _parse_decision
 
@@ -176,20 +190,20 @@ section .text
     ;     lea rcx, [ERR_HEAP_ALLOC]
     ;     call WriteText
         
+        ; Set decision count in game data
+        mov rdx, [rsp+56]   ; Load decision count
+        mov rcx, [rsp + 48]
+        mov [rcx + GameData.decision_count], rdx
 
-        mov rax, [rsp+48] ; Load the address of the last linked list item, can be NULL
+        mov rax, [rsp+48]   ; Load the game data pointer as result
     _end_parsing:
-
         ; Epilogue
-        add rsp, 64
+        add rsp, 80
         pop rbp
         ret
 
+    _err_heap_alloc:
+        HANDLE_ERROR ERR_MISSING_METDATA_SEPARATION
+
     _err_missing_metadata_separation:
-        PRINT_ERROR ERR_MISSING_METDATA_SEPARATION
-
-        mov rcx, [rsp+48]
-        call FreeGameData
-
-        mov rax, 0
-        jmp _end_parsing
+        HANDLE_ERROR ERR_HEAP_ALLOC
