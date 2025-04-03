@@ -2,42 +2,6 @@ default rel
 
 %include "data.inc"
 
-%macro INSERT_MOCK_CONTENT 0
-        ; Allocate test id
-        mov rcx, [rsp+32]
-        mov rdx, 8                          ; flags (HEAP_ZERO_MEMORY = 8)
-        mov r8, 3
-        call HeapAlloc
-
-        mov byte [rax], 'I'
-        mov byte [rax+1], 'D'
-        mov byte [rax+3], 0
-
-        mov rcx, [rsp+40]
-        mov [rcx + DecisionLinkedList.decision + GameDecision.id], rax
-
-        ; Allocate test text
-        mov rcx, [rsp+32]
-        mov rdx, 8                          ; flags (HEAP_ZERO_MEMORY = 8)
-        mov r8, 3
-        call HeapAlloc
-
-        mov byte [rax], 'H'
-        mov byte [rax+1], 'i'
-        mov byte [rax+3], 0
-
-        mov rcx, [rsp+40]
-        mov [rcx + DecisionLinkedList.decision + GameDecision.text], rax
-
-        mov rcx, [rsp+40]
-        mov rcx, [rcx + DecisionLinkedList.decision + GameDecision.id]
-        call WriteText
-
-        mov rcx, [rsp+40]
-        mov rcx, [rcx + DecisionLinkedList.decision + GameDecision.text]
-        call WriteText
-%endmacro
-
 %macro PRINT_ERROR 1
     mov rcx, 0x4
     call SetTextColor
@@ -65,6 +29,46 @@ section .text
 
     extern GetProcessHeap, HeapAlloc, HeapFree, SetTextColor
     extern WriteText, WriteNumber, AllocateNextLineOnHeap, SkipEmptyLines
+
+    ; # Arguments
+    ; - [in]    rcx = pointer to game data struct
+    FreeGameData:
+        ; Prologue
+        push rbp
+        mov rbp, rsp
+        ; Stack frame
+        ; - 32 bytes shadow space
+        ; -----------------------
+        ; => 32 bytes
+        sub rsp, 32
+
+        mov r12, rcx
+
+        call GetProcessHeap
+        mov r13, rax
+
+        ; Free title
+        mov rcx, r13
+        xor rdx, rdx
+        mov r8, [r12 + GameData.title]
+        call HeapFree
+
+        ; Free author
+        mov rcx, r13
+        xor rdx, rdx
+        mov r8, [r12 + GameData.author]
+        call HeapFree
+
+        ; Free game data
+        mov rcx, r13
+        xor rdx, rdx
+        mov  r8, r12
+        call HeapFree
+
+        ; Epiloque
+        add rsp, 32
+        pop rbp
+        ret
 
     ; # Arguments 
     ; - [in] pointer to game data string
@@ -183,5 +187,9 @@ section .text
 
     _err_missing_metadata_separation:
         PRINT_ERROR ERR_MISSING_METDATA_SEPARATION
+
+        mov rcx, [rsp+48]
+        call FreeGameData
+
         mov rax, 0
         jmp _end_parsing
