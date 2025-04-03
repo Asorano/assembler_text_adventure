@@ -1,7 +1,7 @@
 section .text
     extern CopyMemory, WriteNumber, WriteChar
     extern HeapAlloc
-    global AllocateNextLineOnHeap
+    global AllocateNextLineOnHeap, CalculateNextLineLength, SkipEmptyLines
 
     ; Allocates the next line of a string on the heap
     ; # Arguments
@@ -52,6 +52,32 @@ section .text
         mov rdx, [rsp+56]
         ; Epiloque
         add rsp, 80
+        pop rbp
+        ret
+
+    ; Skips all empty lines in the string
+    ; # Arguments:
+    ; - [in]    rcx = pointer to string
+    ; - [out]   rdx = pointer to next line
+    ; - [out]   rax = skipped line count
+    SkipEmptyLines:
+        push rbp
+        mov rbp, rsp
+
+        xor rax, rax
+        xor r10, r10
+
+    _loop_skip_empty_lines:
+        mov r10b, [rcx]
+
+        cmp r10b, 0x0D
+        jne _end_skip_empty_lines
+
+        add rcx, 2  ; Add two because of CR and LF
+        inc rax
+        jmp _loop_skip_empty_lines
+        
+    _end_skip_empty_lines:
         pop rbp
         ret
 

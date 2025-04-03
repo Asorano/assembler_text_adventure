@@ -38,12 +38,24 @@ default rel
         call WriteText
 %endmacro
 
-%macro PARSE_META_DATA 1
+%macro PRINT_ERROR 1
+    mov rcx, 0x4
+    call SetTextColor
 
+    mov rcx, ERR_PARSING_FAILED
+    call WriteText
+
+    mov rcx, %1
+    call WriteText
+
+    mov rcx, 0x7
+    call SetTextColor
 %endmacro
 
 section .data
     ERR_HEAP_ALLOC db "Failed to allocate on the heap.", 10, 0
+    ERR_PARSING_FAILED db "Story file corrupted:", 10, 0
+    ERR_MISSING_METDATA_SEPARATION db "The metadata must be separated from the decisions with at least one empty line!", 10, 0
 
 section .bss
     mock resb DecisionLinkedList
@@ -51,8 +63,8 @@ section .bss
 section .text
     global ParseGameData
 
-    extern GetProcessHeap, HeapAlloc, HeapFree
-    extern WriteText, WriteNumber, AllocateNextLineOnHeap
+    extern GetProcessHeap, HeapAlloc, HeapFree, SetTextColor
+    extern WriteText, WriteNumber, AllocateNextLineOnHeap, SkipEmptyLines
 
     ; # Arguments 
     ; - [in] pointer to game data string
@@ -121,9 +133,20 @@ section .text
 
         ; Metadata: Title
         mov rcx, [rsp+40]
+        ; rdx already contains the pointer to the next line
         call AllocateNextLineOnHeap
         mov  r8, [rsp+48]
         mov [r8 + GameData.author], rax
+
+        ; Empty line
+        mov rcx, rdx
+        call SkipEmptyLines
+
+        test rax, rax
+        jz _err_missing_metadata_separation
+
+        ; mov rcx, rax
+        ; call WriteNumber
 
     ; _parse_decision:
     ;     ; Allocate the next linked list item
@@ -149,10 +172,16 @@ section .text
     ;     lea rcx, [ERR_HEAP_ALLOC]
     ;     call WriteText
         
-    _end_parsing:
+
         mov rax, [rsp+48] ; Load the address of the last linked list item, can be NULL
+    _end_parsing:
 
         ; Epilogue
         add rsp, 64
         pop rbp
         ret
+
+    _err_missing_metadata_separation:
+        PRINT_ERROR ERR_MISSING_METDATA_SEPARATION
+        mov rax, 0
+        jmp _end_parsing

@@ -25,7 +25,7 @@ section .data
     search_path db "stories/*.story", 0
 
     msg_err_no_files db "Seems like a black hole ate all the stories! Noooooooo!", 10, "(No stories found. The files must be located in the 'stories' directory and must have the extension '.stories')", 0
-    msg_err_file_parsing db "Oh no, the data overloaded the reactor! EMERGENCY SHUTDOWN!! FAST!", 10, "(The story file is corrupted and could not be parse)", 0
+    msg_err_file_parsing db "Oh no, the data overloaded the reactor! EMERGENCY SHUTDOWN!! FAST!", 0
     msg_err_invalid_input db "Seems like you are not good enough with numbers yet to play this game.", 10, 0
 
     msg_welcome db "Welcome to the x64 Text Adventures!", 10, 0
@@ -73,6 +73,8 @@ BootstrapGame:
 
     test rax, rax
     jz EndGame
+
+    jmp EndGame
 
     ; Start the game with the chosen file
     mov [rsp], rax
