@@ -1,7 +1,7 @@
 section .text
     extern CopyMemory, WriteNumber, WriteChar
     extern HeapAlloc
-    global CalculateTextLength, AllocateNextLineOnHeap, CalculateNextLineLength, SkipEmptyLines, SubString
+    global CalculateTextLength, AllocateNextLineOnHeap, CalculateNextLineLength, SkipEmptyLines, SubString, FindFirstCharInString
 
     ; Calculates the length of a text by searching the index of the first 0
     ; # Arguments:
@@ -21,6 +21,34 @@ section .text
         jmp _loop_calc_length
 
     _end_calc_length:
+        ret
+
+    ; Returns the index of the first occurence of a char in a string or -1 if none was found
+    ; # Arguments
+    ; - [in]    rcx = Pointer to string
+    ; - [in]    rdx = char to find
+    ; - [out]   rax = first index of char or -1
+    FindFirstCharInString:
+        mov rax, qword -1
+        mov  r9, qword -1
+        xor  r8, r8
+
+    _loop_find_first_char_in_string:
+        ; Check whether current char is 0 and terminates the string
+        mov r8b, byte [rcx]
+        inc qword rcx
+        inc qword r9
+
+        test r8b, r8b
+        jz _end_find_first_char_in_string
+
+        ; Check whether the current char is the target char
+        cmp r8, rdx
+        jne _loop_find_first_char_in_string
+
+        mov rax, r9
+
+    _end_find_first_char_in_string:
         ret
 
     ; Allocates a substring of the passed string on the heap
