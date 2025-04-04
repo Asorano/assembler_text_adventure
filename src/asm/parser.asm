@@ -39,7 +39,7 @@ section .text
 
     extern GetProcessHeap, HeapAlloc, HeapFree, SetTextColor
     extern WriteText, WriteNumber, AllocateNextLineOnHeap, SkipEmptyLines, SubString, FindFirstCharInString
-    extern log_decision
+    extern log_game_data, log_decision
 
     ; Frees the decisions and metadata and the game data struct from the heap
     ; # Arguments
@@ -258,11 +258,11 @@ section .text
         mov rcx, [rsp+64]
         mov [rcx + DecisionLinkedList.decision + GameDecision.id], rax
 
-        mov rcx, [rsp+64]
-        call log_decision
-
         ; Increment decision count
         inc byte [rsp+56]
+
+        mov rcx, [rsp+64]
+        call log_decision
 
         ; Loop
         jmp _parse_decision
@@ -278,6 +278,10 @@ section .text
         mov [rcx + GameData.decisions], rdx
 
     _end_parsing:
+        ; Log decisions
+        mov rcx, [rsp+48]
+        call log_game_data
+
         ; Free TEMP data
         ; Free current line
         mov rcx, [rsp+40]

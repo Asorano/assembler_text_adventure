@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdint.h>
 
 // struc GameAction
 //     .linked_decision    resq 1  ; Pointer to linked decision
@@ -27,20 +28,36 @@ typedef struct {
     GameAction action_3;
 } GameDecision;
 
-
+// struc DecisionLinkedList
+//     .next               resq 1                  ; Pointer to next decision
+//     .decision           resb GameDecision_size  ; Decision
+// endstruc
 typedef struct {
     void* next;
     GameDecision decision;
 } LinkedListItem;
 
+// struc GameData
+//     .title              resq 1  ; Pointer to title text
+//     .author             resq 1  ; Pointer to autor
+//     .decision_count     resq 1  ; Int
+//     .decisions          resq 1  ; Pointer to first decision
+// endstruc
+typedef struct {
+    char* title;
+    char* author;
+    int64_t decision_count;
+    LinkedListItem* decisions;
+} GameData;
+
 void log_action(GameAction action)
 {
     if(action.linked_decision == NULL)
     {
-        printf("\t- None\n");
+        printf(" - None\n");
     }
     else {
-        printf("\- %s <= %s\n", action.linked_decision, action.text);
+        printf(" - %s <= %s\n", action.linked_decision, action.text);
     }
 }
 
@@ -51,4 +68,16 @@ void log_decision(LinkedListItem* item)
     log_action(item->decision.action_1);
     log_action(item->decision.action_2);
     log_action(item->decision.action_3);
+}
+
+void log_game_data(GameData* gameData)
+{
+    printf("------------------------\nGame Data\n------------------------\n - Title: %s\n - Author: %s\n\n", gameData->title, gameData->author);
+    
+    LinkedListItem* currentItem = gameData->decisions;
+    while(currentItem != NULL)
+    {
+        log_decision(currentItem);
+        currentItem = currentItem->next;
+    }
 }
