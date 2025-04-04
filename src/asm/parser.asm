@@ -29,7 +29,7 @@ section .data
     ERR_HEAP_ALLOC db "Failed to allocate on the heap.", 10, 0
     ERR_PARSING_FAILED db "Story file corrupted:", 10, 0
     ERR_INVALID_DECISION_HEADER db "Invalid decision header. Required is: [decision_id=", 0x22, "text", 0x22, "]", 10, 0
-    ERR_MISSING_METDATA_SEPARATION db "The metadata must be separated from the decisions with at least one empty line!", 10, 0
+    ERR_MISSING_SEPARATION_LINE db "The sections (metadata and each decision) must be separated by an empty line!", 10, 0
 
 section .bss
     mock resb DecisionLinkedList
@@ -39,6 +39,7 @@ section .text
 
     extern GetProcessHeap, HeapAlloc, HeapFree, SetTextColor
     extern WriteText, WriteNumber, AllocateNextLineOnHeap, SkipEmptyLines, SubString, FindFirstCharInString
+    extern log_decision
 
     ; Frees the decisions and metadata and the game data struct from the heap
     ; # Arguments
@@ -159,18 +160,20 @@ section .text
         mov  r8, [rsp+48]
         mov [r8 + GameData.author], rax
 
-        ; Empty line
-        mov rcx, rdx
-        call SkipEmptyLines
-
-        test rax, rax
-        jz _err_missing_metadata_separation
-
         mov [rsp+32], rdx   ; Save current position in stack frame
 
         ; =================================================================
         ; Parse decisions
     _parse_decision:
+        ; Empty line
+        mov rcx, [rsp+32]
+        call SkipEmptyLines
+
+        test rax, rax
+        jz _err_missing_metadata_separation
+
+        mov [rsp+72], rdx
+
         ; Allocate the next linked list item
         mov rcx, [rsp+40]
         mov rdx, 8                          ; flags (HEAP_ZERO_MEMORY = 8)
@@ -186,9 +189,10 @@ section .text
 
         ; Allocate decision header line
         mov rcx, [rsp+40]
-        mov rdx, [rsp+32]
+        mov rdx, [rsp+72]
         call AllocateNextLineOnHeap
         mov [rsp+72], rax
+        mov [rsp+32], rdx
         mov [rsp+80], r8
         
         ; Check that it starts with [
@@ -254,8 +258,14 @@ section .text
         mov rcx, [rsp+64]
         mov [rcx + DecisionLinkedList.decision + GameDecision.id], rax
 
+        mov rcx, [rsp+64]
+        call log_decision
+
         ; Increment decision count
         inc byte [rsp+56]
+
+        ; Loop
+        jmp _parse_decision
 
         ; =================================================================
 
@@ -286,7 +296,7 @@ section .text
         HANDLE_ERROR ERR_INVALID_DECISION_HEADER
 
     _err_heap_alloc:
-        HANDLE_ERROR ERR_MISSING_METDATA_SEPARATION
+        HANDLE_ERROR ERR_MISSING_SEPARATION_LINE
 
     _err_missing_metadata_separation:
         HANDLE_ERROR ERR_HEAP_ALLOC
