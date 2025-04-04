@@ -352,6 +352,14 @@ section .text
         test rax, rax
         jz _fail_parse_action
 
+        ; Check that the line ends with "
+        mov rcx, rax
+        add rcx,  r8
+        dec rcx
+        movzx rcx, byte [rcx]
+        cmp  cl, 0x22
+        jne _fail_parse_action
+
         ; Check that the line contains a =
         mov rcx, rax
         mov rdx, '='
@@ -359,6 +367,8 @@ section .text
 
         cmp rax, -1
         jz _fail_parse_action
+
+        mov [rsp+72], rax
 
         mov rcx, [rsp+32]           ; Heap handle
         mov rdx, 8                  ; flags (HEAP_ZERO_MEMORY = 8)
@@ -370,7 +380,13 @@ section .text
         ; Put the heap address on the stack
         mov [rsp+48], rax           
 
-        ; Extract 
+        ; Extract text
+        mov rcx, [rsp+32]           ; Heap handle
+        mov rdx, [rsp+56]           ; Pointer to string
+        mov  r8, [rsp+72]           ; Index of =
+        mov  r9, [rsp+64]           ; Length of line
+        sub  r9, r8
+        call SubString
 
     _end_parse_action:
         ; Free line memory
