@@ -30,7 +30,7 @@ section .data
     ERR_PARSING_FAILED db "Story file corrupted:", 10, 0
     ERR_INVALID_DECISION_HEADER db "Invalid decision header. Required is: [decision_id=", 0x22, "text", 0x22, "]", 10, 0
     ERR_MISSING_SEPARATION_LINE db "The sections (metadata and each decision) must be separated by an empty line!", 10, 0
-    ERR_ACTION_PARSING_FAILED db "Failed to parse action for decision:", 10, 0
+    ERR_ACTION_PARSING_FAILED db "Failed to parse action. Required format: target_decision_id=", 0x22, "action text", 0x22, 10, 0
 
 section .bss
     mock resb DecisionLinkedList
@@ -266,15 +266,15 @@ section .text
         mov rdx, [rsp+32]
         call ParseAction
 
+        cmp rax, -1
+        je _err_action_parsing
+
         ; Increment decision count
         inc byte [rsp+56]
 
-        mov rcx, [rsp+64]
-        call log_decision
-
         ; Loop
         jmp _parse_decision
-
+ 
         ; =================================================================
 
     _finalize_parsing:
@@ -288,7 +288,7 @@ section .text
 
         ; Log decisions
         mov rcx, [rsp+48]
-        mov rdx, qword 1
+        mov rdx, qword 0
         call log_game_data
 
     _end_parsing:
@@ -312,8 +312,11 @@ section .text
     _err_heap_alloc:
         HANDLE_ERROR ERR_MISSING_SEPARATION_LINE
 
-    _err_missing_metadata_separation:
+    _err_missing_separation_line:
         HANDLE_ERROR ERR_HEAP_ALLOC
+
+    _err_action_parsing:
+        HANDLE_ERROR ERR_ACTION_PARSING_FAILED
 
     ; Parses a GameAction
     ; # Arguments
@@ -331,40 +334,59 @@ section .text
         ; -  8 bytes pointer to raw data        (rsp+40)
         ; -  8 bytes pointer to action on heap  (rsp+48)
         ; -  8 bytes pointer to extracted line  (rsp+56)
+        ; -  8 bytes line length                (rsp+64)
+        ; -  8 bytes index of = in line         (rsp+72)
         ; ----------------------------------------------
-        ; => 64 bytes
-        sub rsp, 64
+        ; => 80 bytes
+        sub rsp, 80
 
         mov [rsp+32], rcx
         mov [rsp+40], rdx
 
         ; Allocate line of text
         call AllocateNextLineOnHeap
+        mov [rsp+56], rax
+        mov [rsp+40], rdx
+        mov [rsp+64], r8
 
         test rax, rax
         jz _fail_parse_action
 
-        mov [rsp+56], rax
+        ; Check that the line contains a =
+        mov rcx, rax
+        mov rdx, '='
+        call FindFirstCharInString
 
-        mov rcx, [rsp+32]
-        mov rdx, 8                          ; flags (HEAP_ZERO_MEMORY = 8)
+        cmp rax, -1
+        jz _fail_parse_action
+
+        mov rcx, [rsp+32]           ; Heap handle
+        mov rdx, 8                  ; flags (HEAP_ZERO_MEMORY = 8)
         mov r8, GameAction_size     ; Size
         call HeapAlloc
-
+        ; Check allocation
         test rax, rax
         jz _fail_parse_action
+        ; Put the heap address on the stack
+        mov [rsp+48], rax           
 
-        mov rcx, [rsp+56]
-        call WriteText
-        ; Allocate decision header line
-
+        ; Extract 
 
     _end_parse_action:
+        ; Free line memory
+        mov rcx, [rsp+32]
+        xor rdx, rdx
+        mov  r8, [rsp+56]
+        call HeapFree
+        
+        mov rax, [rsp+48]
+        mov rdx, [rsp+40]
+
         ; Epiloque
-        add rsp, 64
+        add rsp, 80
         pop rbp
         ret
 
     _fail_parse_action:
-        mov rax, qword -1
+        mov qword [rsp+48], -1
         jmp _end_parse_action

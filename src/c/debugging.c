@@ -23,10 +23,10 @@ typedef struct {
     char* id;
     char* text;
 
-    GameAction action_0;
-    GameAction action_1;
-    GameAction action_2;
-    GameAction action_3;
+    GameAction* action_0;
+    GameAction* action_1;
+    GameAction* action_2;
+    GameAction* action_3;
 } GameDecision;
 
 // struc DecisionLinkedList
@@ -51,14 +51,14 @@ typedef struct {
     LinkedListItem* decisions;
 } GameData;
 
-void log_action(GameAction action)
+void log_action(GameAction* action)
 {
-    if(action.linked_decision == NULL)
+    if(action == NULL)
     {
         printf("    - None\n");
     }
     else {
-        printf("    - %s <= %s\n", action.linked_decision, action.text);
+        printf("    - %s <= %s\n", action->linked_decision, action->text);
     }
 }
 
