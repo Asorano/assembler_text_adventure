@@ -33,8 +33,8 @@ section .bss
     cursor_coords resb COORD_size         ; X=5, Y=10 (Little-endian format)
 
 section .text
-    global SetupOutput, ResetCursorPosition, ClearOutput, WriteText, WriteBuffer, WriteNumber, WriteChar, SetTextColor, CalculateTextLength, WriteLastError
-    extern GetStdHandle, WriteConsoleA, GetConsoleScreenBufferInfo, SetConsoleCursorPosition, FillConsoleOutputCharacterA, SetConsoleWindowInfo, SetConsoleTextAttribute, GetLastError, FormatMessageA
+    global SetupOutput, ResetCursorPosition, ClearOutput, WriteText, WriteBuffer, WriteNumber, WriteChar, SetTextColor, WriteLastError
+    extern GetStdHandle, WriteConsoleA, GetConsoleScreenBufferInfo, SetConsoleCursorPosition, FillConsoleOutputCharacterA, SetConsoleWindowInfo, SetConsoleTextAttribute, GetLastError, FormatMessageA, CalculateTextLength
 
     ; Initializes the handle and screen info for the console output
     SetupOutput:
@@ -92,26 +92,6 @@ section .text
 
         add rsp, 48
         pop rbp
-        ret
-
-    ; Calculates the length of a text by searching the index of the first 0
-    ; # Arguments:
-    ;   - rcx = address of text, text must end with 0
-    CalculateTextLength:
-        mov rax, 0
-
-    _calc_length_loop:
-        ; Loads the next byte
-        movzx rdx, byte [rcx]
-        cmp rdx, 0
-        je _return_length
-
-        inc rax
-        inc rcx
-        
-        jmp _calc_length_loop
-
-    _return_length:
         ret
 
     ; Writes the text behind an address to the console

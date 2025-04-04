@@ -1,7 +1,102 @@
 section .text
     extern CopyMemory, WriteNumber, WriteChar
     extern HeapAlloc
-    global AllocateNextLineOnHeap, CalculateNextLineLength, SkipEmptyLines
+    global CalculateTextLength, AllocateNextLineOnHeap, CalculateNextLineLength, SkipEmptyLines, SubString
+
+    ; Calculates the length of a text by searching the index of the first 0
+    ; # Arguments:
+    ;   - rcx = address of text, text must end with 0
+    CalculateTextLength:
+        mov rax, 0
+
+    _loop_calc_length:
+        ; Loads the next byte
+        movzx rdx, byte [rcx]
+        cmp rdx, 0
+        je _end_calc_length
+
+        inc rax
+        inc rcx
+        
+        jmp _loop_calc_length
+
+    _end_calc_length:
+        ret
+
+    ; Allocates a substring of the passed string on the heap
+    ; # Arguments
+    ; - [in]    rcx = Heap handle
+    ; - [in]    rdx = The pointer to the string
+    ; - [in]     r8 = start index
+    ; - [in]     r9 = count
+    ; - [out]   rax = pointer to substring or NULL
+    SubString:
+        ; Proloque
+        push rbp
+        mov rbp, rsp
+        ; Stack frame
+        ; - 32 bytes shadow space
+        ; -  8 bytes heap handle            (rsp+32)
+        ; -  8 bytes pointer to string      (rsp+40)
+        ; -  8 bytes start index            (rsp+48)
+        ; -  8 bytes count                  (rsp+56)
+        ; -  8 bytes required string length (rsp+64)
+        ; -  8 bytes pointer to new string  (rsp+72)
+        ; -----------------------
+        ; => 80 bytes
+        sub rsp, 80
+
+        ; Check that the index is >= 0
+        cmp r8, 0
+        jl _err_sub_string
+
+        ; Check that the count is > 0
+        cmp r9, 0
+        jle _err_sub_string
+
+        ; Setup stack frame
+        mov [rsp+32], rcx
+        mov [rsp+40], rdx
+
+        mov [rsp+48], r8
+        mov [rsp+56], r9   ; Save count on stack
+        add r9, r8          ; Sum start index and count to get min required string length
+        mov [rsp+64], r9    ; Store min required length on stack
+
+        ; Check that index + count does not exceed the length of the string
+        mov rcx, [rsp+40]
+        call CalculateTextLength
+
+        cmp rax, [rsp+64]
+        jl _err_sub_string
+
+        ; Allocate memory
+        mov rcx, [rsp+32]
+        mov rdx, 8                  ; flags (HEAP_ZERO_MEMORY = 8)
+        mov r8, [rsp+56]            ; Substring length             
+        inc r8                      ; Add one byte for string terminator
+        call HeapAlloc
+        mov [rsp+72], rax
+
+        ; Copy string to heap
+        mov rcx, [rsp+40]   ; Load start address of original string
+        add rcx, [rsp+48]   ; Add start index offset
+
+        mov rdx, rax        ; Set destination to address on heap
+        mov  r8, [rsp+56]   ; Set length
+        call CopyMemory
+
+        mov rax, [rsp+72]
+
+    _end_sub_string:
+        ; Epiloque
+        add rsp, 80
+        pop rbp
+        ret
+
+    _err_sub_string:
+        xor rax, rax
+        jmp _end_sub_string
 
     ; Allocates the next line of a string on the heap
     ; # Arguments

@@ -37,7 +37,7 @@ section .text
     global ParseGameData, FreeGameData
 
     extern GetProcessHeap, HeapAlloc, HeapFree, SetTextColor
-    extern WriteText, WriteNumber, AllocateNextLineOnHeap, SkipEmptyLines
+    extern WriteText, WriteNumber, AllocateNextLineOnHeap, SkipEmptyLines, SubString
 
     ; Frees the decisions and metadata and the game data struct from the heap
     ; # Arguments
