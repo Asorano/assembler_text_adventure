@@ -52,6 +52,9 @@ ALL_OBJS = $(ASM_OBJS) $(C_OBJS)
 # Make all assembly objects depend on all include files
 $(ASM_OBJS): $(INC_SRCS)
 
+STORIES_DIR = stories
+STORY_FILES = $(wildcard $(STORIES_DIR)/*.story)
+
 # Common linker settings
 COMMON_LINKFLAGS = -entry:$(APP_ENTRY) -subsystem:console /defaultlib:kernel32.lib /defaultlib:msvcrt.lib /defaultlib:vcruntime.lib /defaultlib:ucrt.lib
 
@@ -69,7 +72,7 @@ else
 endif
 
 # Default rule
-all: prepare $(EXE_FILE)
+all: prepare copy-resources $(EXE_FILE)
 
 # Create necessary directories
 prepare:
@@ -90,6 +93,11 @@ $(OBJ_DIR)/asm/%$(OBJ_EXT): $(ASM_DIR)/%$(ASM_EXT)
 $(OBJ_DIR)/c/%$(OBJ_EXT): $(C_DIR)/%$(C_EXT)
 	$(CC) $(CFLAGS) -o $@ $<
 
+copy-resources: prepare
+	@echo Copying story files to build directory...
+	-@md $(subst /,\,$(BIN_DIR)\stories) 2>NUL || echo.
+	@copy /Y "$(STORIES_DIR)\*.story" "$(BIN_DIR)\stories\" >NUL
+
 # Clean build artifacts
 clean:
 	-@rd /s /q $(subst /,\,$(BUILD_DIR)) 2>NUL || echo.
@@ -104,10 +112,10 @@ rebuild: clean all
 build: all
 
 run: build
-	$(BIN_DIR)/$(TARGET)$(EXE_EXT)
+	cd $(BIN_DIR) && $(TARGET)$(EXE_EXT)
 
 debug: build
-	x64dbg $(CURDIR)/$(BIN_DIR)/$(TARGET)$(EXE_EXT) "" "$(CURDIR)"
+	start "" x64dbg $(CURDIR)/$(BIN_DIR)/$(TARGET)$(EXE_EXT) "" "$(CURDIR)"
 
 # Help information
 help:

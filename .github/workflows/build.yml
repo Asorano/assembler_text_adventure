@@ -50,7 +50,6 @@ jobs:
         run: |
           mkdir -Force -Path build\obj\${{ github.event.inputs.config || 'release' }}\asm, build\obj\${{ github.event.inputs.config || 'release' }}\c, build\bin\${{ github.event.inputs.config || 'release' }}
           make build CONFIG=${{ github.event.inputs.config || 'release' }}
-          copy build\bin\${{ github.event.inputs.config || 'release' }}\game.exe game.exe
         
       # Setting file information
 
@@ -71,8 +70,8 @@ jobs:
         with:
           name: game
           path: |
-            game.exe
-            stories/
+            build/bin/${{ github.event.inputs.config || 'release' }}/game.exe
+            build/bin/${{ github.event.inputs.config || 'release' }}/stories/
   
       - name: Set up Git user
         run: |
