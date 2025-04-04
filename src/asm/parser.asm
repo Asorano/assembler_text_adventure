@@ -119,15 +119,17 @@ section .text
         mov rbp, rsp
         ; Stack frame
         ; - 32 bytes shadow space
-        ; -  8 bytes pointer to rawdata         (rsp+32)
-        ; -  8 bytes heap handle                (rsp+40)
-        ; -  8 bytes pointer to game data       (rsp+48)       
-        ; -  8 bytes decision count             (rsp+56)
-        ; -  8 bytes pointer to current item    (rsp+64)
-        ; -  8 bytes pointer to current line    (rsp+72)
+        ; -  8 bytes pointer to rawdata             (rsp+32)
+        ; -  8 bytes heap handle                    (rsp+40)
+        ; -  8 bytes pointer to game data           (rsp+48)       
+        ; -  8 bytes decision count                 (rsp+56)
+        ; -  8 bytes pointer to current item        (rsp+64)
+        ; -  8 bytes pointer to current line        (rsp+72)
+        ; -  8 bytes current line length            (rsp+80)
+        ; -  8 bytes index of = in decision header  (rsp+88)
         ; ----------------------------------------------
-        ; => 80 bytes
-        sub rsp, 80
+        ; => 96 bytes
+        sub rsp, 96
 
         mov qword [rsp+32], rcx ; Save data pointer in stack frame
         mov qword [rsp+48], 0   ; Ensure that the pointer to the linked list is NULL
@@ -166,6 +168,7 @@ section .text
 
         mov [rsp+32], rdx   ; Save current position in stack frame
 
+        ; =================================================================
         ; Parse decisions
     _parse_decision:
         ; Allocate the next linked list item
@@ -186,6 +189,7 @@ section .text
         mov rdx, [rsp+32]
         call AllocateNextLineOnHeap
         mov [rsp+72], rax
+        mov [rsp+80], r8
         
         ; Check that it starts with [
         mov  cl, byte [rax]
@@ -194,6 +198,7 @@ section .text
 
         ; Check that it ends with "]
         add rax, r8     ; Add the length of the line from AllocateNextLineOnHeap to rax to get the last character
+        dec rax
         mov  cl, byte [rax]
         cmp  cl, ']'
         jne _err_decision_header
@@ -204,13 +209,15 @@ section .text
         jne _err_decision_header
 
         ; Extract position of =
-        mov rcx, [rsp+72]
+        mov rcx, [rsp+72] ; +16 because of the two values pushed
         mov rdx, '='
         call FindFirstCharInString
 
         ; Check that the = exists
         cmp rax, -1
         je _err_decision_header
+
+        mov [rsp+88], rax
 
         mov rcx, [rsp+72]
         add rcx, rax
@@ -219,13 +226,29 @@ section .text
         cmp cl, 0x22
         jne _err_decision_header
 
-        ; Check that the char behind = is "
-        dec rax     ; Decrement because the [ must be ignored
+        ; Extract the text of the decision
+        ; rax has the first index of =
+        ;  r9 has the length of the current line 
+        mov rcx, [rsp+40]
+        mov rdx, [rsp+72]
+        ; Start index
+        mov  r8, [rsp+88]   ; set the start index to the index of =
+        add  r8, qword 2    ; Exclude =" from the text
+        ; Count
+        mov  r9, [rsp+80]
+        sub  r9, r8         ; Substract the index of = from
+        sub  r9, qword 2    ; Exclude "] from the text      
+        call SubString
+
+        ; Set the text pointer of the current decision item
+        mov rcx, [rsp+64]
+        mov [rcx + DecisionLinkedList.decision + GameDecision.text], rax
 
         mov rcx, [rsp+40]
         mov rdx, [rsp+72]
         mov  r8, 1
-        mov  r9, rax
+        mov  r9, [rsp+88]
+        dec  r9             ; Exclude = from the id
         call SubString
 
         mov rcx, [rsp+64]
@@ -234,12 +257,8 @@ section .text
         ; Increment decision count
         inc byte [rsp+56]
 
-    ;     jmp _parse_decision
+        ; =================================================================
 
-    ; _parse_game_data_heap_alloc_failed:
-    ;     lea rcx, [ERR_HEAP_ALLOC]
-    ;     call WriteText
-        
         ; Set decision count in game data
         mov rdx, [rsp+56]   ; Load decision count
         mov rcx, [rsp + 48]
@@ -259,7 +278,7 @@ section .text
         mov rax, [rsp+48]   ; Load the game data pointer as result
 
         ; Epilogue
-        add rsp, 80
+        add rsp, 96
         pop rbp
         ret
 

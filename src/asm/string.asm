@@ -175,7 +175,6 @@ section .text
         mov rax, [rsp+64]
         mov rdx, [rsp+56]
         mov  r8, [rsp+48]
-        dec  r8                     ; Remove the 0 terminator from the length
         ; Epiloque
         add rsp, 80
         pop rbp
