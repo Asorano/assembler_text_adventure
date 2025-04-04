@@ -133,6 +133,7 @@ section .text
     ; - [in]    
     ; - [out]   rax = heap pointer to line
     ; - [out]   rdx = pointer to next line
+    ; - [out]    r8 = string length
     AllocateNextLineOnHeap:
         ; Prologue
         push rbp
@@ -173,6 +174,8 @@ section .text
 
         mov rax, [rsp+64]
         mov rdx, [rsp+56]
+        mov  r8, [rsp+48]
+        dec  r8                     ; Remove the 0 terminator from the length
         ; Epiloque
         add rsp, 80
         pop rbp
@@ -181,8 +184,8 @@ section .text
     ; Skips all empty lines in the string
     ; # Arguments:
     ; - [in]    rcx = pointer to string
-    ; - [out]   rdx = pointer to next line
     ; - [out]   rax = skipped line count
+    ; - [out]   rdx = pointer to next line
     SkipEmptyLines:
         push rbp
         mov rbp, rsp
@@ -201,6 +204,7 @@ section .text
         jmp _loop_skip_empty_lines
         
     _end_skip_empty_lines:
+        mov rdx, rcx
         pop rbp
         ret
 
