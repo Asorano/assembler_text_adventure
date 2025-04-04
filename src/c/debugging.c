@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 // struc GameAction
 //     .linked_decision    resq 1  ; Pointer to linked decision
@@ -54,30 +55,40 @@ void log_action(GameAction action)
 {
     if(action.linked_decision == NULL)
     {
-        printf(" - None\n");
+        printf("    - None\n");
     }
     else {
-        printf(" - %s <= %s\n", action.linked_decision, action.text);
+        printf("    - %s <= %s\n", action.linked_decision, action.text);
     }
 }
 
-void log_decision(LinkedListItem* item)
+void log_decision(LinkedListItem* item, bool detailled)
 {
-    printf("Decision: %s => %s\n", item->decision.id, item->decision.text);
-    log_action(item->decision.action_0);
-    log_action(item->decision.action_1);
-    log_action(item->decision.action_2);
-    log_action(item->decision.action_3);
+    printf(" - %s\n", item->decision.id);
+    if(detailled)
+    {
+        printf("   - Text: %s\n", item->decision.text);
+        printf("   - Actions:\n");
+        log_action(item->decision.action_0);
+        log_action(item->decision.action_1);
+        log_action(item->decision.action_2);
+        log_action(item->decision.action_3);
+    }
 }
 
-void log_game_data(GameData* gameData)
+void log_game_data(GameData* gameData, bool detailled)
 {
-    printf("------------------------\nGame Data\n------------------------\n - Title: %s\n - Author: %s\n\n", gameData->title, gameData->author);
+    printf("---------------------------------------------------\nGame Data\n---------------------------------------------------\n");
+    printf(" - Title: %s\n", gameData->title);
+    printf(" - Author: %s\n", gameData->author);
+    printf(" - Decision count: %i\n\n", gameData->decision_count);
+
+    printf("Decisions:\n");
     
     LinkedListItem* currentItem = gameData->decisions;
     while(currentItem != NULL)
     {
-        log_decision(currentItem);
+        log_decision(currentItem, detailled);
         currentItem = currentItem->next;
     }
 }

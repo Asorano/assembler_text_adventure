@@ -170,7 +170,7 @@ section .text
         call SkipEmptyLines
 
         test rax, rax
-        jz _err_missing_metadata_separation
+        jz _finalize_parsing
 
         mov [rsp+72], rdx
 
@@ -269,6 +269,7 @@ section .text
 
         ; =================================================================
 
+    _finalize_parsing:
         ; Set decision count in game data
         mov rdx, [rsp+56]   ; Load decision count
         mov rcx, [rsp + 48]
@@ -277,11 +278,12 @@ section .text
         mov rdx, [rsp+64]
         mov [rcx + GameData.decisions], rdx
 
-    _end_parsing:
         ; Log decisions
         mov rcx, [rsp+48]
+        mov rdx, qword 1
         call log_game_data
 
+    _end_parsing:
         ; Free TEMP data
         ; Free current line
         mov rcx, [rsp+40]
