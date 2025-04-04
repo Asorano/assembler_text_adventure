@@ -6,10 +6,10 @@ endstruc
 struc GameDecision 
     .id:        resq 1  ; Pointer to id string
     .text:      resq 1  ; Pointer to text string
-    .action_0   resb GameAction_size  ; Pointer to first action
-    .action_1   resb GameAction_size  ; Pointer to second action
-    .action_2   resb GameAction_size  ; Pointer to third action
-    .action_3   resb GameAction_size  ; Pointer to fourth action
+    .action_0   resq 1  ; Pointer to first action
+    .action_1   resq 1  ; Pointer to second action
+    .action_2   resq 1  ; Pointer to third action
+    .action_3   resq 1  ; Pointer to fourth action
 endstruc
 
 struc GameData

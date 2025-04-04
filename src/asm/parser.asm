@@ -30,6 +30,7 @@ section .data
     ERR_PARSING_FAILED db "Story file corrupted:", 10, 0
     ERR_INVALID_DECISION_HEADER db "Invalid decision header. Required is: [decision_id=", 0x22, "text", 0x22, "]", 10, 0
     ERR_MISSING_SEPARATION_LINE db "The sections (metadata and each decision) must be separated by an empty line!", 10, 0
+    ERR_ACTION_PARSING_FAILED db "Failed to parse action for decision:", 10, 0
 
 section .bss
     mock resb DecisionLinkedList
@@ -258,6 +259,13 @@ section .text
         mov rcx, [rsp+64]
         mov [rcx + DecisionLinkedList.decision + GameDecision.id], rax
 
+        ; --------------------------------
+        ; --- Parse Actions
+        ; --------------------------------
+        mov rcx, [rsp+40]
+        mov rdx, [rsp+32]
+        call ParseAction
+
         ; Increment decision count
         inc byte [rsp+56]
 
@@ -306,3 +314,57 @@ section .text
 
     _err_missing_metadata_separation:
         HANDLE_ERROR ERR_HEAP_ALLOC
+
+    ; Parses a GameAction
+    ; # Arguments
+    ; - [in]    rcx = heap handle
+    ; - [in]    rdx = pointer to raw data
+    ; - [out]   rax = pointer to heap of parsed action OR NULL if there is none to parse OR -1 if the parsing failed
+    ; - [out]   rdx = new pointer to raw data
+    ParseAction:
+        ; Proloque
+        push rbp
+        mov rbp, rsp
+        ; Stack frame:
+        ; - 32 bytes shadow space
+        ; -  8 bytes heap handle                (rsp+32)
+        ; -  8 bytes pointer to raw data        (rsp+40)
+        ; -  8 bytes pointer to action on heap  (rsp+48)
+        ; -  8 bytes pointer to extracted line  (rsp+56)
+        ; ----------------------------------------------
+        ; => 64 bytes
+        sub rsp, 64
+
+        mov [rsp+32], rcx
+        mov [rsp+40], rdx
+
+        ; Allocate line of text
+        call AllocateNextLineOnHeap
+
+        test rax, rax
+        jz _fail_parse_action
+
+        mov [rsp+56], rax
+
+        mov rcx, [rsp+32]
+        mov rdx, 8                          ; flags (HEAP_ZERO_MEMORY = 8)
+        mov r8, GameAction_size     ; Size
+        call HeapAlloc
+
+        test rax, rax
+        jz _fail_parse_action
+
+        mov rcx, [rsp+56]
+        call WriteText
+        ; Allocate decision header line
+
+
+    _end_parse_action:
+        ; Epiloque
+        add rsp, 64
+        pop rbp
+        ret
+
+    _fail_parse_action:
+        mov rax, qword -1
+        jmp _end_parse_action
