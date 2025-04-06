@@ -288,7 +288,7 @@ section .text
 
         ; Log decisions
         mov rcx, [rsp+48]
-        mov rdx, qword 0
+        mov rdx, qword 1
         call log_game_data
 
     _end_parsing:
@@ -370,6 +370,14 @@ section .text
 
         mov [rsp+72], rax
 
+        ; Check that the char after = is "
+        mov rcx, [rsp+56]
+        add rcx, rax
+        inc rcx
+        movzx rcx, byte [rcx]
+        cmp  cl, 0x22
+        jne _fail_parse_action
+
         mov rcx, [rsp+32]           ; Heap handle
         mov rdx, 8                  ; flags (HEAP_ZERO_MEMORY = 8)
         mov r8, GameAction_size     ; Size
@@ -384,9 +392,27 @@ section .text
         mov rcx, [rsp+32]           ; Heap handle
         mov rdx, [rsp+56]           ; Pointer to string
         mov  r8, [rsp+72]           ; Index of =
+        add  r8, 2                  ; Exclude ="
         mov  r9, [rsp+64]           ; Length of line
         sub  r9, r8
+        dec  r9                     ; Exclude " at the end
         call SubString
+
+        ; Set text of action
+        mov rcx, [rsp+48]
+        mov [rcx + GameAction.text], rax
+
+        ; Extract id
+        mov rcx, [rsp+32]           ; Heap handle
+        mov rdx, [rsp+56]           ; Pointer to string
+        mov  r8, 0                  ; Index of =
+        mov  r9, [rsp+72]           ; Length of line
+        sub  r9, r8
+        call SubString     
+
+        ; Set id of action
+        mov rcx, [rsp+48]
+        mov [rcx + GameAction.linked_decision], rax 
 
     _end_parse_action:
         ; Free line memory

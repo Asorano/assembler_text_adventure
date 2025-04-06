@@ -53,11 +53,8 @@ typedef struct {
 
 void log_action(GameAction* action)
 {
-    if(action == NULL)
+    if(action != NULL)
     {
-        printf("    - None\n");
-    }
-    else {
         printf("    - %s <= %s\n", action->linked_decision, action->text);
     }
 }
@@ -74,6 +71,7 @@ void log_decision(LinkedListItem* item, bool detailled)
         log_action(item->decision.action_2);
         log_action(item->decision.action_3);
     }
+    printf("\n");
 }
 
 void log_game_data(GameData* gameData, bool detailled)
@@ -81,7 +79,7 @@ void log_game_data(GameData* gameData, bool detailled)
     printf("---------------------------------------------------\nGame Data\n---------------------------------------------------\n");
     printf(" - Title: %s\n", gameData->title);
     printf(" - Author: %s\n", gameData->author);
-    printf(" - Decision count: %i\n\n", gameData->decision_count);
+    printf(" - Decision count: %lli\n\n", gameData->decision_count);
 
     printf("Decisions:\n");
     
