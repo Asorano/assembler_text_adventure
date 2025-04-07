@@ -33,52 +33,12 @@ section .data
     ERR_ACTION_PARSING_FAILED db "Failed to parse action. Required format: target_decision_id=", 0x22, "action text", 0x22, 10, 0
 
 section .text
-    global ParseGameData, FreeGameData
+    global ParseGameData
 
     extern GetProcessHeap, HeapAlloc, HeapFree, SetTextColor
     extern WriteText, WriteNumber, AllocateNextLineOnHeap, SkipEmptyLines, SubString, FindFirstCharInString
+    extern FreeGameData, FreeGameAction, FreeGameDecision
     extern log_game_data, log_decision
-
-    ; Frees the decisions and metadata and the game data struct from the heap
-    ; # Arguments
-    ; - [in]    rcx = pointer to game data struct
-    FreeGameData:
-        ; Prologue
-        push rbp
-        mov rbp, rsp
-        ; Stack frame
-        ; - 32 bytes shadow space
-        ; -----------------------
-        ; => 32 bytes
-        sub rsp, 32
-
-        mov r12, rcx
-
-        call GetProcessHeap
-        mov r13, rax
-
-        ; Free title
-        mov rcx, r13
-        xor rdx, rdx
-        mov r8, [r12 + GameData.title]
-        call HeapFree
-
-        ; Free author
-        mov rcx, r13
-        xor rdx, rdx
-        mov r8, [r12 + GameData.author]
-        call HeapFree
-
-        ; Free game data
-        mov rcx, r13
-        xor rdx, rdx
-        mov  r8, r12
-        call HeapFree
-
-        ; Epiloque
-        add rsp, 32
-        pop rbp
-        ret
 
     ; # Arguments 
     ; - [in] pointer to game data string
