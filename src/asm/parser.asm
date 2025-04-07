@@ -32,9 +32,6 @@ section .data
     ERR_MISSING_SEPARATION_LINE db "The sections (metadata and each decision) must be separated by an empty line!", 10, 0
     ERR_ACTION_PARSING_FAILED db "Failed to parse action. Required format: target_decision_id=", 0x22, "action text", 0x22, 10, 0
 
-section .bss
-    mock resb DecisionLinkedList
-
 section .text
     global ParseGameData, FreeGameData
 
@@ -119,7 +116,10 @@ section .text
         ; Prologue
         push rbp
         mov rbp, rsp
+
         ; Stack frame
+        ; - r10 -  
+        ;
         ; - 32 bytes shadow space
         ; -  8 bytes pointer to rawdata             (rsp+32)
         ; -  8 bytes heap handle                    (rsp+40)
@@ -175,89 +175,60 @@ section .text
 
         mov [rsp+72], rdx
 
+        ; Parse decision with current line
+        mov rcx, [rsp+40]
+        mov rdx, [rsp+72]
+        call ParseDecision
+
         ; Allocate the next linked list item
-        mov rcx, [rsp+40]
-        mov rdx, 8                          ; flags (HEAP_ZERO_MEMORY = 8)
-        mov r8, DecisionLinkedList_size     ; Size
-        call HeapAlloc
+        ; mov rcx, [rsp+40]
+        ; mov rdx, 8                          ; flags (HEAP_ZERO_MEMORY = 8)
+        ; mov r8, LinkedListItem_size     ; Size
+        ; call HeapAlloc
 
-        test rax, rax
-        jz _err_heap_alloc
+        ; test rax, rax
+        ; jz _err_heap_alloc
 
-        mov rcx, [rsp+64]
-        mov [rax + DecisionLinkedList.next], rcx
-        mov [rsp+64], rax
-
-        ; Allocate decision header line
-        mov rcx, [rsp+40]
-        mov rdx, [rsp+72]
-        call AllocateNextLineOnHeap
-        mov [rsp+72], rax
-        mov [rsp+32], rdx
-        mov [rsp+80], r8
+        ; mov rcx, [rsp+64]
+        ; mov [rax + LinkedListItem.next], rcx
+        ; mov [rsp+64], rax
         
-        ; Check that it starts with [
-        mov  cl, byte [rax]
-        cmp  cl, '['
-        jne _err_decision_header
+        ; ; Check that it starts with [
+        ; mov  cl, byte [rax]
+        ; cmp  cl, '['
+        ; jne _err_decision_header
 
-        ; Check that it ends with "]
-        add rax, r8     ; Add the length of the line from AllocateNextLineOnHeap to rax to get the last character
-        dec rax
-        mov  cl, byte [rax]
-        cmp  cl, ']'
-        jne _err_decision_header
+        ; ; Check that it ends with "]
+        ; add rax, r8     ; Add the length of the line from AllocateNextLineOnHeap to rax to get the last character
+        ; dec rax
+        ; mov  cl, byte [rax]
+        ; cmp  cl, ']'
+        ; jne _err_decision_header
 
-        dec rax
-        mov  cl, byte [rax]
-        cmp  cl, 0x22
-        jne _err_decision_header
+        ; dec rax
+        ; mov  cl, byte [rax]
+        ; cmp  cl, 0x22
+        ; jne _err_decision_header
 
-        ; Extract position of =
-        mov rcx, [rsp+72] ; +16 because of the two values pushed
-        mov rdx, '='
-        call FindFirstCharInString
+        ; ; Extract position of =
+        ; mov rcx, [rsp+72] ; +16 because of the two values pushed
+        ; mov rdx, '='
+        ; call FindFirstCharInString
 
-        ; Check that the = exists
-        cmp rax, -1
-        je _err_decision_header
+        ; ; Check that the = exists
+        ; cmp rax, -1
+        ; je _err_decision_header
 
-        mov [rsp+88], rax
+        ; mov [rsp+88], rax
 
-        mov rcx, [rsp+72]
-        add rcx, rax
-        inc rcx
-        mov  cl, byte [rcx]
-        cmp cl, 0x22
-        jne _err_decision_header
+        ; mov rcx, [rsp+72]
+        ; add rcx, rax
+        ; inc rcx
+        ; mov  cl, byte [rcx]
+        ; cmp cl, 0x22
+        ; jne _err_decision_header
 
-        ; Extract the text of the decision
-        ; rax has the first index of =
-        ;  r9 has the length of the current line 
-        mov rcx, [rsp+40]
-        mov rdx, [rsp+72]
-        ; Start index
-        mov  r8, [rsp+88]   ; set the start index to the index of =
-        add  r8, qword 2    ; Exclude =" from the text
-        ; Count
-        mov  r9, [rsp+80]
-        sub  r9, r8         ; Substract the index of = from
-        sub  r9, qword 2    ; Exclude "] from the text      
-        call SubString
 
-        ; Set the text pointer of the current decision item
-        mov rcx, [rsp+64]
-        mov [rcx + DecisionLinkedList.decision + GameDecision.text], rax
-
-        mov rcx, [rsp+40]
-        mov rdx, [rsp+72]
-        mov  r8, 1
-        mov  r9, [rsp+88]
-        dec  r9             ; Exclude = from the id
-        call SubString
-
-        mov rcx, [rsp+64]
-        mov [rcx + DecisionLinkedList.decision + GameDecision.id], rax
 
         ; --------------------------------
         ; --- Parse Actions
@@ -317,6 +288,136 @@ section .text
 
     _err_action_parsing:
         HANDLE_ERROR ERR_ACTION_PARSING_FAILED
+
+    ; Parses a decision with id, text and actions and returns its heap address 
+    ; # Arguments
+    ; - [in]    rcx = heap handle
+    ; - [in]    rdx = pointer to raw data
+    ; - [out]   rax = heap pointer to the decision or NULL
+    ParseDecision:
+        ; Proloque
+        push rbp
+        mov rbp, rsp
+        ; Stack frame:
+        ; - 32 bytes shadow space
+        ; -  8 bytes heap handle                (rsp+32)
+        ; -  8 bytes pointer to raw data        (rsp+40)
+        ; -  8 bytes pointer to current line    (rsp+48)
+        ; -  8 bytes length of the current line (rsp+56)
+        ; -  8 bytes index of =                 (rsp+64)
+        ; -  8 bytes pointer to decision        (rsp+72)
+        ; ------------------------------
+        ; => 80 bytes
+        sub rsp, 80
+
+        mov [rsp+32], rcx
+        mov [rsp+40], rdx
+
+        ; Allocate decision header line
+        mov rcx, [rsp+32]
+        call AllocateNextLineOnHeap
+        mov [rsp+48], rax
+        mov [rsp+40], rdx
+        mov [rsp+56], r8
+
+        ; Check that the string has at least 7 characters including at least one char for id: [a="b"]
+        cmp r8, 0x7
+        jl _fail_parse_decision
+
+        ; Check that it starts with [
+        mov  cl, byte [rax]
+        cmp  cl, '['
+        jne _fail_parse_decision
+
+        ; Check that it ends with "]
+        add rax, r8     ; Add the length of the line from AllocateNextLineOnHeap to rax to get the last character
+        dec rax
+        mov  cl, byte [rax]
+        cmp  cl, ']'
+        jne _fail_parse_decision
+
+        dec rax
+        mov  cl, byte [rax]
+        cmp  cl, 0x22
+        jne _fail_parse_decision
+
+        ; Find index of =
+        ; If it does not exist, fail
+        mov rcx, [rsp+48]
+        mov rdx, '='
+        call FindFirstCharInString
+
+        ; Check that the = exists
+        cmp rax, -1
+        je _fail_parse_decision
+
+        ; Check that there is a " behind =
+        mov rcx, [rsp+48]
+        add rcx, rax
+        inc rcx
+        mov cl, byte [rcx]
+        cmp cl, 0x22
+        jne _fail_parse_decision
+
+        ; Save the index in the stack frame
+        mov [rsp+64], rax
+
+        ; The data has been validated and allocated and now the actual GameDecision can be allocated.
+        mov rcx, [rsp+32]
+        mov rdx, 8                          ; flags (HEAP_ZERO_MEMORY = 8)
+        mov r8, GameDecision_size     ; Size
+        call HeapAlloc
+
+        test rax, rax
+        jz _fail_parse_decision
+
+        mov [rsp+72], rax
+
+        ; Extract and set id
+        mov rcx, [rsp+32]   ; Heap handle
+        mov rdx, [rsp+48]   ; Pointer to current line
+        mov  r8, 1          ; Start Index => 1 to skip the [
+        mov  r9, [rsp+56]   ; Count => Index of =
+        dec  r9             ; Exclude = from the id
+        call SubString
+
+        mov rcx, [rsp+72]
+        mov [rcx + GameDecision.id], rax
+
+        ; Extract and set text
+        mov rcx, [rsp+32]   ; Heap handle
+        mov rdx, [rsp+48]   ; Pointer to current line
+
+        ; Start index
+        mov  r8, [rsp+64]   ; set the start index to the index of =
+        add  r8, qword 2    ; Exclude =" from the text
+        ; Count
+        mov  r9, [rsp+56]
+        sub  r9, r8         ; Substract the index of = from
+        sub  r9, qword 2    ; Exclude "] from the text      
+        call SubString
+
+        mov rcx, [rsp+72]
+        mov [rcx + GameDecision.text], rax
+
+    _end_parse_decision:
+        ; Free the header line
+        mov rcx, [rsp+32]
+        xor rdx, rdx
+        mov r8, [rsp+48]
+        call HeapFree
+
+        ; Load address of decision which can be NULL
+        mov rax, [rsp+72]
+
+        ; Epiloque
+        add rsp, 80
+        pop rbp
+        ret
+
+    _fail_parse_decision:
+        mov qword [rsp+64], 0
+        jmp _end_parse_decision
 
     ; Parses a GameAction
     ; # Arguments

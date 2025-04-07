@@ -35,7 +35,7 @@ typedef struct {
 // endstruc
 typedef struct {
     void* next;
-    GameDecision decision;
+    void* data;
 } LinkedListItem;
 
 // struc GameData
@@ -61,15 +61,17 @@ void log_action(GameAction* action)
 
 void log_decision(LinkedListItem* item, bool detailled)
 {
-    printf(" - %s\n", item->decision.id);
+    GameDecision* decision = (GameDecision*) item->data;
+
+    printf(" - %s\n", decision->id);
     if(detailled)
     {
-        printf("   - Text: %s\n", item->decision.text);
+        printf("   - Text: %s\n", decision->text);
         printf("   - Actions:\n");
-        log_action(item->decision.action_0);
-        log_action(item->decision.action_1);
-        log_action(item->decision.action_2);
-        log_action(item->decision.action_3);
+        log_action(decision->action_0);
+        log_action(decision->action_1);
+        log_action(decision->action_2);
+        log_action(decision->action_3);
     }
     printf("\n");
 }

@@ -19,9 +19,9 @@ struc GameData
     .decisions          resq 1  ; Pointer to first decision
 endstruc
 
-struc DecisionLinkedList
-    .next               resq 1                  ; Pointer to next decision
-    .decision           resb GameDecision_size  ; Decision
+struc LinkedListItem
+    .next               resq 1  ; Pointer to next item
+    .data               resq 1  ; Pointer to data of this item
 endstruc
 
 section .data
