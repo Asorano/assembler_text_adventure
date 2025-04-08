@@ -3,7 +3,7 @@ default rel
 %include "linked_list.inc"
 
 section .text
-    global CreateLinkedList, AppendToLinkedList, FreeLinkedList, GetLinkedListLength
+    global CreateLinkedList, AppendToLinkedList, FreeLinkedList, GetLinkedListLength, GetFirstLinkedListItem, GetLastLinkedListItem, GetLinkedListItemByIndex
 
     extern GetProcessHeap, HeapAlloc, HeapFree
 
@@ -34,6 +34,76 @@ section .text
     ; - [out]   rax = item count of linked list
     GetLinkedListLength:
         mov rax, [rcx + LinkedListHead.length]
+        ret
+
+    ; Returns a pointer to the first data or NULL if the list is empty
+    ; # Arguments
+    ; - [in]    rcx = Pointer to linked list
+    ; - [out]   rax = Pointer to first data or NULL
+    GetFirstLinkedListItem:
+        ; Proloque
+        push rbp
+        mov rbp, rsp
+
+        mov rax, [rcx + LinkedListHead.head]
+        test rax, rax
+        jz _end_get_first_linked_list_item
+
+        mov rax, [rax + LinkedListItem.data]
+
+    _end_get_first_linked_list_item:
+        ; Epiloque
+        pop rbp
+        ret
+
+    ; Returns the item at index if existing
+    ; # Arguments
+    ; - [in]    rcx = Pointer to linked list
+    ; - [in]    rdx = item index
+    ; - [out]   rax = Pointer to data of item at index or NULL
+    GetLinkedListItemByIndex:
+        push rbp
+        mov rbp, rsp
+
+        mov rax, qword 0x0
+
+        mov  r8, [rcx + LinkedListHead.length]
+        cmp rdx, r8
+        jge _end_get_linked_list_item_by_index
+
+        mov rcx, [rcx + LinkedListHead.head]
+    _loop_get_linked_list_item_by_index:
+        mov rax, [rcx + LinkedListItem.data]
+
+        test rdx, rdx
+        jz _end_get_linked_list_item_by_index
+
+        mov rcx, [rcx + LinkedListItem.next]
+        dec rdx
+        jmp _loop_get_linked_list_item_by_index
+
+    _end_get_linked_list_item_by_index:
+        pop rbp
+        ret
+
+    ; Returns the data of the last item or NULL
+    ; # Arguments
+    ; - [in]    rcx = Pointer to linked list
+    ; - [out]   rax = Pointer to data of last item or NULL
+    GetLastLinkedListItem:
+        push rbp
+        mov rbp, rsp
+
+        ; Get length of list
+        mov rdx, [rcx + LinkedListHead.length]
+        test rdx, rdx
+        jz _get_get_last_linked_list_item
+
+        dec rdx
+        call GetLinkedListItemByIndex
+
+    _get_get_last_linked_list_item:
+        pop rbp
         ret
 
     ; Adds an item to the linked list
