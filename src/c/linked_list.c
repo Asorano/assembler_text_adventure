@@ -9,7 +9,14 @@ extern void AppendToLinkedList(HANDLE heapHandle, void* linkedList, void* data);
 
 void FreeText(void* data)
 {
-    // free(data);
+    free(data);
+}
+
+void AppendSomething(HANDLE handle, void* list, char* text)
+{
+    char* data = malloc(sizeof(char) * 50);
+    strcpy(data, text);
+    AppendToLinkedList(handle, list, data);
 }
 
 void TestLinkedList()
@@ -17,16 +24,9 @@ void TestLinkedList()
     HANDLE handle = GetProcessHeap();
     void* linkedList = CreateLinkedList(handle);    
 
-    char* text = malloc(sizeof(char) * 50);
-
-    text = "Hello";
-    AppendToLinkedList(handle, linkedList, text);
-
-    text = "World";
-    AppendToLinkedList(handle, linkedList, text);
-
-    text = "!";
-    AppendToLinkedList(handle, linkedList, text);
+    AppendSomething(handle, linkedList, "Hello");
+    AppendSomething(handle, linkedList, "World");
+    AppendSomething(handle, linkedList, "!");
 
     printf("Length: %i\n", GetLinkedListLength(linkedList));
 
