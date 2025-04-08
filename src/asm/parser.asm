@@ -193,9 +193,7 @@ section .text
         ; --------------------------------
         ; --- Parse Actions
         ; --------------------------------
-        mov rcx, [rsp+40]
-        mov rdx, [rsp+32]
-        call ParseAction
+
 
         cmp rax, -1
         je _err_action_parsing
@@ -254,6 +252,7 @@ section .text
     ; - [in]    rcx = heap handle
     ; - [in]    rdx = pointer to raw data
     ; - [out]   rax = heap pointer to the decision or NULL
+    ; - [out]   rdx = pointer to next line
     ParseDecision:
         ; Proloque
         push rbp
@@ -337,7 +336,7 @@ section .text
         mov rcx, [rsp+32]   ; Heap handle
         mov rdx, [rsp+48]   ; Pointer to current line
         mov  r8, 1          ; Start Index => 1 to skip the [
-        mov  r9, [rsp+56]   ; Count => Index of =
+        mov  r9, [rsp+64]   ; Count => Index of =
         dec  r9             ; Exclude = from the id
         call SubString
 
@@ -360,6 +359,16 @@ section .text
         mov rcx, [rsp+72]
         mov [rcx + GameDecision.text], rax
 
+        ; -------------------- Actions ---------------------------------------
+        mov rcx, [rsp+32]
+        mov rdx, [rsp+40]
+        call ParseAction
+
+        mov rcx, [rsp+72]
+        mov [rcx + GameDecision.action_0], rax
+
+
+
     _end_parse_decision:
         ; Free the header line
         mov rcx, [rsp+32]
@@ -369,6 +378,8 @@ section .text
 
         ; Load address of decision which can be NULL
         mov rax, [rsp+72]
+        ; Load pointer to next line
+        mov rdx, [rsp+40]
 
         ; Epiloque
         add rsp, 80

@@ -35,9 +35,11 @@ section .data
 section .text
     extern SetupOutput, WriteText, WriteChar, WriteNumber, ExitProcess, ClearOutput, ResetCursorPosition, SetTextColor
     extern SetupInput, ReadNumber
-    extern GetFileNamesInDirectory, FindFileByPathAndIndex, ReadFileWithCallback, CopyMemory
+    extern GetFileNamesInDirectory, FindFileByPathAndIndex, ReadFileWithCallback, CopyMemory, GetProcessHeap
     extern ParseGameData, FreeGameData
     extern RunGame
+
+    extern TestLinkedList
 
     global BootstrapGame
 
@@ -67,6 +69,10 @@ BootstrapGame:
     call SetupInput
     ; call ResetCursorPosition
     ; call ClearOutput
+
+    call TestLinkedList
+
+    jmp EndGame
 
     ; Returns the pointer to the first decision if successful
     call SelectAndLoadFile
