@@ -1,4 +1,5 @@
 struc LinkedListHead
+    .handle             resq 1; Heap handle
     .length             resq 1; Length of linked list
     .head               resq 1; Pointer to head item
 endstruc

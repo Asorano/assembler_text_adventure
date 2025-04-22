@@ -5,7 +5,7 @@ default rel
 section .text
     global CreateLinkedList, AppendToLinkedList, FreeLinkedList, GetLinkedListLength, GetFirstLinkedListItem, GetLastLinkedListItem, GetLinkedListItemByIndex
 
-    extern GetProcessHeap, HeapAlloc, HeapFree
+    extern HeapAlloc, HeapFree
 
     ; Creates a new linked list with length 0
     ; # Arguments
@@ -163,7 +163,6 @@ section .text
         add rsp, 48
         pop rbp
         ret
-
 
     ; Frees the memory of a linked list
     ;
